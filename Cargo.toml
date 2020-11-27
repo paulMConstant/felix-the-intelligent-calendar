@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-    "backend",
-    "plan",
+    "plan-backend",
+    "plan-gtk",
 ]
