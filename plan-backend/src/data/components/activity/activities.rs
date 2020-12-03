@@ -1,4 +1,3 @@
-use super::super::helpers::clean_string::clean;
 use super::helpers::id_computation::{compute_incompatible_ids, generate_next_id};
 use super::ActivityMetadata;
 use crate::data::{Activity, Time};
@@ -6,6 +5,7 @@ use std::collections::HashMap;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Activities {
     activities: HashMap<u16, Activity>,
 }
@@ -52,29 +52,24 @@ impl Activities {
         }
     }
 
-    /// Adds an activity with the formatted given name to the collection.
+    /// Adds an activity with the given name to the collection.
     /// Automatically assigns a unique id.
     /// Returns an immutable reference to the newly created activity.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the formatted given name is empty.
     ///
     /// # Panics
     ///
     /// Panics if there is no id available under 65536.
     #[must_use]
-    pub fn add<S>(&mut self, name: S) -> Result<&Activity, String>
-    where
-        S: Into<String>,
-    {
-        let name = clean(name)?;
+    pub fn add(&mut self, name: String) -> &Activity {
         let used_ids = self.activities.keys().collect();
         let id = generate_next_id(used_ids);
         let activity = Activity::new(id, name);
 
         self.activities.insert(id, activity);
-        Ok(&self.activities.get(&id).unwrap())
+        &self
+            .activities
+            .get(&id)
+            .expect("Either the activity was not inserted or getter does not work")
     }
 
     /// Removes the activity with given id from the collection.
@@ -85,7 +80,7 @@ impl Activities {
     #[must_use]
     pub fn remove(&mut self, id: u16) -> Result<(), String> {
         match self.activities.remove(&id) {
-            None => Err(format!("The activity with id {} does not exist !", id)),
+            None => Err(format!("The activity with id {} does not exist.", id)),
             Some(_) => {
                 self.update_incompatible_activities();
                 // TODO update possible insertion times
@@ -94,38 +89,25 @@ impl Activities {
         }
     }
 
-    /// Changes the name of the activity with the given id to the formatted given name.
-    /// Returns the formatted version of the given name.
+    /// Changes the name of the activity with the given id to the given name.
     ///
     /// # Errors
     ///
-    /// Returns Err if there is no activity with the given id, or the formatted given name is
-    /// empty.
+    /// Returns Err if there is no activity with the given id.
     #[must_use]
-    pub fn set_name<S>(&mut self, id: u16, name: S) -> Result<String, String>
-    where
-        S: Into<String>,
-    {
-        let activity = self.get_mut_by_id(id)?;
-        let name = clean(name)?;
-        activity.metadata.set_name(name.clone());
-        Ok(name)
+    pub fn set_name(&mut self, id: u16, name: String) -> Result<(), String> {
+        Ok(self.get_mut_by_id(id)?.metadata.set_name(name))
     }
 
-    /// Adds a participant to the activity with the given id.
+    /// Adds an entity to the activity with the given id.
     ///
     /// # Errors
     ///
-    /// Returns Err if the activity is not found or if the participant is already
+    /// Returns Err if the activity is not found or if the entity is already
     /// taking part in the activity.
     #[must_use]
-    pub fn add_participant<S>(&mut self, id: u16, participant: S) -> Result<(), String>
-    where
-        S: Into<String>,
-    {
-        self.get_mut_by_id(id)?
-            .metadata
-            .add_participant(participant)?;
+    pub fn add_entity(&mut self, id: u16, entity: String) -> Result<(), String> {
+        self.get_mut_by_id(id)?.metadata.add_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
         // TODO update possible insertion times
@@ -143,86 +125,71 @@ impl Activities {
             .collect();
 
         // 2. Iterate over the copied metadata to fill incompatible ids (activities which
-        // have at least one participant in common are incompatible).
+        // have at least one entity in common are incompatible).
         // If the activity has the same id, it is the same activity, don't add it
         for metadata in &metadata_vec {
             self.activities
                 .get_mut(&metadata.id())
-                .unwrap()
+                .expect("Metadata has id which is not recognized in activiites.get_mut !")
                 .computation_data
                 .set_incompatible_activity_ids(compute_incompatible_ids(&metadata, &metadata_vec));
         }
     }
 
-    /// Removes a participant from the activity with the given id.
+    /// Removes an entity from the activity with the given id.
     ///
     /// # Errors
     ///
-    /// Returns Err if the activity is not found or if the participant is not
+    /// Returns Err if the activity is not found or if the entity is not
     /// taking part in the activtiy.
     #[must_use]
-    pub fn remove_participant<S>(&mut self, id: u16, participant: S) -> Result<(), String>
-    where
-        S: Into<String>,
-    {
-        self.get_mut_by_id(id)?
-            .metadata
-            .remove_participant(participant)?;
+    pub fn remove_entity(&mut self, id: u16, entity: &String) -> Result<(), String> {
+        self.get_mut_by_id(id)?.metadata.remove_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
         // TODO update possible insertion times
     }
 
-    /// Removes the participant with formatted given name from all activities.
-    ///
-    /// Returns the name of removed participant.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the given name is empty after formatting.
-    #[must_use]
-    pub fn remove_participant_from_all<S>(&mut self, participant: S) -> Result<String, String>
-    where
-        S: Into<String>,
-    {
-        let participant = clean(participant)?;
+    /// Removes the entity with given name from all activities.
+    pub fn remove_entity_from_all(&mut self, entity: &String) {
         for activity in self.activities.values_mut() {
-            // We don't care about the result : it is fine if the participant is not
+            // We don't care about the result : it is fine if the entity is not
             // taking part in the activity, that is what we want in the first place
-            let _ = activity.metadata.remove_participant(participant.clone());
+            let _ = activity.metadata.remove_entity(entity);
         }
         self.update_incompatible_activities();
-        Ok(participant)
         // TODO update possible insertion times
     }
 
-    /// Renames the participant with formatted given name in all activities.
-    ///
-    /// Returns the formatted new name of the participant.
+    /// Renames the entity with given name in all activities.
+    pub fn rename_entity_in_all(&mut self, old_name: &String, new_name: String) {
+        for activity in self.activities.values_mut() {
+            // We don't care about the result : it is fine if the entity is not
+            // taking part in the activity, this will yield no conflict when it is renamed
+            let _ = activity.metadata.rename_entity(old_name, new_name.clone());
+        }
+    }
+
+    /// Adds the group with the given name to the activity with given id.
     ///
     /// # Errors
     ///
-    /// Returns Err if any given name is empty after formatting.
+    /// Returns Err if the activity is not found or if
+    /// the group is already taking part in the activity.
     #[must_use]
-    pub fn rename_participant_in_all<S1, S2>(
-        &mut self,
-        old_name: S1,
-        new_name: S2,
-    ) -> Result<String, String>
-    where
-        S1: Into<String>,
-        S2: Into<String>,
-    {
-        let old_name = clean(old_name)?;
-        let new_name = clean(new_name)?;
-        for activity in self.activities.values_mut() {
-            // We don't care about the result : it is fine if the participant is not
-            // taking part in the activity, this will yield no conflict when it is renamed
-            let _ = activity
-                .metadata
-                .rename_participant(old_name.clone(), new_name.clone());
-        }
-        Ok(new_name)
+    pub fn add_group(&mut self, id: u16, group_name: String) -> Result<(), String> {
+        self.get_mut_by_id(id)?.metadata.add_group(group_name)
+    }
+
+    /// Removes the group with the given name from the activity with given id.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity si not found or if the group is not taking part in the
+    /// activity.
+    #[must_use]
+    pub fn remove_group(&mut self, id: u16, group_name: &String) -> Result<(), String> {
+        self.get_mut_by_id(id)?.metadata.remove_group(group_name)
     }
 
     /// Sets the duration of the activity with the given id.
@@ -255,26 +222,36 @@ mod tests {
     #[test]
     fn incompatible_ids() {
         let mut activities = Activities::new();
-        let id_a = activities.add("a").unwrap().id();
-        let id_b = activities.add("b").unwrap().id();
+        let id_a = activities.add("a".to_owned()).id();
+        let id_b = activities.add("b".to_owned()).id();
 
         let mut entities = Entities::new();
-        let entity_a = entities.add("a").unwrap().name();
-        let entity_b = entities.add("b").unwrap().name();
+        let entity_a = entities
+            .add("a".to_owned())
+            .expect("Could not add entity")
+            .name();
+        let entity_b = entities
+            .add("b".to_owned())
+            .expect("Could not add entity")
+            .name();
 
         // Insert the same entity in both activities
-        activities.add_participant(id_a, entity_a.clone()).unwrap();
-        activities.add_participant(id_b, entity_a.clone()).unwrap();
+        activities
+            .add_entity(id_a, entity_a.clone())
+            .expect("Could not add entity to activity");
+        activities
+            .add_entity(id_b, entity_a.clone())
+            .expect("Could not add entity to activity");
 
         // At this point : id_a contains {a}, id_b contains {a}
         let incompatible_a = activities
             .get_by_id(id_a)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         let incompatible_b = activities
             .get_by_id(id_b)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         assert_eq!(incompatible_a.len(), 1);
@@ -284,52 +261,56 @@ mod tests {
 
         // Remove the entity in one activity
         activities
-            .remove_participant(id_a, entity_a.clone())
-            .unwrap();
+            .remove_entity(id_a, &entity_a)
+            .expect("Could not remove entity from activity");
 
         // At this point : id_a contains {}, id_b contains {a}
         let incompatible_a = activities
             .get_by_id(id_a)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         let incompatible_b = activities
             .get_by_id(id_b)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         assert_eq!(incompatible_a.len(), 0);
         assert_eq!(incompatible_b.len(), 0);
 
         // Add non-confictual entity
-        activities.add_participant(id_a, entity_b.clone()).unwrap();
+        activities
+            .add_entity(id_a, entity_b.clone())
+            .expect("Could not add entity to activity");
 
         // At this point : id_a contains {b}, id_b contains {a}
         let incompatible_a = activities
             .get_by_id(id_a)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         let incompatible_b = activities
             .get_by_id(id_b)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         assert_eq!(incompatible_a.len(), 0);
         assert_eq!(incompatible_b.len(), 0);
 
         // Add conflictual entity again
-        activities.add_participant(id_b, entity_b).unwrap();
+        activities
+            .add_entity(id_b, entity_b)
+            .expect("Could not add entity to activity");
 
         // At this point : id_a contains {b}, id_b contains {a, b}
         let incompatible_a = activities
             .get_by_id(id_a)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         let incompatible_b = activities
             .get_by_id(id_b)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         assert_eq!(incompatible_a.len(), 1);
@@ -338,23 +319,25 @@ mod tests {
         assert_eq!(incompatible_b[0], id_a);
 
         // Add third activity
-        let id_c = activities.add("c").unwrap().id();
-        activities.add_participant(id_c, entity_a).unwrap();
+        let id_c = activities.add("c".to_owned()).id();
+        activities
+            .add_entity(id_c, entity_a)
+            .expect("Could not add entity to activity");
 
         // At this point : id_a contains {b}, id_b contains {a, b}, id_c contains {a}
         let incompatible_a = activities
             .get_by_id(id_a)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         let incompatible_b = activities
             .get_by_id(id_b)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         let incompatible_c = activities
             .get_by_id(id_c)
-            .unwrap()
+            .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
         assert_eq!(incompatible_a.len(), 1);

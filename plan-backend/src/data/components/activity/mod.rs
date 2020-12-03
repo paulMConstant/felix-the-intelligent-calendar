@@ -11,7 +11,7 @@ use std::collections::HashSet;
 /// An activity represents a group of entities which must meet during a defined period of time.
 ///
 /// This structure is read-only. To modify an activity, use the Data structure.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Activity {
     metadata: ActivityMetadata,
     computation_data: ActivityComputationData,
@@ -21,14 +21,11 @@ impl Activity {
     /// Creates a new activity with the given name.
     ///
     /// An activity is split into
-    /// * metadata (id, name, participants),
+    /// * metadata (id, name, entities),
     /// * computation data (duration, time interval if inserted,
     /// incompatible activities, possible insertion times)
     #[must_use]
-    fn new<S>(id: u16, name: S) -> Activity
-    where
-        S: Into<String>,
-    {
+    fn new(id: u16, name: String) -> Activity {
         Activity {
             metadata: ActivityMetadata::new(id, name),
             computation_data: ActivityComputationData::new(),
@@ -49,10 +46,16 @@ impl Activity {
         self.metadata.name().clone()
     }
 
-    /// Simple getter for the participants. The participants are sorted by name.
+    /// Simple getter for the entities. The entities are sorted by name.
     #[must_use]
-    pub fn participants_sorted(&self) -> Vec<String> {
-        self.metadata.participants_sorted()
+    pub fn entities_sorted(&self) -> Vec<String> {
+        self.metadata.entities_sorted()
+    }
+
+    /// Simple getter for the groups. The groups are sorted by name.
+    #[must_use]
+    pub fn groups_sorted(&self) -> Vec<String> {
+        self.metadata.groups_sorted()
     }
 
     /// Simple getter for the duration.
@@ -74,12 +77,5 @@ impl Activity {
         self.computation_data
             .possible_insertion_beginnings()
             .clone()
-    }
-}
-
-impl Eq for Activity {}
-impl PartialEq for Activity {
-    fn eq(&self, other: &Self) -> bool {
-        self.metadata.id() == other.metadata.id()
     }
 }

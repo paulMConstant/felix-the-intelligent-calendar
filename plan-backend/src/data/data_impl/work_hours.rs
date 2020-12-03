@@ -64,8 +64,12 @@ impl Data {
             .entities_sorted()
             .iter()
             .map(|entity| entity.name())
-            // Call to unwrap(): we are sure that the entity exists
-            .find(|entity_name| self.free_time_of(entity_name.clone()).unwrap() < duration)
+            // Call to expect(): we are sure that the entity exists
+            .find(|entity_name| {
+                self.free_time_of(entity_name.clone())
+                    .expect("Could not get entity listed in data.entities_sorted()")
+                    < duration
+            })
         {
             return Err(format!(
                 "{} does not have enough time left. Free up their time before removing the work interval.",
@@ -110,8 +114,12 @@ impl Data {
                 .entities_sorted()
                 .iter()
                 .map(|entity| entity.name())
-                // Call to unwrap() : we are sure that the entity exists
-                .find(|entity_name| self.free_time_of(entity_name).unwrap() < required_free_time)
+                // Call to expect() : we are sure that the entity exists
+                .find(|entity_name| {
+                    self.free_time_of(entity_name)
+                        .expect("Could not get entity listed in data.entities_sorted()")
+                        < required_free_time
+                })
             {
                 return Err(format!(
                     "{} does not have enough free time to reduce this interval.",

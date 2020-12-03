@@ -1,4 +1,4 @@
-use super::helpers::entity_time_computation::{time_taken_by_activities, total_available_time};
+use super::helpers::clean_string::clean;
 use crate::data::{Data, Entity, Time, TimeInterval};
 
 /// Operations on entities
@@ -13,7 +13,7 @@ impl Data {
     ///
     /// # Errors
     ///
-    /// Returns Err if the entity is not found.
+    /// Returns Err if the formatted name is empty or if the entity is not found.
     ///
     /// # Example
     ///
@@ -33,7 +33,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        self.entities.get_by_name(name)
+        self.entities.get_by_name(&clean(name)?)
     }
 
     /// Adds an entity with the formatted given name.
@@ -59,13 +59,25 @@ impl Data {
     where
         S: Into<String>,
     {
+        let name = clean(name)?;
+        // Check if a group has the same name
+        if let Some(group_name) = self
+            .groups_sorted()
+            .iter()
+            .map(|group| group.name())
+            .find(|group_name| group_name == &name)
+        {
+            return Err(format!(
+                "The name '{}' is already taken by a group.",
+                group_name
+            ));
+        }
         self.entities.add(name)
     }
 
     /// Removes the entity with the formatted given name.
     ///
     /// If the entity is taking part in any activity, it is removed from them.
-    /// Returns the name of the removed entity.
     ///
     /// # Errors
     ///
@@ -83,16 +95,17 @@ impl Data {
     /// assert!(data.remove_entity(name).is_err());
     /// ```
     #[must_use]
-    pub fn remove_entity<S>(&mut self, name: S) -> Result<String, String>
+    pub fn remove_entity<S>(&mut self, name: S) -> Result<(), String>
     where
         S: Into<String>,
     {
-        let name = name.into();
+        let name = clean(name)?;
         // First, remove in entities to check for any error
-        self.entities.remove(name.clone())?;
+        self.entities.remove(&name)?;
         // If the entity was successfuly removed in entities, remove it
         // in all activities
-        Ok(self.activities.remove_participant_from_all(name)?)
+        self.activities.remove_entity_from_all(&name);
+        Ok(())
     }
 
     /// Renames the entity with the formatted given name.
@@ -125,13 +138,32 @@ impl Data {
         S1: Into<String>,
         S2: Into<String>,
     {
+        let new_name = clean(new_name)?;
+
+        // Check if a group has the same name
+        if let Some(group_name) = self
+            .groups_sorted()
+            .iter()
+            .map(|group| group.name())
+            .find(|group_name| group_name == &new_name)
+        {
+            return Err(format!(
+                "The name '{}' is already taken by a group.",
+                group_name
+            ));
+        }
+
         // First, rename in entities to check for any error
-        let old_name = old_name.into();
-        let new_name = self.entities.set_name_of(old_name.clone(), new_name)?;
+        let old_name = clean(old_name)?;
+        self.entities.set_name_of(&old_name, new_name.clone())?;
+
+        // Then, rename in group (group/activities order does not matter)
+        self.groups
+            .rename_entity_in_all(&old_name, new_name.clone());
         // Then, rename in activities
-        Ok(self
-            .activities
-            .rename_participant_in_all(old_name, new_name.clone())?)
+        self.activities
+            .rename_entity_in_all(&old_name, new_name.clone());
+        Ok(new_name)
     }
 
     /// Sets the mail of the entity with the formatted given name.
@@ -158,7 +190,7 @@ impl Data {
         S1: Into<String>,
         S2: Into<String>,
     {
-        self.entities.set_mail_of(entity_name, mail)
+        self.entities.set_mail_of(&clean(entity_name)?, mail.into())
     }
 
     /// Set to true to send mails to the entity with formatted given name.
@@ -185,12 +217,8 @@ impl Data {
     where
         S: Into<String>,
     {
-        self.entities.set_send_mail_to(entity_name, send)
+        self.entities.set_send_mail_to(&clean(entity_name)?, send)
     }
-
-    // *** Custom Work Hours ***
-    // - Individual getter
-    // - Add / Remove
 
     /// Returns the free time of an entity (total time in work hours - time taken by activities).
     ///
@@ -214,7 +242,7 @@ impl Data {
     /// let activity_id = data.add_activity("Activity").unwrap().id();
     /// let activity_duration = Time::new(1, 0);
     /// data.set_activity_duration(activity_id, activity_duration).unwrap();
-    /// data.add_participant_to_activity(activity_id, name.clone());
+    /// data.add_entity_to_activity(activity_id, name.clone());
     ///
     /// // Total time is 4 hours, time taken by activity is 1 hour.
     /// assert_eq!(data.free_time_of(name).unwrap(), Time::new(3, 0));
@@ -224,11 +252,11 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = entity_name.into();
+        let entity_name = clean(entity_name)?;
 
         // total_available_time checks if the entity exists
-        let total_duration = total_available_time(&self, &entity_name)?;
-        let activity_duration = time_taken_by_activities(&self, &entity_name);
+        let total_duration = self.total_available_time(&entity_name)?;
+        let activity_duration = self.time_taken_by_activities(&entity_name);
         Ok(if total_duration < activity_duration {
             Time::new(0, 0)
         } else {
@@ -307,13 +335,13 @@ impl Data {
     {
         // If this intervals overrides the global work hours,
         // check if the entity has enough free time
-        let entity_name = entity_name.into();
+        let entity_name = clean(entity_name)?;
         if self
-            .entity(entity_name.clone())? // Check if entity exists here
+            .entity(&entity_name)? // Check if entity exists here
             .custom_work_hours()
             .is_empty()
         {
-            let activity_duration = time_taken_by_activities(&self, &entity_name);
+            let activity_duration = self.time_taken_by_activities(&entity_name);
             if interval.duration() < activity_duration {
                 return Err(format!(
                     "{} will not have enough time for their activities using these custom work hours.",
@@ -322,7 +350,7 @@ impl Data {
             }
         }
         self.entities
-            .add_custom_work_interval_for(entity_name, interval)
+            .add_custom_work_interval_for(&entity_name, interval)
         // TODO update possible insertion times
     }
 
@@ -359,10 +387,10 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = entity_name.into();
+        let entity_name = clean(entity_name)?;
         // First, check if the entity has a corresponding custom work interval
         if self
-            .entity(entity_name.clone())?
+            .entity(&entity_name)?
             .custom_work_hours()
             .contains(&interval)
             == false
@@ -370,7 +398,7 @@ impl Data {
             return Err("The given time interval was not found.".to_owned());
         }
         // Check if the entity has enough free time
-        let entity_free_time = self.free_time_of(entity_name.clone())?;
+        let entity_free_time = self.free_time_of(&entity_name)?;
         if entity_free_time < interval.duration() {
             return Err(format!(
                 "{} will not have enough time for their activities once this interval is removed.",
@@ -378,7 +406,7 @@ impl Data {
             ));
         }
         self.entities
-            .remove_custom_work_interval_for(entity_name, interval)
+            .remove_custom_work_interval_for(&entity_name, interval)
         // TODO update possible insertion times
     }
 
@@ -415,10 +443,10 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = entity_name.into();
+        let entity_name = clean(entity_name)?;
         // First, check if the entity has a corresponding custom work interval
         if self
-            .entity(entity_name.clone())?
+            .entity(&entity_name)?
             .custom_work_hours()
             .contains(&old_interval)
             == false
@@ -428,7 +456,7 @@ impl Data {
         // If the interval is shorter, check that the entity will still have time left
         if new_interval.duration() < old_interval.duration() {
             let required_free_time = old_interval.duration() - new_interval.duration();
-            if self.free_time_of(entity_name.clone())? < required_free_time {
+            if self.free_time_of(&entity_name)? < required_free_time {
                 return Err(format!(
                     "{} does not have enough free time to reduce this interval.",
                     entity_name
@@ -436,7 +464,7 @@ impl Data {
             }
         }
         self.entities
-            .update_custom_work_interval_for(entity_name, old_interval, new_interval)
+            .update_custom_work_interval_for(&entity_name, old_interval, new_interval)
         // TODO update possible insertion times
     }
 }

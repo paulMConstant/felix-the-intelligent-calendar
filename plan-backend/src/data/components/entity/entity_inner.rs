@@ -1,7 +1,7 @@
 use super::super::super::WorkHours;
 use crate::data::TimeInterval;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EntityInner {
     name: String,
     mail: String,
@@ -11,12 +11,9 @@ pub struct EntityInner {
 
 impl EntityInner {
     /// Instantiates a new EntityInner.
-    pub fn new<S>(name: S) -> EntityInner
-    where
-        S: Into<String>,
-    {
+    pub fn new(name: String) -> EntityInner {
         EntityInner {
-            name: name.into(),
+            name,
             mail: String::new(),
             send_me_a_mail: false,
             custom_work_hours: WorkHours::new(),
@@ -48,24 +45,13 @@ impl EntityInner {
     // *** Setters ***
 
     /// Sets the name of the entity.
-    ///
-    /// The name is not formatted or checked, this is done by the entities collection.
-    /// It is easier to have the entities collection do it because names are checked for addition
-    /// of entities, renaming, checking for existence, etc. Having the entities collection do it
-    /// keeps it it one place.
-    pub fn set_name<S>(&mut self, name: S)
-    where
-        S: Into<String>,
-    {
-        self.name = name.into();
+    pub fn set_name(&mut self, name: String) {
+        self.name = name;
     }
 
     /// Sets the mail of the entity. The given mail is always accepted.
-    pub fn set_mail<S>(&mut self, mail: S)
-    where
-        S: Into<String>,
-    {
-        self.mail = mail.into();
+    pub fn set_mail(&mut self, mail: String) {
+        self.mail = mail;
     }
 
     /// Call with true if a mail should be sent to the entity, else with false.
@@ -94,7 +80,7 @@ impl EntityInner {
         self.custom_work_hours.remove_work_interval(interval)
     }
 
-    /// Removes a work interval to the entity with the formatted given name.
+    /// Removes a work interval to the entity with the given name.
     ///
     /// # Errors
     ///

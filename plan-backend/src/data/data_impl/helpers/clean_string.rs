@@ -15,7 +15,7 @@ where
         .collect::<Vec<String>>()
         .join(" ");
     if s.is_empty() {
-        Err("The formatted name is empty.".to_owned())
+        Err("The given name is empty.".to_owned())
     } else {
         Ok(s)
     }
@@ -23,18 +23,18 @@ where
 
 /// Turns the first letter to uppercase and last to lowercase.
 #[must_use]
-fn fix_case<S>(s: S) -> String
-where
-    S: Into<String>,
-{
-    s.into()
-        .chars()
+fn fix_case(s: &str) -> String {
+    s.chars()
         .enumerate()
         .map(|(i, c)| {
             if i == 0 {
-                c.to_uppercase().next().unwrap()
+                c.to_uppercase()
+                    .next()
+                    .expect("next() failed while iterating with known size")
             } else {
-                c.to_lowercase().next().unwrap()
+                c.to_lowercase()
+                    .next()
+                    .expect("next() failed while iterating with known size")
             }
         })
         .collect::<String>()
@@ -48,7 +48,10 @@ mod tests {
     fn test_clean() {
         let s = "LauREnt \t  outang";
         let expected = String::from("Laurent Outang");
-        assert_eq!(clean(s).unwrap(), expected);
+        assert_eq!(
+            clean(s).expect("Could not get clean string from non-empty"),
+            expected
+        );
 
         let s = " \t";
         assert!(clean(s).is_err());

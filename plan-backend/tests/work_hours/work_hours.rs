@@ -23,11 +23,13 @@ fn add_overlapping_interval() {
         .expect("Could not add simple work interval");
 
     let overlap = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
-    assert_eq!(
-        data.add_work_interval(overlap),
-        Err("The given interval overlaps with other work intervals.".to_owned()),
-        "Could add overlapping interval"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.add_work_interval(overlap),
+            Err("The given interval overlaps with other work intervals.".to_owned()),
+            "Could add overlapping interval"
+        );
+    });
 }
 
 /// It should be possible to add adjacent work intervals (end == beginning of other)
@@ -90,28 +92,32 @@ fn remove_wrong_time_interval() {
     let mut data = Data::new();
 
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.remove_work_interval(interval),
-        Err("The given time interval was not found.".to_owned()),
-        "Could remove time interval even though there are none"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.remove_work_interval(interval),
+            Err("The given time interval was not found.".to_owned()),
+            "Could remove time interval even though there are none"
+        );
+    });
 
     data.add_work_interval(interval)
         .expect("Could not add simple work interval");
 
-    let same_beginning = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
-    assert_eq!(
-        data.remove_work_interval(same_beginning),
-        Err("The given time interval was not found.".to_owned()),
-        "Could remove interval with same beginning but different end"
-    );
+    assert_not_modified!(data, {
+        let same_beginning = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
+        assert_eq!(
+            data.remove_work_interval(same_beginning),
+            Err("The given time interval was not found.".to_owned()),
+            "Could remove interval with same beginning but different end"
+        );
 
-    let same_end = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
-    assert_eq!(
-        data.remove_work_interval(same_end),
-        Err("The given time interval was not found.".to_owned()),
-        "Could remove interval with same end but different beginning"
-    );
+        let same_end = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
+        assert_eq!(
+            data.remove_work_interval(same_end),
+            Err("The given time interval was not found.".to_owned()),
+            "Could remove interval with same end but different beginning"
+        );
+    });
 }
 
 /// We must make sure that entities always have more time in their schedule
@@ -132,13 +138,15 @@ fn remove_time_interval_not_enough_time_for_activities() {
         .add_entity("Entity")
         .expect("Could not add entity")
         .name();
-    data.add_participant_to_activity(id, name)
-        .expect("Could not add participant");
+    data.add_entity_to_activity(id, name)
+        .expect("Could not add entity");
     data.set_activity_duration(id, Time::new(1, 0))
         .expect("Could not set activity duration");
 
-    assert_eq!(data.remove_work_interval(interval), Err("Entity does not have enough time left. Free up their time before removing the work interval.".to_owned()),
+    assert_not_modified!(data, {
+        assert_eq!(data.remove_work_interval(interval), Err("Entity does not have enough time left. Free up their time before removing the work interval.".to_owned()),
         "Could remove interval which led to entity not having enough time");
+    });
 }
 
 #[test]
@@ -161,11 +169,13 @@ fn update_nonexistent_interval() {
     let mut data = Data::new();
 
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.update_work_interval(interval, interval),
-        Err("The given time interval was not found.".to_owned()),
-        "Could update nonexistent work interval"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_work_interval(interval, interval),
+            Err("The given time interval was not found.".to_owned()),
+            "Could update nonexistent work interval"
+        );
+    });
 }
 
 #[test]
@@ -186,19 +196,21 @@ fn update_time_interval_not_enough_time_for_activities() {
     let duration = Time::new(4, 0);
     data.set_activity_duration(id, duration)
         .expect("Could not set activity duration");
-    data.add_participant_to_activity(id, name)
-        .expect("Could not add participant");
+    data.add_entity_to_activity(id, name)
+        .expect("Could not add entity");
 
     let new_interval_too_short = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
     assert!(
         new_interval_too_short.duration() < duration,
         "Test is pointless : there is enough time for the activities"
     );
-    assert_eq!(
-        data.update_work_interval(interval, new_interval_too_short),
-        Err("Name does not have enough free time to reduce this interval.".to_owned()),
-        "Could update interval which left entity with not enough time"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_work_interval(interval, new_interval_too_short),
+            Err("Name does not have enough free time to reduce this interval.".to_owned()),
+            "Could update interval which left entity with not enough time"
+        );
+    });
 }
 
 #[test]
@@ -213,11 +225,13 @@ fn update_time_interval_overlaps() {
     data.add_work_interval(interval2)
         .expect("Could not add interval");
     let new_interval_overlaps = TimeInterval::new(Time::new(10, 0), Time::new(15, 0));
-    assert_eq!(
-        data.update_work_interval(interval1, new_interval_overlaps),
-        Err("The given interval overlaps with other work intervals.".to_owned()),
-        "Could add overlapping work interval"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_work_interval(interval1, new_interval_overlaps),
+            Err("The given interval overlaps with other work intervals.".to_owned()),
+            "Could add overlapping work interval"
+        );
+    });
 }
 
 #[test]

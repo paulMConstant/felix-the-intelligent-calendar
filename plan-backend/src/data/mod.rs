@@ -1,12 +1,14 @@
+mod components;
 mod data_impl;
-mod objects;
 
-use objects::{
-    activity::activities::Activities, entity::entities::Entities, time::work_hours::WorkHours,
+use components::{
+    activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
+    time::work_hours::WorkHours,
 };
-pub use objects::{
+pub use components::{
     activity::Activity,
     entity::Entity,
+    group::Group,
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
 
@@ -84,11 +86,13 @@ pub use objects::{
 /// data.add_work_interval(morning_shift).unwrap();
 ///
 /// data.set_activity_duration(activity_id, Time::new(1, 0));
-/// data.add_participant_to_activity(activity_id, entity_name);
+/// data.add_entity_to_activity(activity_id, entity_name);
 /// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Data {
     work_hours: WorkHours,
     entities: Entities,
+    groups: Groups,
     activities: Activities,
 }
 
@@ -98,6 +102,7 @@ impl Data {
         Data {
             work_hours: WorkHours::new(),
             entities: Entities::new(),
+            groups: Groups::new(),
             activities: Activities::new(),
         }
     }

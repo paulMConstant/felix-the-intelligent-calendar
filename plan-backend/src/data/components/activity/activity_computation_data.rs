@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
@@ -59,7 +59,7 @@ impl ActivityComputationData {
     /// Returns Err if the duration is too short (< MIN\_TIME\_DISCRETIZATION).
     pub fn set_duration(&mut self, duration: Time) -> Result<(), String> {
         if duration < MIN_TIME_DISCRETIZATION {
-            Err("The given duration is too short !".to_owned())
+            Err("The given duration is too short.".to_owned())
         } else {
             self.duration = duration;
             Ok(())

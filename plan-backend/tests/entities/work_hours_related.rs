@@ -34,11 +34,13 @@ fn add_custom_work_interval_nonexistent_entity() {
     let mut data = Data::new();
 
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.add_custom_work_interval_for("Name", interval),
-        Err("Name does not exist !".to_owned()),
-        "Could add custom work interval for nonexistent entity"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.add_custom_work_interval_for("Name", interval),
+            Err("The entity 'Name' does not exist.".to_owned()),
+            "Could add custom work interval for nonexistent entity"
+        );
+    });
 }
 
 #[test]
@@ -55,11 +57,13 @@ fn add_overlapping_custom_work_interval() {
         .expect("Could not add custom work interval");
 
     let overlap = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
-    assert_eq!(
-        data.add_custom_work_interval_for(name, overlap),
-        Err("The given interval overlaps with other work intervals.".to_owned()),
-        "Could add overlapping interval"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.add_custom_work_interval_for(name, overlap),
+            Err("The given interval overlaps with other work intervals.".to_owned()),
+            "Could add overlapping interval"
+        )
+    });
 }
 
 #[test]
@@ -81,11 +85,12 @@ fn add_custom_work_interval_not_enough_free_time() {
         .expect("Could not add work interval");
     data.set_activity_duration(id, duration)
         .expect("Could not set activity duration");
-    data.add_participant_to_activity(id, name.clone())
-        .expect("Could not add participant");
+    data.add_entity_to_activity(id, name.clone())
+        .expect("Could not add entity");
 
     let custom_interval_too_short = TimeInterval::new(Time::new(8, 0), Time::new(10, 0));
-    assert_eq!(
+    assert_not_modified!(data, {
+        assert_eq!(
         data.add_custom_work_interval_for(name, custom_interval_too_short),
         Err(
             "Name will not have enough time for their activities using these custom work hours."
@@ -93,6 +98,7 @@ fn add_custom_work_interval_not_enough_free_time() {
         ),
         "Coud add custom work interval which led to entity not having enough time"
     );
+    });
 }
 
 /// It should be possible to add adjacent work intervals (end == beginning of other)
@@ -183,11 +189,13 @@ fn remove_custom_work_interval_nonexistent_entity() {
     let mut data = Data::new();
 
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.remove_custom_work_interval_for("Name", interval),
-        Err("Name does not exist !".to_owned()),
-        "Could add custom work interval for nonexistent entity"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.remove_custom_work_interval_for("Name", interval),
+            Err("The entity 'Name' does not exist.".to_owned()),
+            "Could add custom work interval for nonexistent entity"
+        );
+    });
 }
 
 #[test]
@@ -209,16 +217,18 @@ fn remove_custom_work_interval_not_enough_free_time() {
 
     data.add_custom_work_interval_for(name.clone(), interval)
         .expect("Could not add custom work interval.");
-    data.add_participant_to_activity(id, name.clone())
-        .expect("Could not add participant.");
-    assert_eq!(
+    data.add_entity_to_activity(id, name.clone())
+        .expect("Could not add entity.");
+    assert_not_modified!(data, {
+        assert_eq!(
         data.remove_custom_work_interval_for(name, interval),
         Err(
             "Name will not have enough time for their activities once this interval is removed."
                 .to_owned()
         ),
         "Could remove custom work interval which led to entity having not enough free time",
-    );
+    )
+    });
 }
 
 #[test]
@@ -230,28 +240,32 @@ fn remove_invalid_custom_work_interval() {
         .expect("Could not add entity")
         .name();
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.remove_custom_work_interval_for(name.clone(), interval),
-        Err("The given time interval was not found.".to_owned()),
-        "Could remove time interval even though there are none"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.remove_custom_work_interval_for(name.clone(), interval),
+            Err("The given time interval was not found.".to_owned()),
+            "Could remove time interval even though there are none"
+        );
+    });
 
     data.add_custom_work_interval_for(name.clone(), interval)
         .expect("Could not add custom work interval");
 
-    let same_beginning = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
-    assert_eq!(
-        data.remove_custom_work_interval_for(name.clone(), same_beginning),
-        Err("The given time interval was not found.".to_owned()),
-        "Could remove interval with same beginning but different end"
-    );
+    assert_not_modified!(data, {
+        let same_beginning = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
+        assert_eq!(
+            data.remove_custom_work_interval_for(name.clone(), same_beginning),
+            Err("The given time interval was not found.".to_owned()),
+            "Could remove interval with same beginning but different end"
+        );
 
-    let same_end = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
-    assert_eq!(
-        data.remove_custom_work_interval_for(name, same_end),
-        Err("The given time interval was not found.".to_owned()),
-        "Could remove interval with same end but different beginning"
-    );
+        let same_end = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
+        assert_eq!(
+            data.remove_custom_work_interval_for(name, same_end),
+            Err("The given time interval was not found.".to_owned()),
+            "Could remove interval with same end but different beginning"
+        );
+    });
 }
 
 #[test]
@@ -285,22 +299,26 @@ fn update_nonexistent_custom_interval() {
         .expect("Could not add entity")
         .name();
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.update_custom_work_interval_for(name, interval, interval),
-        Err("The given time interval was not found.".to_owned()),
-        "Could update nonexistent work interval"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_custom_work_interval_for(name, interval, interval),
+            Err("The given time interval was not found.".to_owned()),
+            "Could update nonexistent work interval"
+        );
+    });
 }
 #[test]
 fn update_custom_interval_nonexistent_entity() {
     let mut data = Data::new();
 
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
-    assert_eq!(
-        data.update_custom_work_interval_for("Does not exist", interval, interval),
-        Err("Does Not Exist does not exist !".to_owned()),
-        "Could update custom work interval for nonexistent entity"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_custom_work_interval_for("Does not exist", interval, interval),
+            Err("The entity 'Does Not Exist' does not exist.".to_owned()),
+            "Could update custom work interval for nonexistent entity"
+        );
+    });
 }
 
 #[test]
@@ -321,19 +339,21 @@ fn update_custom_time_interval_not_enough_time_for_activities() {
     let duration = Time::new(4, 0);
     data.set_activity_duration(id, duration)
         .expect("Could not set activity duration");
-    data.add_participant_to_activity(id, name.clone())
-        .expect("Could not add participant");
+    data.add_entity_to_activity(id, name.clone())
+        .expect("Could not add entity");
 
     let new_interval_too_short = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
     assert!(
         new_interval_too_short.duration() < duration,
         "Test is pointless : there is enough time for the activities"
     );
-    assert_eq!(
-        data.update_custom_work_interval_for(name, interval, new_interval_too_short),
-        Err("Name does not have enough free time to reduce this interval.".to_owned()),
-        "Could update interval which left entity with not enough time"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_custom_work_interval_for(name, interval, new_interval_too_short),
+            Err("Name does not have enough free time to reduce this interval.".to_owned()),
+            "Could update interval which left entity with not enough time"
+        );
+    });
 }
 
 #[test]
@@ -352,11 +372,13 @@ fn update_custom_time_interval_overlaps() {
     data.add_custom_work_interval_for(name.clone(), interval2)
         .expect("Could not add custom interval");
     let new_interval_overlaps = TimeInterval::new(Time::new(10, 0), Time::new(15, 0));
-    assert_eq!(
-        data.update_custom_work_interval_for(name, interval1, new_interval_overlaps),
-        Err("The given interval overlaps with other work intervals.".to_owned()),
-        "Could add overlapping work interval"
-    );
+    assert_not_modified!(data, {
+        assert_eq!(
+            data.update_custom_work_interval_for(name, interval1, new_interval_overlaps),
+            Err("The given interval overlaps with other work intervals.".to_owned()),
+            "Could add overlapping work interval"
+        );
+    });
 }
 
 #[test]
@@ -519,10 +541,10 @@ fn free_time_with_activities_with_global_work_hours() {
     data.set_activity_duration(id2, Time::new(1, 30))
         .expect("Could not set activity duration");
 
-    data.add_participant_to_activity(id1, name.clone())
-        .expect("Could not add participant");
-    data.add_participant_to_activity(id2, name.clone())
-        .expect("Could not add participant");
+    data.add_entity_to_activity(id1, name.clone())
+        .expect("Could not add entity");
+    data.add_entity_to_activity(id2, name.clone())
+        .expect("Could not add entity");
 
     let free_time = data
         .free_time_of(name)
@@ -572,10 +594,10 @@ fn free_time_with_activities_with_custom_work_hours() {
     data.set_activity_duration(id2, Time::new(1, 30))
         .expect("Could not set activity duration");
 
-    data.add_participant_to_activity(id1, name.clone())
-        .expect("Could not add participant");
-    data.add_participant_to_activity(id2, name.clone())
-        .expect("Could not add participant");
+    data.add_entity_to_activity(id1, name.clone())
+        .expect("Could not add entity");
+    data.add_entity_to_activity(id2, name.clone())
+        .expect("Could not add entity");
 
     let free_time = data
         .free_time_of(name)
@@ -602,7 +624,7 @@ fn free_time_of_wrong_entity() {
 
     assert_eq!(
         data.free_time_of("Does not exist"),
-        Err("Does Not Exist does not exist !".to_owned()),
+        Err("The entity 'Does Not Exist' does not exist.".to_owned()),
         "Could get free time of nonexistent entity"
     );
 }

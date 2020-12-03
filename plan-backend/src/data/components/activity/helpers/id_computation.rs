@@ -43,12 +43,12 @@ pub fn compute_incompatible_ids(
 ) -> Vec<u16> {
     metadata_vec
         .iter()
-        // The participants have one element in common
+        // The entities have one element in common
         .filter(|other_metadata| {
             metadata.id() != other_metadata.id()
                 && metadata
-                    .participants_as_set()
-                    .intersection(other_metadata.participants_as_set())
+                    .entities_as_set()
+                    .intersection(other_metadata.entities_as_set())
                     .next()
                     != None
         })

@@ -19,7 +19,7 @@ pub const MIN_TIME_DISCRETIZATION: Time = Time::unsafe_const_new(0, 5);
 /// # use std::mem::size_of;
 /// assert_eq!(size_of::<Time>(), 2);
 /// ```
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct Time {
     hours: i8,
     minutes: i8,

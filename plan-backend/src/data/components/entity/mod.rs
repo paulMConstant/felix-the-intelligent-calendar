@@ -11,8 +11,10 @@ use std::cmp::Ordering;
 /// (free or not free at any point during the day). This extends to any tool or thing which
 /// does not have the gift of ubiquity.
 ///
+/// Entities have unique names. An entity may not have the same name as a group.
+///
 /// This structure is read-only. If you wish to create or modify an entity, use the Data object.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entity {
     inner: EntityInner,
 }
@@ -20,15 +22,14 @@ pub struct Entity {
 impl Entity {
     /// Creates a new entity with the given name.
     #[must_use]
-    fn new<S>(name: S) -> Entity
-    where
-        S: Into<String>,
-    {
+    fn new(name: String) -> Entity {
         Entity {
             inner: EntityInner::new(name),
         }
     }
 
+    // *** Getters ***
+    // This is the only public API. To modify an entity, use the inner field.
     /// Simple getter for the name.
     #[must_use]
     pub fn name(&self) -> String {
@@ -52,13 +53,6 @@ impl Entity {
     #[must_use]
     pub fn custom_work_hours(&self) -> Vec<TimeInterval> {
         self.inner.custom_work_hours().clone()
-    }
-}
-
-impl Eq for Entity {}
-impl PartialEq for Entity {
-    fn eq(&self, other: &Self) -> bool {
-        self.name() == other.name()
     }
 }
 
