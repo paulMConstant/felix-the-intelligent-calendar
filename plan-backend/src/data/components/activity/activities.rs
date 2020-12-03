@@ -1,4 +1,4 @@
-use super::helpers::id_computation::{compute_incompatible_ids, generate_next_id};
+use super::computation::id_computation::{compute_incompatible_ids, generate_next_id};
 use super::ActivityMetadata;
 use crate::data::{Activity, Time};
 use std::collections::HashMap;
@@ -18,13 +18,6 @@ impl Activities {
             activities: HashMap::new(),
         }
     }
-
-    // Code organization :
-    // - Getter for collection
-    // - Getter for individual element
-    // - Add
-    // - Remove
-    // - Modify
 
     /// Simple getter for the activity list, sorted by name.
     #[must_use]

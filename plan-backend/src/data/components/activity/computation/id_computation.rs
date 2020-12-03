@@ -1,5 +1,4 @@
 //! Contains helper functions specific to impl Activities.
-//! The goal of moving these functions here is to help lighten the original file.
 
 use super::super::activity_metadata::ActivityMetadata;
 use std::convert::TryFrom;
@@ -36,7 +35,7 @@ pub fn generate_next_id(mut used_ids: Vec<&u16>) -> u16 {
 }
 
 /// Returns the list of incompatible activities for a given activity metadata
-/// w.r.t all other metadata.
+/// given all other metadata.
 pub fn compute_incompatible_ids(
     metadata: &ActivityMetadata,
     metadata_vec: &Vec<ActivityMetadata>,

@@ -32,13 +32,12 @@ impl WorkHours {
             .work_intervals
             .iter()
             .any(|&other| interval.overlaps_with(&other))
-            == false
         {
+            Err("The given interval overlaps with other work intervals.".to_owned())
+        } else {
             self.work_intervals.push(interval);
             self.work_intervals.sort();
             Ok(())
-        } else {
-            Err("The given interval overlaps with other work intervals.".to_owned())
         }
     }
 

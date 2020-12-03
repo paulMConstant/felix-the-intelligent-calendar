@@ -1,6 +1,7 @@
-use super::helpers::clean_string::clean;
+mod helpers;
+
+use super::helpers::clean_string;
 use crate::data::{Activity, Data, Time};
-use std::collections::HashSet;
 
 /// Operations on activities
 impl Data {
@@ -47,7 +48,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        Ok(self.activities.add(clean(name)?))
+        Ok(self.activities.add(clean_string(name)?))
     }
 
     /// Removes the activity with the given id.
@@ -107,7 +108,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = clean(entity_name)?;
+        let entity_name = clean_string(entity_name)?;
         if self.has_enough_time_for_activity(id, &entity_name)? {
             // Add the entity to the activity
             self.activities.add_entity(id, entity_name)
@@ -188,24 +189,21 @@ impl Data {
         let group_name = group.name();
 
         // Check that each entity has enough time
-        for entity_name in &entities {
-            if self.has_enough_time_for_activity(id, entity_name)? == false {
-                return Err(format!(
-                    "'{}' does not have enough time left for this activity.",
-                    entity_name
-                ));
-            }
+        if let Some(entity_name) = self.entity_without_enough_time_for_activity(id, &entities)? {
+            return Err(format!(
+                "'{}' does not have enough time left for this activity.",
+                entity_name
+            ));
         }
 
         // Add each entity in the group to the activity.
-        // We do not care about the result: if the entity is already in the activity,
-        // it is fine.
+        // We do not care about the result: if the entity is already in the activity, it is fine.
         for entity_name in entities {
             let _ = self.activities.add_entity(id, entity_name);
         }
 
         // Add the group to the activity
-        self.activities.add_group(id, group_name)
+        self.activities.add_group(id, clean_string(group_name)?)
         // TODO update possible insertion times
     }
 
@@ -240,33 +238,15 @@ impl Data {
         S: Into<String>,
     {
         // Check that the group exists and get name formatted
-        let group = self.group(group_name)?;
-        // Fetch group and entities here as copies (dropping group reference for borrow checker)
-        let entities: Vec<String> = group.entities_sorted().into_iter().cloned().collect();
-        let group_name = group.name();
+        let group_name = self.group(group_name)?.name();
 
-        // TODO create new file for helpers
-        let entities_participating_through_other_groups = self
-            .activity(id)?
-            .groups_sorted()
-            .iter()
-            .filter(|&other_group_name| other_group_name != &group_name)
-            .flat_map(|group_name|
-                // Expect is safe to use here: we are sure that the activtiy contains valid groups
-                self.group(group_name).expect("Could not get group which is in an activity").entities_sorted())
-            .cloned()
-            .collect::<HashSet<String>>();
+        let entities_to_remove =
+            self.entities_participating_through_this_group_only(id, &group_name)?;
 
-        let entities_to_remove = entities.iter().filter(|entity_name| {
-            entities_participating_through_other_groups.contains(*entity_name) == false
-        });
-
-        // Remove any entity which is not participanting through other groups from the activity
-        for entity_name in entities_to_remove {
+        for entity_name in &entities_to_remove {
             self.activities.remove_entity(id, entity_name)?;
         }
 
-        // Remove the group from the activity
         self.activities.remove_group(id, &group_name)
         // TODO update possible insertion times
     }
@@ -296,7 +276,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let name = clean(name)?;
+        let name = clean_string(name)?;
         self.activities.set_name(id, name.clone())?;
         Ok(name)
     }
@@ -323,27 +303,15 @@ impl Data {
     #[must_use]
     pub fn set_activity_duration(&mut self, id: u16, new_duration: Time) -> Result<(), String> {
         // If the duration is longer than the previous one, check for conflicts
-        let activity = self.activity(id)?;
-        let current_duration = activity.duration();
-        if new_duration > current_duration {
-            // Duration is longer - check if it conflicts with entity's schedule
-            let required_free_time = new_duration - current_duration; // > 0
-            if let Some(entity_name) = activity
-                .entities_sorted()
-                .iter()
-                // Call to expect() : we are sure that all entities in the activity exist.
-                .find(|entity_name| {
-                    self.free_time_of(entity_name.clone())
-                        .expect("Could not get entity participating in an activity")
-                        < required_free_time
-                })
-            {
-                return Err(format!(
-                    "{} does not have enough time for the new duration.",
-                    entity_name
-                ));
-            }
-        };
-        self.activities.set_duration(id, new_duration)
+        if let Some(entity_name) =
+            self.entity_without_enough_time_to_set_duration(id, new_duration)?
+        {
+            Err(format!(
+                "{} does not have enough time for the new duration.",
+                entity_name
+            ))
+        } else {
+            self.activities.set_duration(id, new_duration)
+        }
     }
 }

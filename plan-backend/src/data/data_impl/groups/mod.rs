@@ -1,4 +1,6 @@
-use super::helpers::clean_string::clean;
+mod helpers;
+
+use super::helpers::clean_string;
 use crate::data::{Data, Group};
 
 /// Operations on groups
@@ -33,7 +35,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        self.groups.get_by_name(&clean(name)?)
+        self.groups.get_by_name(&clean_string(name)?)
     }
 
     /// Adds a new group with the given formatted name.
@@ -57,7 +59,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let name = clean(name)?;
+        let name = clean_string(name)?;
         // Check if an entity has the same name
         if let Ok(entity) = self.entity(&name) {
             Err(format!(
@@ -94,7 +96,7 @@ impl Data {
         S: Into<String>,
     {
         // TODO remove group in activity
-        self.groups.remove(&clean(name)?)
+        self.groups.remove(&clean_string(name)?)
     }
 
     /// Adds the entity with the given name to the group with the given name.
@@ -131,7 +133,7 @@ impl Data {
     {
         // Check if the entity exists and format name
         let entity_name = self.entity(entity_name)?.name();
-        let group_name = clean(group_name)?;
+        let group_name = clean_string(group_name)?;
 
         // If the groups takes part in activities in which the entity does not,
         // we need to make sure the entity has time for them.
@@ -185,7 +187,7 @@ impl Data {
         let entity_name = self.entity(entity_name)?.name();
         // TODO remove in activities if no other group holds the entity
         self.groups
-            .remove_entity_from_group(&clean(group_name)?, &entity_name)
+            .remove_entity_from_group(&clean_string(group_name)?, &entity_name)
     }
 
     /// Renames the group with the given name.
@@ -203,7 +205,7 @@ impl Data {
         S1: Into<String>,
         S2: Into<String>,
     {
-        let new_name = clean(new_name)?;
+        let new_name = clean_string(new_name)?;
 
         // Check if an entity has the same name
         if let Some(entity_name) = self
@@ -219,7 +221,7 @@ impl Data {
         }
 
         // First, rename in entities to check for any error
-        let old_name = clean(old_name)?;
+        let old_name = clean_string(old_name)?;
         self.groups.set_name_of(&old_name, new_name.clone())?;
 
         Ok(new_name)

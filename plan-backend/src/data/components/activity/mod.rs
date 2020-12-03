@@ -1,7 +1,7 @@
 pub mod activities;
 mod activity_computation_data;
 mod activity_metadata;
-mod helpers;
+mod computation;
 
 use crate::data::{Time, TimeInterval};
 use activity_computation_data::ActivityComputationData;

@@ -1,4 +1,6 @@
-use super::helpers::clean_string::clean;
+mod helpers;
+
+use super::helpers::clean_string;
 use crate::data::{Data, Entity, Time, TimeInterval};
 
 /// Operations on entities
@@ -33,7 +35,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        self.entities.get_by_name(&clean(name)?)
+        self.entities.get_by_name(&clean_string(name)?)
     }
 
     /// Adds an entity with the formatted given name.
@@ -59,7 +61,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let name = clean(name)?;
+        let name = clean_string(name)?;
         // Check if a group has the same name
         if let Some(group_name) = self
             .groups_sorted()
@@ -99,7 +101,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let name = clean(name)?;
+        let name = clean_string(name)?;
         // First, remove in entities to check for any error
         self.entities.remove(&name)?;
         // If the entity was successfuly removed in entities, remove it
@@ -138,7 +140,7 @@ impl Data {
         S1: Into<String>,
         S2: Into<String>,
     {
-        let new_name = clean(new_name)?;
+        let new_name = clean_string(new_name)?;
 
         // Check if a group has the same name
         if let Some(group_name) = self
@@ -154,7 +156,7 @@ impl Data {
         }
 
         // First, rename in entities to check for any error
-        let old_name = clean(old_name)?;
+        let old_name = clean_string(old_name)?;
         self.entities.set_name_of(&old_name, new_name.clone())?;
 
         // Then, rename in group (group/activities order does not matter)
@@ -190,7 +192,8 @@ impl Data {
         S1: Into<String>,
         S2: Into<String>,
     {
-        self.entities.set_mail_of(&clean(entity_name)?, mail.into())
+        self.entities
+            .set_mail_of(&clean_string(entity_name)?, mail.into())
     }
 
     /// Set to true to send mails to the entity with formatted given name.
@@ -217,7 +220,8 @@ impl Data {
     where
         S: Into<String>,
     {
-        self.entities.set_send_mail_to(&clean(entity_name)?, send)
+        self.entities
+            .set_send_mail_to(&clean_string(entity_name)?, send)
     }
 
     /// Returns the free time of an entity (total time in work hours - time taken by activities).
@@ -252,7 +256,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = clean(entity_name)?;
+        let entity_name = clean_string(entity_name)?;
 
         // total_available_time checks if the entity exists
         let total_duration = self.total_available_time(&entity_name)?;
@@ -335,7 +339,7 @@ impl Data {
     {
         // If this intervals overrides the global work hours,
         // check if the entity has enough free time
-        let entity_name = clean(entity_name)?;
+        let entity_name = clean_string(entity_name)?;
         if self
             .entity(&entity_name)? // Check if entity exists here
             .custom_work_hours()
@@ -387,7 +391,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = clean(entity_name)?;
+        let entity_name = clean_string(entity_name)?;
         // First, check if the entity has a corresponding custom work interval
         if self
             .entity(&entity_name)?
@@ -443,7 +447,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let entity_name = clean(entity_name)?;
+        let entity_name = clean_string(entity_name)?;
         // First, check if the entity has a corresponding custom work interval
         if self
             .entity(&entity_name)?

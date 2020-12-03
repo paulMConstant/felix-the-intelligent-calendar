@@ -2,23 +2,23 @@
 extern crate assert_not_modified;
 
 mod activities {
-    mod basic;
+    mod activities;
     mod entities_related;
     mod groups_related;
 }
 
 mod entities {
-    mod basic;
+    mod entities;
     mod work_hours_related;
 }
 
 mod groups {
     mod activities_related;
-    mod basic;
+    mod groups;
     mod entities_related;
 }
 
-mod work_hours {
+mod time {
     mod time;
     mod time_interval;
     mod work_hours;
