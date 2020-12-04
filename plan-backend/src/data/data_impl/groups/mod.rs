@@ -1,4 +1,4 @@
-mod inner;
+mod error_checks;
 
 use super::helpers::clean_string;
 use crate::data::{Data, Group};
@@ -131,14 +131,9 @@ impl Data {
 
         // If the groups takes part in activities in which the entity does not,
         // we need to make sure the entity has time for them.
-        if self.has_enough_time_for_group(&group_name, &entity_name)? {
-            self.groups.add_entity_to_group(&group_name, entity_name)
-        } else {
-            Err(format!(
-                "{} does not have enough time for the activities of the group '{}'.",
-                entity_name, group_name
-            ))
-        }
+        self.check_has_enough_time_for_group(&group_name, &entity_name)?;
+
+        self.groups.add_entity_to_group(&group_name, entity_name)
     }
 
     /// Removes the entity with the given name from the group with the given name.

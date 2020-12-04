@@ -3,17 +3,18 @@
 use crate::data::{Activity, Data, Time};
 
 impl Data {
-    /// Returns true if the entity has enough time for the activities of the given group.
+    /// Checks that the given entity has enough time to be added to the group.
     ///
     /// # Errors
     ///
-    /// Returns Err if the entity name is empty or if the entity is not found.
+    /// Returns Err if the entity name is empty, if the entity is not found
+    /// or if the entity will not have enough time for the group's activities.
     #[must_use]
-    pub(in super::super::groups) fn has_enough_time_for_group(
+    pub(in super::super::groups) fn check_has_enough_time_for_group(
         &self,
         group_name: &String,
         entity_name: &String,
-    ) -> Result<bool, String> {
+    ) -> Result<(), String> {
         let entity_should_be_added_to_activity = |activity: &Activity| {
             activity.groups_sorted().contains(group_name)
                 && activity.entities_sorted().contains(entity_name) == false
@@ -32,7 +33,14 @@ impl Data {
             .sum();
 
         let free_time = self.free_time_of(entity_name)?;
-        Ok(free_time >= duration_of_added_activities)
+        if free_time >= duration_of_added_activities {
+            Ok(())
+        } else {
+            Err(format!(
+                "{} does not have enough time for the activities of the group '{}'.",
+                entity_name, group_name
+            ))
+        }
     }
 
     /// Checks if the given name is taken by an entity.

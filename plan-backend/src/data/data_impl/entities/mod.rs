@@ -1,3 +1,4 @@
+mod error_checks;
 mod inner;
 
 use super::helpers::clean_string;
@@ -318,19 +319,10 @@ impl Data {
         // If this intervals overrides the global work hours,
         // check if the entity has enough free time
         let entity_name = clean_string(entity_name)?;
-        if self
-            .entity(&entity_name)? // Check if entity exists here
-            .custom_work_hours()
-            .is_empty()
-        {
-            let activity_duration = self.time_taken_by_activities(&entity_name);
-            if interval.duration() < activity_duration {
-                return Err(format!(
-                    "{} will not have enough time for their activities using these custom work hours.",
-                    entity_name
-                ));
-            }
-        }
+        self.check_entity_will_have_enough_time_with_custom_interval(
+            &entity_name,
+            interval.duration(),
+        )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)
         // TODO update possible insertion times
@@ -370,23 +362,13 @@ impl Data {
         S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
-        // First, check if the entity has a corresponding custom work interval
-        if self
-            .entity(&entity_name)?
-            .custom_work_hours()
-            .contains(&interval)
-            == false
-        {
-            return Err("The given time interval was not found.".to_owned());
-        }
-        // Check if the entity has enough free time
-        let entity_free_time = self.free_time_of(&entity_name)?;
-        if entity_free_time < interval.duration() {
-            return Err(format!(
-                "{} will not have enough time for their activities once this interval is removed.",
-                entity_name
-            ));
-        }
+        // TODO Continue Here First
+
+        self.check_entity_has_custom_interval(&entity_name, &interval)?;
+        self.check_entity_will_have_enough_time_after_deletion_of_interval(
+            &entity_name,
+            interval.duration(),
+        )?;
         self.entities
             .remove_custom_work_interval_for(&entity_name, interval)
         // TODO update possible insertion times
@@ -426,26 +408,13 @@ impl Data {
         S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
-        // First, check if the entity has a corresponding custom work interval
-        if self
-            .entity(&entity_name)?
-            .custom_work_hours()
-            .contains(&old_interval)
-            == false
-        {
-            return Err("The given time interval was not found.".to_owned());
-        }
-        // TODO Continue Here
-        // If the interval is shorter, check that the entity will still have time left
-        if new_interval.duration() < old_interval.duration() {
-            let required_free_time = old_interval.duration() - new_interval.duration();
-            if self.free_time_of(&entity_name)? < required_free_time {
-                return Err(format!(
-                    "{} does not have enough free time to reduce this interval.",
-                    entity_name
-                ));
-            }
-        }
+        self.check_entity_has_custom_interval(&entity_name, &old_interval)?;
+        self.check_entity_will_have_enough_time_after_update(
+            &entity_name,
+            old_interval.duration(),
+            new_interval.duration(),
+        )?;
+
         self.entities
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)
         // TODO update possible insertion times

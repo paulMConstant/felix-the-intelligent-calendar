@@ -1,3 +1,4 @@
+mod error_checks;
 mod inner;
 
 use super::helpers::clean_string;
@@ -109,15 +110,8 @@ impl Data {
         S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
-        if self.has_enough_time_for_activity(id, &entity_name)? {
-            // Add the entity to the activity
-            self.activities.add_entity(id, entity_name)
-        } else {
-            Err(format!(
-                "{} does not have enough time left for this activity.",
-                entity_name
-            ))
-        }
+        self.check_has_enough_time_for_activity(id, &entity_name)?;
+        self.activities.add_entity(id, entity_name)
     }
 
     /// Removes the entity with given name from the activity with given id.
@@ -188,13 +182,7 @@ impl Data {
         let entities: Vec<String> = group.entities_sorted().into_iter().cloned().collect();
         let group_name = group.name();
 
-        // Check that each entity has enough time
-        if let Some(entity_name) = self.entity_without_enough_time_for_activity(id, &entities)? {
-            return Err(format!(
-                "'{}' does not have enough time left for this activity.",
-                entity_name
-            ));
-        }
+        self.check_entity_without_enough_time_for_activity(id, &entities)?;
 
         // Add each entity in the group to the activity.
         // We do not care about the result: if the entity is already in the activity, it is fine.
@@ -303,15 +291,7 @@ impl Data {
     #[must_use]
     pub fn set_activity_duration(&mut self, id: u16, new_duration: Time) -> Result<(), String> {
         // If the duration is longer than the previous one, check for conflicts
-        if let Some(entity_name) =
-            self.entity_without_enough_time_to_set_duration(id, new_duration)?
-        {
-            Err(format!(
-                "{} does not have enough time for the new duration.",
-                entity_name
-            ))
-        } else {
-            self.activities.set_duration(id, new_duration)
-        }
+        self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
+        self.activities.set_duration(id, new_duration)
     }
 }
