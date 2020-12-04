@@ -1,3 +1,5 @@
+mod inner;
+
 use crate::data::{Data, TimeInterval};
 
 /// Operations on work hours
@@ -58,25 +60,7 @@ impl Data {
     /// ```
     #[must_use]
     pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
-        // Check if every entity has enough time left
-        let duration = interval.duration();
-        if let Some(entity_name) = self
-            .entities_sorted()
-            .iter()
-            .map(|entity| entity.name())
-            // Call to expect(): we are sure that the entity exists
-            .find(|entity_name| {
-                self.free_time_of(entity_name.clone())
-                    .expect("Could not get entity listed in data.entities_sorted()")
-                    < duration
-            })
-        {
-            return Err(format!(
-                "{} does not have enough time left. Free up their time before removing the work interval.",
-                entity_name
-            ));
-        }
-
+        self.check_entity_without_enough_time_to_remove_interval(interval.duration())?;
         self.work_hours.remove_work_interval(interval)
         // TODO update possible insertion times
     }
@@ -108,25 +92,10 @@ impl Data {
         new_interval: TimeInterval,
     ) -> Result<(), String> {
         // If the interval is shorter, check that entities still have time left
-        if new_interval.duration() < old_interval.duration() {
-            let required_free_time = old_interval.duration() - new_interval.duration();
-            if let Some(entity_name) = self
-                .entities_sorted()
-                .iter()
-                .map(|entity| entity.name())
-                // Call to expect() : we are sure that the entity exists
-                .find(|entity_name| {
-                    self.free_time_of(entity_name)
-                        .expect("Could not get entity listed in data.entities_sorted()")
-                        < required_free_time
-                })
-            {
-                return Err(format!(
-                    "{} does not have enough free time to reduce this interval.",
-                    entity_name
-                ));
-            }
-        }
+        self.check_entity_without_enough_time_to_update_interval(
+            old_interval.duration(),
+            new_interval.duration(),
+        )?;
         self.work_hours
             .update_work_interval(old_interval, new_interval)
         // TODO update possible insertion times

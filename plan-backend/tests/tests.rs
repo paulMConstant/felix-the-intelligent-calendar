@@ -14,8 +14,8 @@ mod entities {
 
 mod groups {
     mod activities_related;
-    mod groups;
     mod entities_related;
+    mod groups;
 }
 
 mod time {

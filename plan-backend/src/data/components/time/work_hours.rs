@@ -28,17 +28,10 @@ impl WorkHours {
     ///
     /// Returns Err if the interval overlaps with the current work intervals.
     pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
-        if self
-            .work_intervals
-            .iter()
-            .any(|&other| interval.overlaps_with(&other))
-        {
-            Err("The given interval overlaps with other work intervals.".to_owned())
-        } else {
-            self.work_intervals.push(interval);
-            self.work_intervals.sort();
-            Ok(())
-        }
+        self.check_if_interval_overlaps(interval, None)?;
+        self.work_intervals.push(interval);
+        self.work_intervals.sort();
+        Ok(())
     }
 
     /// Removes the given interval.
@@ -48,16 +41,15 @@ impl WorkHours {
     /// Returns Err if the interval was not found.
     #[must_use]
     pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
-        match self
+        if let Some(index) = self
             .work_intervals
             .iter()
             .position(|&other| interval == other)
         {
-            Some(index) => {
-                self.work_intervals.remove(index);
-                Ok(())
-            }
-            None => Err("The given time interval was not found.".to_owned()),
+            self.work_intervals.remove(index);
+            Ok(())
+        } else {
+            Err("The given time interval was not found.".to_owned())
         }
     }
 
@@ -73,28 +65,45 @@ impl WorkHours {
         old_interval: TimeInterval,
         new_interval: TimeInterval,
     ) -> Result<(), String> {
-        match self
+        if let Some(index) = self
             .work_intervals
             .iter()
             .position(|&other| old_interval == other)
         {
-            Some(index) => {
-                match self.work_intervals.iter().find(|&interval| {
-                    interval != &old_interval && interval.overlaps_with(&new_interval)
-                }) {
-                    Some(_) => {
-                        Err("The given interval overlaps with other work intervals.".to_owned())
-                    }
-                    None => {
-                        self.work_intervals[index] = new_interval;
-                        self.work_intervals.sort();
-                        Ok(())
-                    }
-                }
-            }
-            None => Err("The given time interval was not found.".to_owned()),
+            self.check_if_interval_overlaps(new_interval, Some(old_interval))?;
+            self.work_intervals[index] = new_interval;
+            self.work_intervals.sort();
+            Ok(())
+        } else {
+            Err("The given time interval was not found.".to_owned())
+        }
+    }
+
+    /// Checks if the given interval overlaps with others, one exception allowed.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the interval overlaps else Ok(()).
+    #[must_use]
+    fn check_if_interval_overlaps(
+        &self,
+        interval: TimeInterval,
+        except: Option<TimeInterval>,
+    ) -> Result<(), String> {
+        let equal_to_except = |&other_interval: &&TimeInterval| match except {
+            Some(except_value) => *other_interval != except_value,
+            None => true,
+        };
+
+        if self
+            .work_intervals
+            .iter()
+            .filter(equal_to_except)
+            .any(|&other_interval| interval.overlaps_with(&other_interval))
+        {
+            Err("The given interval overlaps with other work intervals.".to_owned())
+        } else {
+            Ok(())
         }
     }
 }
-
-// No tests, functions are tested in tests directory

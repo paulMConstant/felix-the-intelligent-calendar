@@ -40,4 +40,29 @@ impl Data {
             .map(|interval| interval.duration())
             .sum())
     }
+
+    /// Checks if the given name is taken by a group.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the group exists.
+    #[must_use]
+    pub(in super::super::entities) fn check_name_taken_by_group(
+        &self,
+        name: &String,
+    ) -> Result<(), String> {
+        if let Some(group_name) = self
+            .groups_sorted()
+            .iter()
+            .map(|group| group.name())
+            .find(|group_name| group_name == name)
+        {
+            Err(format!(
+                "The name '{}' is already taken by a group.",
+                group_name
+            ))
+        } else {
+            Ok(())
+        }
+    }
 }

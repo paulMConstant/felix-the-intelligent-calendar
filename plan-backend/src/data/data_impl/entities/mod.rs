@@ -1,4 +1,4 @@
-mod helpers;
+mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Data, Entity, Time, TimeInterval};
@@ -63,17 +63,7 @@ impl Data {
     {
         let name = clean_string(name)?;
         // Check if a group has the same name
-        if let Some(group_name) = self
-            .groups_sorted()
-            .iter()
-            .map(|group| group.name())
-            .find(|group_name| group_name == &name)
-        {
-            return Err(format!(
-                "The name '{}' is already taken by a group.",
-                group_name
-            ));
-        }
+        self.check_name_taken_by_group(&name)?;
         self.entities.add(name)
     }
 
@@ -141,19 +131,7 @@ impl Data {
         S2: Into<String>,
     {
         let new_name = clean_string(new_name)?;
-
-        // Check if a group has the same name
-        if let Some(group_name) = self
-            .groups_sorted()
-            .iter()
-            .map(|group| group.name())
-            .find(|group_name| group_name == &new_name)
-        {
-            return Err(format!(
-                "The name '{}' is already taken by a group.",
-                group_name
-            ));
-        }
+        self.check_name_taken_by_group(&new_name)?;
 
         // First, rename in entities to check for any error
         let old_name = clean_string(old_name)?;
@@ -457,6 +435,7 @@ impl Data {
         {
             return Err("The given time interval was not found.".to_owned());
         }
+        // TODO Continue Here
         // If the interval is shorter, check that the entity will still have time left
         if new_interval.duration() < old_interval.duration() {
             let required_free_time = old_interval.duration() - new_interval.duration();

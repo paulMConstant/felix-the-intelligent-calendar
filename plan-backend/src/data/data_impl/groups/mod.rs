@@ -1,4 +1,4 @@
-mod helpers;
+mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Data, Group};
@@ -60,16 +60,10 @@ impl Data {
         S: Into<String>,
     {
         let name = clean_string(name)?;
-        // Check if an entity has the same name
-        if let Ok(entity) = self.entity(&name) {
-            Err(format!(
-                "The name '{}' is already taken by an entity.",
-                entity.name()
-            ))
-        } else {
-            self.groups.add(name.clone())?;
-            Ok(name)
-        }
+        self.check_name_taken_by_entity(&name)?;
+
+        self.groups.add(name.clone())?;
+        Ok(name)
     }
 
     /// Removes a group with the given formatted name.
@@ -206,19 +200,7 @@ impl Data {
         S2: Into<String>,
     {
         let new_name = clean_string(new_name)?;
-
-        // Check if an entity has the same name
-        if let Some(entity_name) = self
-            .entities_sorted()
-            .iter()
-            .map(|entity| entity.name())
-            .find(|entity_name| entity_name == &new_name)
-        {
-            return Err(format!(
-                "The name '{}' is already taken by an entity.",
-                entity_name
-            ));
-        }
+        self.check_name_taken_by_entity(&new_name)?;
 
         // First, rename in entities to check for any error
         let old_name = clean_string(old_name)?;

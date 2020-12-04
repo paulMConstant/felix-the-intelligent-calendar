@@ -1,4 +1,4 @@
-mod helpers;
+mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Activity, Data, Time};

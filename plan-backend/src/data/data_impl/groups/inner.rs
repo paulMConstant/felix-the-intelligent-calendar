@@ -34,4 +34,29 @@ impl Data {
         let free_time = self.free_time_of(entity_name)?;
         Ok(free_time >= duration_of_added_activities)
     }
+
+    /// Checks if the given name is taken by an entity.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the name is taken.
+    #[must_use]
+    pub(in super::super::groups) fn check_name_taken_by_entity(
+        &self,
+        name: &String,
+    ) -> Result<(), String> {
+        if let Some(entity_name) = self
+            .entities_sorted()
+            .iter()
+            .map(|entity| entity.name())
+            .find(|entity_name| entity_name == name)
+        {
+            Err(format!(
+                "The name '{}' is already taken by an entity.",
+                entity_name
+            ))
+        } else {
+            Ok(())
+        }
+    }
 }
