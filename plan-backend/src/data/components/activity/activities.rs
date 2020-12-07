@@ -146,7 +146,7 @@ impl Activities {
     /// Removes the entity with given name from all activities.
     pub fn remove_entity_from_all(&mut self, entity: &String) {
         for activity in self.activities.values_mut() {
-            // We don't care about the result : it is fine if the entity is not
+            // We don't care about the result : if the entity is not
             // taking part in the activity, that is what we want in the first place
             let _ = activity.metadata.remove_entity(entity);
         }
@@ -157,8 +157,8 @@ impl Activities {
     /// Renames the entity with given name in all activities.
     pub fn rename_entity_in_all(&mut self, old_name: &String, new_name: String) {
         for activity in self.activities.values_mut() {
-            // We don't care about the result : it is fine if the entity is not
-            // taking part in the activity, this will yield no conflict when it is renamed
+            // We don't care about the result : if the entity is not
+            // taking part in the activity, it does not need to be renamed
             let _ = activity.metadata.rename_entity(old_name, new_name.clone());
         }
     }
@@ -183,6 +183,25 @@ impl Activities {
     #[must_use]
     pub fn remove_group(&mut self, id: u16, group_name: &String) -> Result<(), String> {
         self.get_mut_by_id(id)?.metadata.remove_group(group_name)
+    }
+
+    /// Removes the group with the given name from all activities.
+    pub fn remove_group_from_all(&mut self, group: &String) {
+        for activity in self.activities.values_mut() {
+            // We don't care about the result: if the group is not in the activity, this
+            // is what we want.
+            let _ = activity.metadata.remove_group(group);
+        }
+        self.update_incompatible_activities();
+    }
+
+    /// Renames the group with given name in all activities.
+    pub fn rename_group_in_all(&mut self, old_name: &String, new_name: String) {
+        for activity in self.activities.values_mut() {
+            // We don't care about the result : if the entity is not
+            // taking part in the activity, it does not need to be renamed
+            let _ = activity.metadata.rename_group(old_name, new_name.clone());
+        }
     }
 
     /// Sets the duration of the activity with the given id.
@@ -219,14 +238,14 @@ mod tests {
         let id_b = activities.add("b".to_owned()).id();
 
         let mut entities = Entities::new();
-        let entity_a = entities
-            .add("a".to_owned())
-            .expect("Could not add entity")
-            .name();
-        let entity_b = entities
-            .add("b".to_owned())
-            .expect("Could not add entity")
-            .name();
+        let entity_a = "A".to_owned();
+        let entity_b = "B".to_owned();
+        entities
+            .add(entity_a.clone())
+            .expect("Could not add entity");
+        entities
+            .add(entity_b.clone())
+            .expect("Could not add entity");
 
         // Insert the same entity in both activities
         activities

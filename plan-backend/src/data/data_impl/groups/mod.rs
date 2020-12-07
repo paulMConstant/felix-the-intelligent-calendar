@@ -90,7 +90,10 @@ impl Data {
         S: Into<String>,
     {
         // TODO remove group in activity
-        self.groups.remove(&clean_string(name)?)
+        let name = clean_string(name)?;
+        self.groups.remove(&name)?;
+        self.activities.remove_group_from_all(&name);
+        Ok(())
     }
 
     /// Adds the entity with the given name to the group with the given name.
@@ -109,7 +112,7 @@ impl Data {
     /// let mut data = Data::new();
     ///
     /// let group_name = data.add_group("New group").unwrap();
-    /// let entity_name = data.add_entity("Entity").unwrap().name();
+    /// let entity_name = data.add_entity("Entity").unwrap();
     ///
     /// data.add_entity_to_group(group_name.clone(), entity_name.clone());
     /// let entities = data.group(group_name).unwrap().entities_sorted();
@@ -154,7 +157,7 @@ impl Data {
     /// let mut data = Data::new();
     ///
     /// let group_name = data.add_group("Group").unwrap();
-    /// let entity_name = data.add_entity("Entity").unwrap().name();
+    /// let entity_name = data.add_entity("Entity").unwrap();
     ///
     /// data.add_entity_to_group(group_name.clone(), entity_name.clone()).unwrap();
     /// data.remove_entity_from_group(group_name.clone(), entity_name.clone()).unwrap();
@@ -201,11 +204,9 @@ impl Data {
         let old_name = clean_string(old_name)?;
         self.groups.set_name_of(&old_name, new_name.clone())?;
 
-        Ok(new_name)
         // Then, rename in activities
-        // TODO
-        //Ok(self
-        //.activities
-        //.rename_group_in_all(old_name, new_name.clone())?)
+        self.activities
+            .rename_group_in_all(&old_name, new_name.clone());
+        Ok(new_name)
     }
 }

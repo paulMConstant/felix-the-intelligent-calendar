@@ -25,7 +25,7 @@ impl Data {
     /// let mut data = Data::new();
     ///
     /// // name = "Jeanne" because of formatting
-    /// let name = data.add_entity("jeanne").unwrap().name();
+    /// let name = data.add_entity("jeanne").unwrap();
     /// assert!(data.entity(name).is_ok());
     ///
     /// let invalid_name = "Jean";
@@ -41,7 +41,7 @@ impl Data {
 
     /// Adds an entity with the formatted given name.
     ///
-    /// Returns an immutable reference to the added entity.
+    /// Returns the name of the added entity.
     ///
     /// # Errors
     ///
@@ -53,19 +53,20 @@ impl Data {
     /// # use plan_backend::data::Data;
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// // Name already taken
     /// assert!(data.add_entity(name).is_err());
     /// ```
     #[must_use]
-    pub fn add_entity<S>(&mut self, name: S) -> Result<&Entity, String>
+    pub fn add_entity<S>(&mut self, name: S) -> Result<String, String>
     where
         S: Into<String>,
     {
         let name = clean_string(name)?;
         // Check if a group has the same name
         self.check_name_taken_by_group(&name)?;
-        self.entities.add(name)
+        self.entities.add(name.clone())?;
+        Ok(name)
     }
 
     /// Removes the entity with the formatted given name.
@@ -82,7 +83,7 @@ impl Data {
     /// # use plan_backend::data::Data;
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// assert!(data.remove_entity(name.clone()).is_ok());
     /// // Entity does not exist anymore
     /// assert!(data.remove_entity(name).is_err());
@@ -116,7 +117,7 @@ impl Data {
     /// # use plan_backend::data::Data;
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// let new_name = "Jean";
     ///
     /// assert!(data.set_entity_name(name.clone(), new_name).is_ok());
@@ -159,7 +160,7 @@ impl Data {
     /// # use plan_backend::data::Data;
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// let mail = "jeanne@xyz.com";
     ///
     /// assert!(data.set_entity_mail(name.clone(), mail).is_ok());
@@ -187,7 +188,7 @@ impl Data {
     /// # use plan_backend::data::Data;
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// assert_eq!(data.entity(name.clone()).unwrap().send_me_a_mail(), false);
     ///
     /// let send = true;
@@ -221,7 +222,7 @@ impl Data {
     /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12,0));
     /// data.add_work_interval(morning_shift).unwrap();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// let activity_id = data.add_activity("Activity").unwrap().id();
     /// let activity_duration = Time::new(1, 0);
     /// data.set_activity_duration(activity_id, activity_duration).unwrap();
@@ -261,7 +262,7 @@ impl Data {
     /// # use plan_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     ///
     /// let regular_work_interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
     /// data.add_work_interval(regular_work_interval);
@@ -298,7 +299,7 @@ impl Data {
     /// # use plan_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     ///
     /// let custom_work_interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
     /// let overlapping_interval = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
@@ -340,7 +341,7 @@ impl Data {
     /// # use plan_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Jeanne").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     ///
     /// let custom_work_interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
     /// data.add_custom_work_interval_for(name.clone(), custom_work_interval).unwrap();
@@ -389,7 +390,7 @@ impl Data {
     /// # use plan_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
-    /// let name = data.add_entity("Name").unwrap().name();
+    /// let name = data.add_entity("Jeanne").unwrap();
     /// let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
     /// data.add_custom_work_interval_for(name.clone(), interval).unwrap();
     ///

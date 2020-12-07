@@ -54,22 +54,20 @@ impl Entities {
     }
 
     /// Adds an entity with the given name.
-    /// Returns an immutable reference to the created entity.
     ///
     /// # Errors
     ///
     /// Returns Err if the name is already taken.
     #[must_use]
-    pub fn add(&mut self, name: String) -> Result<&Entity, String> {
+    pub fn add(&mut self, name: String) -> Result<(), String> {
         if self.entities.contains_key(&name) {
             Err(format!(
                 "The name '{}' is already taken by an entity.",
                 name
             ))
         } else {
-            self.entities
-                .insert(name.clone(), Entity::new(name.clone()));
-            self.get_by_name(&name)
+            self.entities.insert(name.clone(), Entity::new(name));
+            Ok(())
         }
     }
 

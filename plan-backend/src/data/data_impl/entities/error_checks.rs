@@ -45,16 +45,13 @@ impl Data {
         {
             let activity_duration = self.time_taken_by_activities(&entity_name);
             if interval_duration < activity_duration {
-                Err(format!(
+                return Err(format!(
                     "{} will not have enough time for their activities using these custom work hours.",
                     entity_name
-                ))
-            } else {
-                Ok(())
+                ));
             }
-        } else {
-            Ok(())
         }
+        Ok(())
     }
 
     /// Checks if the entity has a custom work interval corresponding to the given one.
@@ -88,6 +85,10 @@ impl Data {
     ///
     /// Returns Err if the entity name is empty, the entity is not found or the entity will not
     /// have enough free time.
+    ///
+    /// # Panics
+    ///
+    /// Panics if interval\_duration is greater than the custom work hours's total duration.
     #[must_use]
     pub(in super::super::entities) fn check_entity_will_have_enough_time_after_deletion_of_interval(
         &self,
@@ -95,9 +96,23 @@ impl Data {
         interval_duration: Time,
     ) -> Result<(), String> {
         // Check if the entity has enough free time
-        // TODO Create a failing test for this
-        let entity_free_time = self.free_time_of(entity_name)?;
-        if entity_free_time < interval_duration {
+        let custom_work_hours = self.entity(entity_name)?.custom_work_hours();
+        let entity_time = if custom_work_hours.len() == 1 {
+            // This is the last custom work hours.
+            // We should check that the global work hours will suffice.
+            self.work_hours()
+                .iter()
+                .map(|interval| interval.duration())
+                .sum()
+        } else {
+            // We should check that the remaining custom work hours will suffice.
+            let time_before_deletion: Time = custom_work_hours
+                .iter()
+                .map(|interval| interval.duration())
+                .sum();
+            time_before_deletion - interval_duration
+        };
+        if entity_time < self.time_taken_by_activities(entity_name) {
             Err(format!(
                 "{} will not have enough time for their activities once this interval is removed.",
                 entity_name

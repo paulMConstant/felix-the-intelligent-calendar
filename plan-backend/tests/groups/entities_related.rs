@@ -13,10 +13,7 @@ fn simple_add_entity_to_group() {
     let mut data = Data::new();
 
     let group_name = data.add_group("Group").expect("Could not add group");
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
 
     data.add_entity_to_group(group_name.clone(), entity_name.clone())
         .expect("Could not add entity to group");
@@ -36,10 +33,7 @@ fn add_entity_to_group_already_in_group() {
     let mut data = Data::new();
 
     let group_name = data.add_group("Group").expect("Could not add group");
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
     data.add_entity_to_group(group_name.clone(), entity_name.clone())
         .expect("Could not add entity to group");
 
@@ -71,10 +65,7 @@ fn add_nonexistent_entity_to_group() {
 fn add_entity_to_nonexistent_group() {
     let mut data = Data::new();
 
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
 
     assert_not_modified!(data, {
         assert_eq!(
@@ -89,10 +80,7 @@ fn add_entity_to_nonexistent_group() {
 fn add_entity_to_group_empty_names() {
     let mut data = Data::new();
 
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
     let group_name = data.add_group("Group").expect("Could not add group");
 
     assert_not_modified!(data, {
@@ -114,14 +102,8 @@ fn add_entity_to_group_empty_names() {
 fn add_entity_to_group_check_sorting() {
     let mut data = Data::new();
 
-    let entity1 = data
-        .add_entity("Entity1")
-        .expect("Could not add entity")
-        .name();
-    let entity2 = data
-        .add_entity("Entity2")
-        .expect("Could not add entity")
-        .name();
+    let entity1 = data.add_entity("Entity1").expect("Could not add entity");
+    let entity2 = data.add_entity("Entity2").expect("Could not add entity");
     let group_name = data.add_group("Group").expect("Could not add group");
 
     data.add_entity_to_group(group_name.clone(), entity2.clone())
@@ -142,10 +124,7 @@ fn add_entity_to_group_not_enough_time_left() {
     let mut data = Data::new();
 
     let group_name = data.add_group("Group").expect("Could not add group");
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
     let id = data
         .add_activity("Activity")
         .expect("Could not add activity")
@@ -172,14 +151,8 @@ fn simple_remove_entity() {
     let mut data = Data::new();
 
     // Add two entities to check that the right one is removed
-    let entity_name1 = data
-        .add_entity("Entity1")
-        .expect("Could not add entity")
-        .name();
-    let entity_name2 = data
-        .add_entity("Entity2")
-        .expect("Could not add entity")
-        .name();
+    let entity_name1 = data.add_entity("Entity1").expect("Could not add entity");
+    let entity_name2 = data.add_entity("Entity2").expect("Could not add entity");
     let group_name = data.add_group("Group").expect("Could not add group");
     data.add_entity_to_group(group_name.clone(), entity_name1.clone())
         .expect("Could not add entity to group");
@@ -200,10 +173,7 @@ fn simple_remove_entity() {
 fn remove_entity_not_in_group() {
     let mut data = Data::new();
 
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
     let group_name = data.add_group("Group").expect("Could not add group");
 
     assert_not_modified!(data, {
@@ -233,10 +203,7 @@ fn remove_nonexistent_entity_from_group() {
 fn remove_entity_from_nonexistent_group() {
     let mut data = Data::new();
 
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entiy")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entiy");
     assert_not_modified!(data, {
         assert_eq!(
             data.remove_entity_from_group("Does not exist", entity_name),
@@ -250,10 +217,7 @@ fn remove_entity_from_nonexistent_group() {
 fn remove_entity_empty_names() {
     let mut data = Data::new();
 
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
     let group_name = data.add_group("Group name").expect("Could not add group");
 
     assert_not_modified!(data, {
@@ -276,10 +240,7 @@ fn rename_group_name_taken_by_entity() {
     let mut data = Data::new();
 
     let group_name = data.add_group("Group name").expect("Could not add group");
-    let entity_name = data
-        .add_entity("name")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("name").expect("Could not add entity");
 
     assert_not_modified!(data, {
         assert_eq!(

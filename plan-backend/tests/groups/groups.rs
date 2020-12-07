@@ -7,6 +7,7 @@
 //! - Getter
 //! - Edition (name)
 
+// TODO use data_builder for all files in groups directory
 use plan_backend::data::Data;
 
 // Test organization
@@ -51,10 +52,7 @@ fn add_group_check_formatting() {
 #[test]
 fn add_group_entity_has_same_name() {
     let mut data = Data::new();
-    let entity_name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let entity_name = data.add_entity("Entity").expect("Could not add entity");
     assert_not_modified!(data, {
         assert_eq!(
             data.add_group(entity_name),

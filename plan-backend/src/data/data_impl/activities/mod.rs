@@ -92,7 +92,7 @@ impl Data {
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
-    /// let entity_name = data.add_entity("Bernard").unwrap().name();
+    /// let entity_name = data.add_entity("Bernard").unwrap();
     ///
     /// // Make sure the entity has enough time !
     /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
@@ -128,7 +128,7 @@ impl Data {
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
-    /// let entity_name = data.add_entity("Bernard").unwrap().name();
+    /// let entity_name = data.add_entity("Bernard").unwrap();
     ///
     /// // Make sure the entity has enough time before adding him to an activity
     /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));

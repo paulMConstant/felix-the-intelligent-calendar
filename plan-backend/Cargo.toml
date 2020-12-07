@@ -4,5 +4,6 @@ version = "0.1.0"
 authors = ["Paul Constant <constantpaul@hotmail.fr>"]
 edition = "2018"
 
-[dependencies]
+[dev-dependencies]
+test-utils = { path = "test-utils" }
 assert-not-modified = "1.0.0"

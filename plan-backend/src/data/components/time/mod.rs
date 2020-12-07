@@ -5,7 +5,10 @@ use std::cmp::Ordering;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-pub const MIN_TIME_DISCRETIZATION: Time = Time::unsafe_const_new(0, 5);
+pub const MIN_TIME_DISCRETIZATION: Time = Time {
+    hours: 0,
+    minutes: 5,
+};
 
 /// Minimal time structure with minute precision.
 ///
@@ -56,17 +59,6 @@ impl Time {
                 && minutes % MIN_TIME_DISCRETIZATION.minutes() == 0,
             "Time must be kept in [00:00, 23:55] and be a multiple of MIN_TIME_DISCRETIZATION"
         );
-        Time { hours, minutes }
-    }
-
-    /// Creates a new time object. Used for const initialization only.
-    ///
-    /// # Safety
-    ///
-    /// This can be used to initialize an invalid time !
-    /// All Time objects must stay in [00:00, 23:55].
-    #[must_use]
-    const fn unsafe_const_new(hours: i8, minutes: i8) -> Time {
         Time { hours, minutes }
     }
 
@@ -255,5 +247,4 @@ impl Sum<Self> for Time {
         )
     }
 }
-
 // This class is public. It is tested in integration tests, in the 'tests' folder.

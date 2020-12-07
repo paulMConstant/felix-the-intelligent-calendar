@@ -166,6 +166,30 @@ impl ActivityMetadata {
             ))
         }
     }
+
+    /// Renames the group in the activity.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the group is not taking part in the activity or
+    /// if a group with this name is already present in the activity.
+    #[must_use]
+    pub fn rename_group(&mut self, old_name: &String, new_name: String) -> Result<(), String> {
+        if self.groups.contains(&new_name) {
+            return Err(format!("The group '{}' already exists.", new_name));
+        };
+
+        if self.groups.remove(old_name) {
+            self.groups.insert(new_name);
+            Ok(())
+        } else {
+            Err(format!(
+                "The group '{}' is not taking part in the activity '{}'.",
+                old_name,
+                self.name()
+            ))
+        }
+    }
 }
 
 // No tests, functions are tested in tests directory

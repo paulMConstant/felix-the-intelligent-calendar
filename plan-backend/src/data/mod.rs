@@ -49,7 +49,7 @@ pub use components::{
 /// # use plan_backend::data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
-/// let entity_name = data.add_entity("Bernard").unwrap().name();
+/// let entity_name = data.add_entity("Bernard").unwrap();
 ///
 /// let mail = "bernard@xyz.com";
 /// data.set_entity_mail(entity_name.clone(), mail.clone()).unwrap();
@@ -80,7 +80,7 @@ pub use components::{
 /// let mut data = Data::new();
 ///
 /// let activity_id = data.add_activity("My Activity").unwrap().id();
-/// let entity_name = data.add_entity("My Entity").unwrap().name();
+/// let entity_name = data.add_entity("My Entity").unwrap();
 ///
 /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
 /// data.add_work_interval(morning_shift).unwrap();

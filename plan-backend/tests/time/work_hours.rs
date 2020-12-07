@@ -1,3 +1,4 @@
+// TODO use data_builder for all files in work_hours directory
 use plan_backend::data::{Data, Time, TimeInterval};
 
 #[test]
@@ -134,10 +135,7 @@ fn remove_time_interval_not_enough_time_for_activities() {
         .add_activity("Name")
         .expect("Could not add activity")
         .id();
-    let name = data
-        .add_entity("Entity")
-        .expect("Could not add entity")
-        .name();
+    let name = data.add_entity("Entity").expect("Could not add entity");
     data.add_entity_to_activity(id, name)
         .expect("Could not add entity");
     data.set_activity_duration(id, Time::new(1, 0))
@@ -189,10 +187,7 @@ fn update_time_interval_not_enough_time_for_activities() {
         .add_activity("Name")
         .expect("Could not add activity")
         .id();
-    let name = data
-        .add_entity("Name")
-        .expect("Could not add entity")
-        .name();
+    let name = data.add_entity("Name").expect("Could not add entity");
     let duration = Time::new(4, 0);
     data.set_activity_duration(id, duration)
         .expect("Could not set activity duration");

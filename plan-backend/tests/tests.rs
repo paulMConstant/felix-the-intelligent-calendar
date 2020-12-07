@@ -1,4 +1,7 @@
 #[macro_use]
+extern crate test_utils;
+
+#[macro_use]
 extern crate assert_not_modified;
 
 mod activities {
@@ -8,7 +11,9 @@ mod activities {
 }
 
 mod entities {
+    mod activities_related;
     mod entities;
+    mod groups_related;
     mod work_hours_related;
 }
 
