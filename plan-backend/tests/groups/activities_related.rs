@@ -6,29 +6,17 @@
 //! - Adding entities to group
 //! - Removing entities from a group
 
-use plan_backend::data::Data;
+use test_utils::data_builder::{DataBuilder, Group, Activity};
 
 #[test]
 fn rename_group_check_renamed_in_activities() {
-    let mut data = Data::new();
-
-    let id = data
-        .add_activity("Activity")
-        .expect("Could not add activity")
-        .id();
-
-    // Add two groups to check that the right one was renamed
-    let group1 = data.add_group("Group1").expect("Could not add group");
-    let group2 = data.add_group("Group2").expect("Could not add group");
-
-    data.add_group_to_activity(id, group1.clone())
-        .expect("Could not add group");
-    data.add_group_to_activity(id, group2.clone())
-        .expect("Could not add group");
+    let (group1, group2) = ("Group1", "Group2");
+    test_ok!(data, DataBuilder::new().with_groups(vec![Group::default(group1), Group::default(group2)])
+             .with_activity(Activity{groups:vec![group1, group2], ..Default::default()}), {
+    let id = data.activities_sorted()[0].id();
     let group3 = data
         .set_group_name(group1, "Group3")
         .expect("Could not set group name");
-
     let groups = data
         .activity(id)
         .expect("Could not get activity by id")
@@ -36,26 +24,15 @@ fn rename_group_check_renamed_in_activities() {
     assert_eq!(groups.len(), 2, "Groups were not added to the activity");
     assert_eq!(groups[0], group2, "Group was not renamed right in activity");
     assert_eq!(groups[1], group3, "Group was not renamed right in activity");
+             });
 }
 
 #[test]
 fn remove_group_check_removed_in_activities() {
-    let mut data = Data::new();
-
-    let id = data
-        .add_activity("Activity")
-        .expect("Could not add activity")
-        .id();
-
-    // Add two groups to check that the right one was removed
-    let group1 = data.add_group("Group1").expect("Could not add group");
-    let group2 = data.add_group("Group2").expect("Could not add group");
-
-    data.add_group_to_activity(id, group1.clone())
-        .expect("Could not add group");
-    data.add_group_to_activity(id, group2.clone())
-        .expect("Could not add group");
-
+    let (group1, group2) = ("Group1", "Group2");
+    test_ok!(data, DataBuilder::new().with_groups(vec![Group::default(group1), Group::default(group2)])
+             .with_activity(Activity{groups:vec![group1, group2], ..Default::default()}), {
+                 let id = data.activities_sorted()[0].id();
     data.remove_group(group1).expect("Could not remove group");
 
     let groups = data
@@ -66,9 +43,10 @@ fn remove_group_check_removed_in_activities() {
     assert_eq!(
         groups[0], group2,
         "The wrong group was removed from the activity"
-    );
+    );});
 }
 
+// TODO
 #[test]
 fn add_entity_to_group_check_added_to_activities() {
     //let mut data = Data::new();
