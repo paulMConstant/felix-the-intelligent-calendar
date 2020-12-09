@@ -107,4 +107,10 @@ impl PartialOrd for TimeInterval {
     }
 }
 
+impl std::fmt::Display for TimeInterval {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{} - {}", self.beginning, self.end)
+    }
+}
+
 // This class is public. It is tested in integration tests, in 'tests' folder.

@@ -1,5 +1,5 @@
 use plan_backend::data::{Time, TimeInterval};
-use test_utils::data_builder::{Activity, DataBuilder};
+use plan_test_utils::data_builder::{Activity, DataBuilder};
 
 #[test]
 fn simple_add_custom_work_interval() {

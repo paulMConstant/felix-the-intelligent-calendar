@@ -6,7 +6,7 @@
 //! - Renaming groups
 
 use plan_backend::data::Time;
-use test_utils::data_builder::{Activity, DataBuilder, Group};
+use plan_test_utils::data_builder::{Activity, DataBuilder, Group};
 
 // *** Add entity to group ***
 #[test]

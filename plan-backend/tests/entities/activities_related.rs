@@ -3,7 +3,7 @@
 //! - Renaming
 //! - Removing
 
-use test_utils::data_builder::{Activity, DataBuilder};
+use plan_test_utils::data_builder::{Activity, DataBuilder};
 
 #[test]
 fn rename_entity_check_renamed_in_activity() {

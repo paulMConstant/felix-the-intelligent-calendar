@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate test_utils;
+extern crate plan_test_utils;
 
 #[macro_use]
 extern crate assert_not_modified;
@@ -27,4 +27,11 @@ mod time {
     mod time;
     mod time_interval;
     mod work_hours;
+}
+
+mod errors {
+    mod does_not_exist;
+    mod name_taken;
+    mod interval_overlaps;
+    mod not_enough_time;
 }

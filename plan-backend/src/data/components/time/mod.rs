@@ -247,4 +247,11 @@ impl Sum<Self> for Time {
         )
     }
 }
+
+impl std::fmt::Display for Time {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:02}:{:02}", self.hours, self.minutes)
+    }
+}
+
 // This class is public. It is tested in integration tests, in the 'tests' folder.

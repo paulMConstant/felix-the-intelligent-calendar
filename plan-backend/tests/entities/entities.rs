@@ -7,7 +7,7 @@
 //! - Edition (name, mail, send_me_a_mail)
 //! - Getter
 
-use test_utils::data_builder::DataBuilder;
+use plan_test_utils::data_builder::DataBuilder;
 
 // *** Add ***
 #[test]

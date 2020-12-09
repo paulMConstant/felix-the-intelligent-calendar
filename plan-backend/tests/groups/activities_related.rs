@@ -6,7 +6,7 @@
 //! - Adding entities to group
 //! - Removing entities from a group
 
-use test_utils::data_builder::{Activity, DataBuilder, Group};
+use plan_test_utils::data_builder::{Activity, DataBuilder, Group};
 
 #[test]
 fn rename_group_check_renamed_in_activities() {

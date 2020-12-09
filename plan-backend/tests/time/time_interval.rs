@@ -45,3 +45,9 @@ fn std_cmp() {
     let interval2 = TimeInterval::new(Time::new(11, 0), Time::new(13, 0));
     assert!(interval1 < interval2, "TimeInterval comparison is broken");
 }
+
+#[test]
+fn display() {
+    let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 15));
+    assert_eq!(format!("{}", interval), "08:00 - 12:15");
+}

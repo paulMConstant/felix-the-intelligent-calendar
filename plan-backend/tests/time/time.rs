@@ -88,3 +88,8 @@ fn invalid_new() {
     assert!(catch_unwind(|| { Time::new(-1, 0) }).is_err());
     assert!(catch_unwind(|| { Time::new(0, -1) }).is_err());
 }
+
+#[test]
+fn display() {
+    assert_eq!(format!("{}", Time::new(1, 5)), "01:05");
+}
