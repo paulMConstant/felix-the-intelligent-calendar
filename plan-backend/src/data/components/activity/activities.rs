@@ -1,7 +1,8 @@
 use super::computation::id_computation::{compute_incompatible_ids, generate_next_id};
 use super::ActivityMetadata;
-use crate::data::{Activity, Time};
 use std::collections::HashMap;
+use crate::data::{Activity, Time};
+use crate::errors::{Result, does_not_exist::DoesNotExist};
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
@@ -29,19 +30,19 @@ impl Activities {
 
     /// Simple getter for an activity.
     #[must_use]
-    pub fn get_by_id(&self, id: u16) -> Result<&Activity, String> {
+    pub fn get_by_id(&self, id: u16) -> Result<&Activity> {
         match self.activities.get(&id) {
             Some(activity) => Ok(activity),
-            None => Err(format!("Cannot get activity with id {}.", id)),
+            None => Err(DoesNotExist::activity_does_not_exist(id)),
         }
     }
 
     /// Simple private mutable getter for an activity.
     #[must_use]
-    fn get_mut_by_id(&mut self, id: u16) -> Result<&mut Activity, String> {
+    fn get_mut_by_id(&mut self, id: u16) -> Result<&mut Activity> {
         match self.activities.get_mut(&id) {
             Some(activity) => Ok(activity),
-            None => Err(format!("Cannot get activity with id {}.", id)),
+            None => Err(DoesNotExist::activity_does_not_exist(id)),
         }
     }
 
@@ -71,9 +72,9 @@ impl Activities {
     ///
     /// Returns Err if there is no activity with the given id.
     #[must_use]
-    pub fn remove(&mut self, id: u16) -> Result<(), String> {
+    pub fn remove(&mut self, id: u16) -> Result<()> {
         match self.activities.remove(&id) {
-            None => Err(format!("The activity with id {} does not exist.", id)),
+            None => Err(DoesNotExist::activity_does_not_exist(id)),
             Some(_) => {
                 self.update_incompatible_activities();
                 // TODO update possible insertion times
@@ -88,7 +89,7 @@ impl Activities {
     ///
     /// Returns Err if there is no activity with the given id.
     #[must_use]
-    pub fn set_name(&mut self, id: u16, name: String) -> Result<(), String> {
+    pub fn set_name(&mut self, id: u16, name: String) -> Result<()> {
         Ok(self.get_mut_by_id(id)?.metadata.set_name(name))
     }
 
@@ -99,7 +100,7 @@ impl Activities {
     /// Returns Err if the activity is not found or if the entity is already
     /// taking part in the activity.
     #[must_use]
-    pub fn add_entity(&mut self, id: u16, entity: String) -> Result<(), String> {
+    pub fn add_entity(&mut self, id: u16, entity: String) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.add_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
@@ -136,7 +137,7 @@ impl Activities {
     /// Returns Err if the activity is not found or if the entity is not
     /// taking part in the activtiy.
     #[must_use]
-    pub fn remove_entity(&mut self, id: u16, entity: &String) -> Result<(), String> {
+    pub fn remove_entity(&mut self, id: u16, entity: &String) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.remove_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
@@ -170,7 +171,7 @@ impl Activities {
     /// Returns Err if the activity is not found or if
     /// the group is already taking part in the activity.
     #[must_use]
-    pub fn add_group(&mut self, id: u16, group_name: String) -> Result<(), String> {
+    pub fn add_group(&mut self, id: u16, group_name: String) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.add_group(group_name)
     }
 
@@ -181,7 +182,7 @@ impl Activities {
     /// Returns Err if the activity si not found or if the group is not taking part in the
     /// activity.
     #[must_use]
-    pub fn remove_group(&mut self, id: u16, group_name: &String) -> Result<(), String> {
+    pub fn remove_group(&mut self, id: u16, group_name: &String) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.remove_group(group_name)
     }
 
@@ -211,7 +212,7 @@ impl Activities {
     /// Returns Err if the activity is not found or if the duration is too short
     /// (< MIN\_TIME\_DISCRETIZATION).
     #[must_use]
-    pub fn set_duration(&mut self, id: u16, duration: Time) -> Result<(), String> {
+    pub fn set_duration(&mut self, id: u16, duration: Time) -> Result<()> {
         self.get_mut_by_id(id)?
             .computation_data
             .set_duration(duration)

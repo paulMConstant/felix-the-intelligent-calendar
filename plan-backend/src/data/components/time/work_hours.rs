@@ -1,4 +1,5 @@
 use crate::data::TimeInterval;
+use crate::errors::{Result, interval_overlaps::IntervalOverlaps, does_not_exist::DoesNotExist};
 
 /// Contains work hours represented as time intervals.
 /// Stays sorted by ascending order and prevents work intervals from overlapping.
@@ -27,7 +28,7 @@ impl WorkHours {
     /// # Errors
     ///
     /// Returns Err if the interval overlaps with the current work intervals.
-    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
+    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.check_if_interval_overlaps(interval, None)?;
         self.work_intervals.push(interval);
         self.work_intervals.sort();
@@ -40,7 +41,7 @@ impl WorkHours {
     ///
     /// Returns Err if the interval was not found.
     #[must_use]
-    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
+    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         if let Some(index) = self
             .work_intervals
             .iter()
@@ -49,7 +50,7 @@ impl WorkHours {
             self.work_intervals.remove(index);
             Ok(())
         } else {
-            Err("The given time interval was not found.".to_owned())
+            Err(DoesNotExist::interval_does_not_exist(interval))
         }
     }
 
@@ -64,7 +65,7 @@ impl WorkHours {
         &mut self,
         old_interval: TimeInterval,
         new_interval: TimeInterval,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         if let Some(index) = self
             .work_intervals
             .iter()
@@ -75,7 +76,7 @@ impl WorkHours {
             self.work_intervals.sort();
             Ok(())
         } else {
-            Err("The given time interval was not found.".to_owned())
+            Err(DoesNotExist::interval_does_not_exist(old_interval))
         }
     }
 
@@ -89,7 +90,7 @@ impl WorkHours {
         &self,
         interval: TimeInterval,
         except: Option<TimeInterval>,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         let equal_to_except = |&other_interval: &&TimeInterval| match except {
             Some(except_value) => *other_interval != except_value,
             None => true,
@@ -101,7 +102,7 @@ impl WorkHours {
             .filter(equal_to_except)
             .any(|&other_interval| interval.overlaps_with(&other_interval))
         {
-            Err("The given interval overlaps with other work intervals.".to_owned())
+            Err(IntervalOverlaps::new())
         } else {
             Ok(())
         }

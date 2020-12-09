@@ -3,6 +3,7 @@ mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Activity, Data, Time};
+use crate::errors::Result;
 
 /// Operations on activities
 impl Data {
@@ -18,7 +19,7 @@ impl Data {
     ///
     /// Returns Err if the activity is not found.
     #[must_use]
-    pub fn activity(&self, id: u16) -> Result<&Activity, String> {
+    pub fn activity(&self, id: u16) -> Result<&Activity> {
         self.activities.get_by_id(id)
     }
 
@@ -45,7 +46,7 @@ impl Data {
     /// assert_eq!(activities[0].id(), activity_id);
     /// ```
     #[must_use]
-    pub fn add_activity<S>(&mut self, name: S) -> Result<&Activity, String>
+    pub fn add_activity<S>(&mut self, name: S) -> Result<&Activity>
     where
         S: Into<String>,
     {
@@ -73,7 +74,7 @@ impl Data {
     /// assert!(data.activities_sorted().is_empty());
     /// ```
     #[must_use]
-    pub fn remove_activity(&mut self, id: u16) -> Result<(), String> {
+    pub fn remove_activity(&mut self, id: u16) -> Result<()> {
         self.activities.remove(id)
     }
 
@@ -105,7 +106,7 @@ impl Data {
     /// assert_eq!(entities[0], entity_name);
     /// ```
     #[must_use]
-    pub fn add_entity_to_activity<S>(&mut self, id: u16, entity_name: S) -> Result<(), String>
+    pub fn add_entity_to_activity<S>(&mut self, id: u16, entity_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -139,7 +140,7 @@ impl Data {
     /// assert!(data.activity(activity_id).unwrap().entities_sorted().is_empty());
     /// ```
     #[must_use]
-    pub fn remove_entity_from_activity<S>(&mut self, id: u16, entity_name: S) -> Result<(), String>
+    pub fn remove_entity_from_activity<S>(&mut self, id: u16, entity_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -172,7 +173,7 @@ impl Data {
     /// assert_eq!(groups[0], group_name);
     /// ```
     #[must_use]
-    pub fn add_group_to_activity<S>(&mut self, id: u16, group_name: S) -> Result<(), String>
+    pub fn add_group_to_activity<S>(&mut self, id: u16, group_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -221,7 +222,7 @@ impl Data {
     /// assert!(groups.is_empty());
     /// ```
     #[must_use]
-    pub fn remove_group_from_activity<S>(&mut self, id: u16, group_name: S) -> Result<(), String>
+    pub fn remove_group_from_activity<S>(&mut self, id: u16, group_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -260,7 +261,7 @@ impl Data {
     /// assert_eq!(data.activity(activity_id).unwrap().name(), new_name);
     /// ```
     #[must_use]
-    pub fn set_activity_name<S>(&mut self, id: u16, name: S) -> Result<String, String>
+    pub fn set_activity_name<S>(&mut self, id: u16, name: S) -> Result<String>
     where
         S: Into<String>,
     {
@@ -289,7 +290,7 @@ impl Data {
     /// assert_eq!(data.activity(activity_id).unwrap().duration(), min_valid_duration);
     /// ```
     #[must_use]
-    pub fn set_activity_duration(&mut self, id: u16, new_duration: Time) -> Result<(), String> {
+    pub fn set_activity_duration(&mut self, id: u16, new_duration: Time) -> Result<()> {
         // If the duration is longer than the previous one, check for conflicts
         self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
         self.activities.set_duration(id, new_duration)

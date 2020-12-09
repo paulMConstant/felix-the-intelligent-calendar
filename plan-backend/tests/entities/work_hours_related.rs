@@ -33,7 +33,7 @@ fn add_custom_work_interval_nonexistent_entity() {
         data,
         DataBuilder::new(),
         data.add_custom_work_interval_for("Name", interval),
-        "The entity 'Name' does not exist.",
+        "Name does not exist.",
         "Could add custom work interval for nonexistent entity"
     );
 }
@@ -49,7 +49,7 @@ fn add_overlapping_custom_work_interval() {
             .with_entity(entity)
             .with_custom_work_interval_for(entity, interval),
         data.add_custom_work_interval_for(entity, overlap),
-        "The given interval overlaps with other work intervals.",
+        "The given interval overlaps with others.",
         "Could add overlapping interval"
     );
 }
@@ -72,7 +72,7 @@ fn add_custom_work_interval_not_enough_free_time() {
             assert!(data.activities_sorted()[0].entities_sorted()[0] == entity);
             data.add_custom_work_interval_for(entity, custom_interval_too_short)
         },
-        "Entity will not have enough time for their activities using these custom work hours.",
+        "Entity will not have enough time if their work hours are shortened.",
         "Could add custom work interval which led to entity not having enough time"
     );
 }
@@ -151,7 +151,7 @@ fn remove_custom_work_interval_nonexistent_entity() {
         data,
         DataBuilder::new(),
         data.remove_custom_work_interval_for("Name", interval),
-        "The entity 'Name' does not exist.",
+        "Name does not exist.",
         "Could add custom work interval for nonexistent entity"
     );
 }
@@ -171,7 +171,7 @@ fn remove_custom_work_interval_not_enough_free_time() {
                 ..Default::default()
             }),
         data.remove_custom_work_interval_for(entity, interval),
-        "Entity will not have enough time for their activities once this interval is removed.",
+        "Entity will not have enough time if their work hours are shortened.",
         "Could remove custom work interval which led to entity having not enough free time"
     );
 }
@@ -196,7 +196,7 @@ fn remove_nonexistent_custom_work_interval() {
         data,
         DataBuilder::new().with_entity(entity),
         data.remove_custom_work_interval_for(entity, interval),
-        "The given time interval was not found.",
+        "The interval '08:00 - 12:00' does not exist.",
         "Could remove time interval even though there are none"
     );
 }
@@ -214,7 +214,7 @@ fn remove_custom_work_interval_beginning_different() {
             let same_end = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
             data.remove_custom_work_interval_for(entity, same_end)
         },
-        "The given time interval was not found.",
+        "The interval '09:00 - 12:00' does not exist.",
         "Could remove time interval with different beginning"
     );
 }
@@ -232,7 +232,7 @@ fn remove_custom_work_interval_end_different() {
             let same_beginning = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
             data.remove_custom_work_interval_for(entity, same_beginning)
         },
-        "The given time interval was not found.",
+        "The interval '08:00 - 11:00' does not exist.",
         "Could remove time interval with different end"
     );
 }
@@ -267,7 +267,7 @@ fn update_nonexistent_custom_interval() {
         data,
         DataBuilder::new().with_entity(entity),
         data.update_custom_work_interval_for(entity, interval, interval),
-        "The given time interval was not found.",
+        "The interval '08:00 - 12:00' does not exist.",
         "Could update nonexistent work interval"
     );
 }
@@ -279,7 +279,7 @@ fn update_custom_interval_nonexistent_entity() {
         data,
         DataBuilder::new(),
         data.update_custom_work_interval_for("Does not exist", interval, interval),
-        "The entity 'Does Not Exist' does not exist.",
+        "Does Not Exist does not exist.",
         "Could update custom work interval for nonexistent entity"
     );
 }
@@ -302,7 +302,7 @@ fn update_custom_time_interval_not_enough_time_for_activities() {
             let new_interval_too_short = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
             data.update_custom_work_interval_for(entity, interval, new_interval_too_short)
         },
-        "Entity does not have enough free time to reduce this interval.",
+        "Entity will not have enough time if their work hours are shortened.",
         "Could update interval which left entity with not enough time"
     );
 }
@@ -321,7 +321,7 @@ fn update_custom_time_interval_overlaps() {
             let new_interval_overlaps = TimeInterval::new(Time::new(10, 0), Time::new(15, 0));
             data.update_custom_work_interval_for(entity, interval1, new_interval_overlaps)
         },
-        "The given interval overlaps with other work intervals.",
+        "The given interval overlaps with others.",
         "Could add overlapping work interval"
     );
 }
@@ -533,7 +533,7 @@ fn free_time_of_wrong_entity() {
         data,
         DataBuilder::new(),
         data.free_time_of("Does not exist"),
-        "The entity 'Does Not Exist' does not exist.",
+        "Does Not Exist does not exist.",
         "Could get free time of nonexistent entity"
     );
 }

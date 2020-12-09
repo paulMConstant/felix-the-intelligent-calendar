@@ -1,6 +1,7 @@
 mod error_checks;
 
 use crate::data::{Data, TimeInterval};
+use crate::errors::Result;
 
 /// Operations on work hours
 impl Data {
@@ -31,7 +32,7 @@ impl Data {
     /// assert!(data.add_work_interval(overlapping_interval).is_err());
     /// ```
     #[must_use]
-    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
+    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.work_hours.add_work_interval(interval)
         // TODO update possible insertion times
     }
@@ -59,7 +60,7 @@ impl Data {
     /// assert!(data.remove_work_interval(interval).is_err());
     /// ```
     #[must_use]
-    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
+    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.check_entity_without_enough_time_to_remove_interval(interval.duration())?;
         self.work_hours.remove_work_interval(interval)
         // TODO update possible insertion times
@@ -90,7 +91,7 @@ impl Data {
         &mut self,
         old_interval: TimeInterval,
         new_interval: TimeInterval,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         // If the interval is shorter, check that entities still have time left
         self.check_entity_without_enough_time_to_update_interval(
             old_interval.duration(),

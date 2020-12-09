@@ -112,7 +112,7 @@ fn remove_entity_does_not_exist() {
         data,
         DataBuilder::new(),
         data.remove_entity("Other name"),
-        "The entity 'Other Name' does not exist.",
+        "Other Name does not exist.",
         "Could remove nonexistent entity"
     );
 }
@@ -148,7 +148,7 @@ fn get_invalid_entity() {
         data,
         DataBuilder::new(),
         data.remove_entity("Does not exist"),
-        "The entity 'Does Not Exist' does not exist.",
+        "Does Not Exist does not exist.",
         "Could remove invalid entity"
     );
 }
@@ -215,9 +215,9 @@ fn simple_rename_entity() {
         // Check that the entity with old name is removed
         assert_not_modified!(data, {
             assert_eq!(
-                data.entity(name),
-                Err("The entity 'Name' does not exist.".to_owned()),
-                "Could get renamed entity with old name"
+                format!("{}", data.entity(name).expect_err("Could get renamed entity with old name")),
+                "Name does not exist.",
+                "Got wrong error message"
             );
         });
     });
@@ -243,7 +243,7 @@ fn rename_entity_entity_already_exists() {
         data,
         DataBuilder::new().with_entities(vec![other_name, name]),
         data.set_entity_name(name, other_name),
-        "The name 'Other Name' is already taken by another entity.",
+        "The name 'Other Name' is already taken by an entity.",
         "Could rename with name taken by other entity"
     );
 }

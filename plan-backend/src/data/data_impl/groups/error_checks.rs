@@ -1,6 +1,7 @@
 //! Helper functions for groups implementation of data.
 
 use crate::data::{Activity, Data, Time};
+use crate::errors::{Result, name_taken::NameTaken, not_enough_time::NotEnoughTime};
 
 impl Data {
     /// Checks that the given entity has enough time to be added to the group.
@@ -14,7 +15,7 @@ impl Data {
         &self,
         group_name: &String,
         entity_name: &String,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         let entity_should_be_added_to_activity = |activity: &Activity| {
             activity.groups_sorted().contains(group_name)
                 && activity.entities_sorted().contains(entity_name) == false
@@ -36,10 +37,7 @@ impl Data {
         if free_time >= duration_of_added_activities {
             Ok(())
         } else {
-            Err(format!(
-                "{} does not have enough time for the activities of the group '{}'.",
-                entity_name, group_name
-            ))
+            Err(NotEnoughTime::added_to_group(entity_name, group_name))
         }
     }
 
@@ -52,17 +50,14 @@ impl Data {
     pub(in super::super::groups) fn check_name_taken_by_entity(
         &self,
         name: &String,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         if let Some(entity_name) = self
             .entities_sorted()
             .iter()
             .map(|entity| entity.name())
             .find(|entity_name| entity_name == name)
         {
-            Err(format!(
-                "The name '{}' is already taken by an entity.",
-                entity_name
-            ))
+            Err(NameTaken::name_taken_by_entity(entity_name))
         } else {
             Ok(())
         }

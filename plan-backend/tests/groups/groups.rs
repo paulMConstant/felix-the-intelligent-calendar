@@ -70,7 +70,7 @@ fn add_group_group_has_same_name() {
         data,
         DataBuilder::new().with_group(Group::default(group)),
         data.add_group(group),
-        "The group 'Group' already exists.",
+        "The name 'Group' is already taken by a group.",
         "Could add group with the same name as other group"
     );
 }
@@ -219,8 +219,8 @@ fn rename_group_name_taken_by_group() {
         DataBuilder::new()
             .with_groups(vec![Group::default(group_name), Group::default(other_name)]),
         data.set_group_name(group_name, other_name),
-        "The name 'Other Name' is already taken by another group.",
-        "Could add group with name taken by another group"
+        "The name 'Other Name' is already taken by a group.",
+        "Could add group with name taken by a group"
     );
 }
 

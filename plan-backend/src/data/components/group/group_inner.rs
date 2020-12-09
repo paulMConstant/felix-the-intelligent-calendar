@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use crate::errors::{Result, already_in::AlreadyIn, not_in::NotIn, name_taken::NameTaken};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupInner {
@@ -38,15 +39,11 @@ impl GroupInner {
     ///
     /// Returns Err if the entity is already in the group.
     #[must_use]
-    pub fn add_entity(&mut self, entity_name: String) -> Result<(), String> {
+    pub fn add_entity(&mut self, entity_name: String) -> Result<()> {
         if self.entities.insert(entity_name.clone()) {
             Ok(())
         } else {
-            Err(format!(
-                "{} is already a member of the group '{}'.",
-                entity_name,
-                self.name.clone()
-            ))
+            Err(AlreadyIn::entity_already_in_group(entity_name, self.name()))
         }
     }
 
@@ -56,15 +53,11 @@ impl GroupInner {
     ///
     /// Returns Err if the entity is not in the group.
     #[must_use]
-    pub fn remove_entity(&mut self, entity_name: &String) -> Result<(), String> {
+    pub fn remove_entity(&mut self, entity_name: &String) -> Result<()> {
         if self.entities.remove(entity_name) {
             Ok(())
         } else {
-            Err(format!(
-                "{} is not a member of the group '{}'.",
-                entity_name,
-                self.name.clone()
-            ))
+            Err(NotIn::entity_not_in_group(entity_name, self.name()))
         }
     }
 
@@ -80,20 +73,16 @@ impl GroupInner {
     /// Returns Err if the entity is not part of the group or if
     /// an entity with the new name is already in the group.
     #[must_use]
-    pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<(), String> {
+    pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<()> {
         if self.entities.contains(&new_name) {
-            return Err(format!("The entity '{}' already exists.", new_name));
+            return Err(NameTaken::name_taken_by_entity(new_name));
         };
 
         if self.entities.remove(old_name) {
             self.entities.insert(new_name);
             Ok(())
         } else {
-            Err(format!(
-                "{} is not taking part in the activity '{}'.",
-                old_name,
-                self.name()
-            ))
+            Err(NotIn::entity_not_in_activity(old_name, self.name()))
         }
     }
 }

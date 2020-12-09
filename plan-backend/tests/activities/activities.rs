@@ -110,7 +110,7 @@ fn remove_invalid_activity() {
         data,
         DataBuilder::new(),
         data.remove_activity(0),
-        "The activity with id 0 does not exist.",
+        "The activity with id '0' does not exist.",
         "Could remove an activity with wrong id"
     );
 }
@@ -135,7 +135,7 @@ fn get_activity_with_wrong_id() {
         data,
         DataBuilder::new(),
         data.activity(0),
-        "Cannot get activity with id 0.",
+        "The activity with id '0' does not exist.",
         "Could get activity with wrong id"
     );
 }
@@ -184,7 +184,7 @@ fn set_activity_name_invalid_id() {
         data,
         DataBuilder::new().with_activity(Activity::default()),
         data.set_activity_name(3, "New Name"),
-        "Cannot get activity with id 3.",
+        "The activity with id '3' does not exist.",
         "Could set name of activity with invalid id"
     );
 }
@@ -238,7 +238,7 @@ fn set_activity_duration_invalid_id() {
         data,
         DataBuilder::new().with_activity(Activity::default()),
         data.set_activity_duration(2, Time::new(1, 0)),
-        "Cannot get activity with id 2.",
+        "The activity with id '2' does not exist.",
         "Could set the duration of nonexistent activity"
     );
 }

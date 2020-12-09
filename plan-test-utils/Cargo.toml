@@ -1,20 +1,9 @@
 [package]
-name = "plan-gtk"
+name = "plan-test-utils"
 version = "0.1.0"
 authors = ["Paul Constant <constantpaul@hotmail.fr>"]
 edition = "2018"
 workspace = "../"
 
-build = "build.rs"
-
 [dependencies]
 plan-backend = { path = "../plan-backend" }
-glib = "0.10.3"
-
-[dependencies.gtk]
-version = "0.9.0"
-features = ["v3_22"]
-
-[dependencies.gio]
-version = ""
-features = ["v2_44"]

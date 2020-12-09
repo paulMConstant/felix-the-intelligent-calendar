@@ -12,7 +12,7 @@ fn en_display_interval_does_not_exist() {
 fn en_display_entity_does_not_exist() {
     let name = "Entity Name";
     let error = DoesNotExist::entity_does_not_exist(name);
-    assert_eq!(error.to_string(), "The entity 'Entity Name' does not exist.");
+    assert_eq!(error.to_string(), "Entity Name does not exist.");
 }
 
 #[test]

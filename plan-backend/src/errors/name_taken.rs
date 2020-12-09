@@ -45,12 +45,12 @@ impl Error for NameTaken {}
 
 impl NameTaken {
     // Constructors
-    pub fn name_taken_by_entity<S>(name: S) -> NameTaken where S: Into<String>, {
-        NameTaken { by: GroupOrEntity::Entity, name: name.into() }
+    pub fn name_taken_by_entity<S>(name: S) -> Box<NameTaken> where S: Into<String>, {
+        Box::new(NameTaken { by: GroupOrEntity::Entity, name: name.into() })
     }
 
-    pub fn name_taken_by_group<S>(name: S) -> NameTaken where S: Into<String>, {
-        NameTaken { by: GroupOrEntity::Group, name: name.into() }
+    pub fn name_taken_by_group<S>(name: S) -> Box<NameTaken> where S: Into<String>, {
+        Box::new(NameTaken { by: GroupOrEntity::Group, name: name.into() })
     }
 
     // Getters

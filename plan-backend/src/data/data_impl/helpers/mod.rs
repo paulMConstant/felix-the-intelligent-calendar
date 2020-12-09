@@ -1,10 +1,12 @@
+use crate::errors::{Result, empty_name::EmptyName};
+
 /// Removes multiple spaces and fix caps.
 ///
 /// # Errors
 ///
 /// Returns Err if the formatted string is empty.
 #[must_use]
-pub fn clean_string<S>(s: S) -> Result<String, String>
+pub fn clean_string<S>(s: S) -> Result<String>
 where
     S: Into<String>,
 {
@@ -15,7 +17,7 @@ where
         .collect::<Vec<String>>()
         .join(" ");
     if s.is_empty() {
-        Err("The given name is empty.".to_owned())
+        Err(EmptyName::new())
     } else {
         Ok(s)
     }

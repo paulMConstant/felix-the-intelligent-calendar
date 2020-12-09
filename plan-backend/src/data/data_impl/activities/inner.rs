@@ -1,8 +1,9 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::Data;
 use std::collections::HashSet;
 use std::iter::FromIterator;
+use crate::data::Data;
+use crate::errors::Result;
 
 impl Data {
     /// Returns all entities which participate in the given activity in more than one group.
@@ -15,7 +16,7 @@ impl Data {
         &self,
         activity_id: u16,
         group_name: &String,
-    ) -> Result<HashSet<String>, String> {
+    ) -> Result<HashSet<String>> {
         let all_participating_groups = self.activity(activity_id)?.groups_sorted();
         let entities_of_group =
             HashSet::from_iter(self.group(group_name)?.entities_sorted().into_iter());

@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use crate::errors::{Result, already_in::AlreadyIn, not_in::NotIn, name_taken::NameTaken};
 
 /// Simple structure holding non-computation related data : id, name, entities.
 ///
@@ -75,15 +76,11 @@ impl ActivityMetadata {
     ///
     /// Returns Err if the entity is already taking part in the activity.
     #[must_use]
-    pub fn add_entity(&mut self, entity: String) -> Result<(), String> {
+    pub fn add_entity(&mut self, entity: String) -> Result<()> {
         if self.entities.insert(entity.clone()) {
             Ok(())
         } else {
-            Err(format!(
-                "{} is already taking part in the activity '{}'.",
-                entity,
-                self.name()
-            ))
+            Err(AlreadyIn::entity_already_in_activity(entity, self.name()))
         }
     }
 
@@ -93,15 +90,11 @@ impl ActivityMetadata {
     ///
     /// Returns Err if the entity is not taking part in the activity.
     #[must_use]
-    pub fn remove_entity(&mut self, entity: &String) -> Result<(), String> {
+    pub fn remove_entity(&mut self, entity: &String) -> Result<()> {
         if self.entities.remove(entity) {
             Ok(())
         } else {
-            Err(format!(
-                "{} is not taking part in the activity '{}'.",
-                entity,
-                self.name()
-            ))
+            Err(NotIn::entity_not_in_activity(entity, self.name()))
         }
     }
 
@@ -112,20 +105,16 @@ impl ActivityMetadata {
     /// Returns Err if the entity is not taking part in the activity or if
     /// an entity with the new name is already taking part in the activity.
     #[must_use]
-    pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<(), String> {
+    pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<()> {
         if self.entities.contains(&new_name) {
-            return Err(format!("The entity '{}' already exists.", new_name));
+            return Err(NameTaken::name_taken_by_entity(new_name)); 
         };
 
         if self.entities.remove(old_name) {
             self.entities.insert(new_name);
             Ok(())
         } else {
-            Err(format!(
-                "{} is not taking part in the activity '{}'.",
-                old_name,
-                self.name()
-            ))
+            Err(NotIn::entity_not_in_activity(old_name, self.name()))
         }
     }
 
@@ -135,13 +124,9 @@ impl ActivityMetadata {
     ///
     /// Returns Err if the group is already taking part in the activity.
     #[must_use]
-    pub fn add_group(&mut self, group: String) -> Result<(), String> {
+    pub fn add_group(&mut self, group: String) -> Result<()> {
         if self.groups.contains(&group) {
-            Err(format!(
-                "The group '{}' is already in the activity '{}'.",
-                group,
-                self.name()
-            ))
+            Err(AlreadyIn::group_already_in_activity(group, self.name()))
         } else {
             self.groups.insert(group);
             Ok(())
@@ -154,16 +139,12 @@ impl ActivityMetadata {
     ///
     /// Returns Err if the group is already taking part in the activity.
     #[must_use]
-    pub fn remove_group(&mut self, group: &String) -> Result<(), String> {
+    pub fn remove_group(&mut self, group: &String) -> Result<()> {
         if self.groups.contains(group) {
             self.groups.remove(group);
             Ok(())
         } else {
-            Err(format!(
-                "The group '{}' is not in the activity '{}'.",
-                group,
-                self.name()
-            ))
+            Err(NotIn::group_not_in_activity(group, self.name()))
         }
     }
 
@@ -174,20 +155,16 @@ impl ActivityMetadata {
     /// Returns Err if the group is not taking part in the activity or
     /// if a group with this name is already present in the activity.
     #[must_use]
-    pub fn rename_group(&mut self, old_name: &String, new_name: String) -> Result<(), String> {
+    pub fn rename_group(&mut self, old_name: &String, new_name: String) -> Result<()> {
         if self.groups.contains(&new_name) {
-            return Err(format!("The group '{}' already exists.", new_name));
+            return Err(NameTaken::name_taken_by_group(new_name));
         };
 
         if self.groups.remove(old_name) {
             self.groups.insert(new_name);
             Ok(())
         } else {
-            Err(format!(
-                "The group '{}' is not taking part in the activity '{}'.",
-                old_name,
-                self.name()
-            ))
+            Err(NotIn::group_not_in_activity(old_name, self.name()))
         }
     }
 }

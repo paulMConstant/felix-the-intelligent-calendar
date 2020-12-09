@@ -24,7 +24,7 @@ pub enum ComponentType {
 ///
 /// let error = DoesNotExist::entity_does_not_exist("Entity Name");
 ///
-/// assert_eq!(format!("{}", error), "The entity 'Entity Name' does not exist.");
+/// assert_eq!(format!("{}", error), "Entity Name does not exist.");
 /// assert_eq!(error.what(), ComponentType::Entity);
 /// assert_eq!(error.who(), "Entity Name");
 /// ```
@@ -36,13 +36,19 @@ pub struct DoesNotExist {
 
 impl fmt::Display for DoesNotExist {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let does_not_exist = tr("does not exist");
+        if self.what == ComponentType::Entity {
+            write!(f, "{} {}.", self.who, does_not_exist)
+
+        } else {
         let what = match self.what {
-            ComponentType::Entity => tr("The entity"),
             ComponentType::TimeInterval => tr("The interval"),
             ComponentType::Group => tr("The group"),
             ComponentType::Activity => tr("The activity with id"),
+            ComponentType::Entity => panic!("This case should have been treated above"),
         };
-        write!(f, "{} '{}' {}.", what, self.who, tr("does not exist"))
+        write!(f, "{} '{}' {}.", what, self.who, does_not_exist)
+        }
     }
 }
 
@@ -51,23 +57,23 @@ impl Error for DoesNotExist {}
 impl DoesNotExist {
     // Constructors
     #[must_use]
-    pub fn interval_does_not_exist(interval: TimeInterval) -> DoesNotExist {
-        DoesNotExist { what: ComponentType::TimeInterval, who: interval.to_string() }
+    pub fn interval_does_not_exist(interval: TimeInterval) -> Box<DoesNotExist> {
+        Box::new(DoesNotExist { what: ComponentType::TimeInterval, who: interval.to_string() })
     }
 
     #[must_use]
-    pub fn entity_does_not_exist<S>(name: S) -> DoesNotExist where S: Into<String>, {
-        DoesNotExist { what: ComponentType::Entity, who: name.into() }
+    pub fn entity_does_not_exist<S>(name: S) -> Box<DoesNotExist> where S: Into<String>, {
+        Box::new(DoesNotExist { what: ComponentType::Entity, who: name.into() })
     }
 
     #[must_use]
-    pub fn group_does_not_exist<S>(name: S) -> DoesNotExist where S: Into<String>, {
-        DoesNotExist { what: ComponentType::Group, who: name.into() }
+    pub fn group_does_not_exist<S>(name: S) -> Box<DoesNotExist> where S: Into<String>, {
+        Box::new(DoesNotExist { what: ComponentType::Group, who: name.into() })
     }
     
     #[must_use]
-    pub fn activity_does_not_exist(id: u16) -> DoesNotExist {
-        DoesNotExist { what: ComponentType::Activity, who: id.to_string() }
+    pub fn activity_does_not_exist(id: u16) -> Box<DoesNotExist> {
+        Box::new(DoesNotExist { what: ComponentType::Activity, who: id.to_string() })
     }
 
     // Getters

@@ -28,8 +28,8 @@ impl Error for IntervalOverlaps {}
 impl IntervalOverlaps {
     // Constructors
     #[must_use]
-    pub fn new() -> IntervalOverlaps {
-        IntervalOverlaps { }
+    pub fn new() -> Box<IntervalOverlaps> {
+        Box::new(IntervalOverlaps { })
     }
 }
 

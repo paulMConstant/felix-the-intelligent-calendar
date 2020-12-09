@@ -30,8 +30,12 @@ mod time {
 }
 
 mod errors {
+    mod already_in;
+    mod duration_too_short;
     mod does_not_exist;
     mod name_taken;
+    mod empty_name;
+    mod not_in;
     mod interval_overlaps;
     mod not_enough_time;
 }

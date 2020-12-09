@@ -1,5 +1,6 @@
 use crate::data::{Entity, TimeInterval};
 use std::collections::HashMap;
+use crate::errors::{Result, does_not_exist::DoesNotExist, name_taken::NameTaken};
 
 /// Manages the entities. Makes sure there are no duplicates.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -30,10 +31,10 @@ impl Entities {
     ///
     /// Returns Err if the entity does not exist.
     #[must_use]
-    pub fn get_by_name(&self, name: &String) -> Result<&Entity, String> {
+    pub fn get_by_name(&self, name: &String) -> Result<&Entity> {
         match self.entities.get(name) {
             Some(entity) => Ok(entity),
-            None => Err(format!("The entity '{}' does not exist.", name)),
+            None => Err(DoesNotExist::entity_does_not_exist(name)),
         }
     }
 
@@ -46,10 +47,10 @@ impl Entities {
     /// Keep this function private !
     /// No mutable access to elements of the collection should be granted.
     #[must_use]
-    fn get_mut_by_name(&mut self, name: &String) -> Result<&mut Entity, String> {
+    fn get_mut_by_name(&mut self, name: &String) -> Result<&mut Entity> {
         match self.entities.get_mut(name) {
             Some(entity) => Ok(entity),
-            None => Err(format!("The entity '{}' does not exist.", name)),
+            None => Err(DoesNotExist::entity_does_not_exist(name)),
         }
     }
 
@@ -59,12 +60,9 @@ impl Entities {
     ///
     /// Returns Err if the name is already taken.
     #[must_use]
-    pub fn add(&mut self, name: String) -> Result<(), String> {
+    pub fn add(&mut self, name: String) -> Result<()> {
         if self.entities.contains_key(&name) {
-            Err(format!(
-                "The name '{}' is already taken by an entity.",
-                name
-            ))
+            Err(NameTaken::name_taken_by_entity(name))
         } else {
             self.entities.insert(name.clone(), Entity::new(name));
             Ok(())
@@ -77,10 +75,10 @@ impl Entities {
     ///
     /// Returns Err if the entity does not exist.
     #[must_use]
-    pub fn remove(&mut self, name: &String) -> Result<(), String> {
+    pub fn remove(&mut self, name: &String) -> Result<()> {
         match self.entities.remove(name) {
             Some(_) => Ok(()),
-            None => Err(format!("The entity '{}' does not exist.", name)),
+            None => Err(DoesNotExist::entity_does_not_exist(name)),
         }
     }
 
@@ -90,12 +88,9 @@ impl Entities {
     ///
     /// Returns Err if the entity does not exist or if the new name is already taken.
     #[must_use]
-    pub fn set_name_of(&mut self, old_name: &String, new_name: String) -> Result<(), String> {
+    pub fn set_name_of(&mut self, old_name: &String, new_name: String) -> Result<()> {
         if self.entities.contains_key(&new_name) {
-            Err(format!(
-                "The name '{}' is already taken by another entity.",
-                new_name
-            ))
+            Err(NameTaken::name_taken_by_entity(new_name))
         } else {
             // We have to change the key and the value
             match self.entities.remove(old_name) {
@@ -103,8 +98,8 @@ impl Entities {
                     entity.inner.set_name(new_name.clone());
                     self.entities.insert(new_name, entity);
                     Ok(())
-                }
-                None => Err(format!("The entity '{}' does not exist.", old_name)),
+                },
+                None => Err(DoesNotExist::entity_does_not_exist(old_name)),
             }
         }
     }
@@ -115,7 +110,7 @@ impl Entities {
     ///
     /// Returns Err if the entity is not found.
     #[must_use]
-    pub fn set_mail_of(&mut self, entity_name: &String, mail: String) -> Result<(), String> {
+    pub fn set_mail_of(&mut self, entity_name: &String, mail: String) -> Result<()> {
         self.get_mut_by_name(entity_name)?.inner.set_mail(mail);
         Ok(())
     }
@@ -126,7 +121,7 @@ impl Entities {
     ///
     /// Returns Err if the entity is not found.
     #[must_use]
-    pub fn set_send_mail_to(&mut self, entity_name: &String, send: bool) -> Result<(), String> {
+    pub fn set_send_mail_to(&mut self, entity_name: &String, send: bool) -> Result<()> {
         self.get_mut_by_name(entity_name)?
             .inner
             .set_send_me_a_mail(send);
@@ -143,7 +138,7 @@ impl Entities {
         &mut self,
         entity_name: &String,
         interval: TimeInterval,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         self.get_mut_by_name(entity_name)?
             .inner
             .add_work_interval(interval)
@@ -159,7 +154,7 @@ impl Entities {
         &mut self,
         entity_name: &String,
         interval: TimeInterval,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         self.get_mut_by_name(entity_name)?
             .inner
             .remove_work_interval(interval)
@@ -177,7 +172,7 @@ impl Entities {
         entity_name: &String,
         old_interval: TimeInterval,
         new_interval: TimeInterval,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         self.get_mut_by_name(entity_name)?
             .inner
             .update_work_interval(old_interval, new_interval)

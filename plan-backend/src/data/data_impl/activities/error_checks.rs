@@ -1,6 +1,7 @@
 //! Helper functions for activity implementation of data.
 
 use crate::data::{Data, Time};
+use crate::errors::{Result, not_enough_time::NotEnoughTime};
 
 impl Data {
     /// Returns the first entity which does not have enough time to change the duration of the
@@ -14,7 +15,7 @@ impl Data {
         &self,
         id: u16,
         new_duration: Time,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         let activity = self.activity(id)?;
         let current_duration = activity.duration();
 
@@ -34,10 +35,7 @@ impl Data {
                 })
                 .cloned()
             {
-                Err(format!(
-                    "{} does not have enough time for the new duration.",
-                    entity_name
-                ))
+                Err(NotEnoughTime::activity_duration_too_long_for(entity_name, activity.name()))
             } else {
                 Ok(())
             }
@@ -55,14 +53,12 @@ impl Data {
         &self,
         activity_id: u16,
         entity_name: &String,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         if self.has_enough_time_for_activity(activity_id, &entity_name)? {
             Ok(())
         } else {
-            Err(format!(
-                "{} does not have enough time left for this activity.",
-                entity_name
-            ))
+            let activity = self.activity(activity_id)?;
+            Err(NotEnoughTime::activity_added_for(entity_name, activity.name()))
         }
     }
 
@@ -77,15 +73,13 @@ impl Data {
         &self,
         activity_id: u16,
         entities: &Vec<String>,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         // TODO use try_find
         // Check that each entity has enough time
         for entity_name in entities {
             if self.has_enough_time_for_activity(activity_id, entity_name)? == false {
-                return Err(format!(
-                    "'{}' does not have enough time left for this activity.",
-                    entity_name
-                ));
+                let activity = self.activity(activity_id)?;
+                return Err(NotEnoughTime::activity_added_for(entity_name, activity.name()));
             }
         }
         Ok(())
@@ -101,7 +95,7 @@ impl Data {
         &self,
         activity_id: u16,
         entity_name: &String,
-    ) -> Result<bool, String> {
+    ) -> Result<bool> {
         let free_time = self.free_time_of(entity_name)?;
         Ok(free_time >= self.activity(activity_id)?.duration())
     }

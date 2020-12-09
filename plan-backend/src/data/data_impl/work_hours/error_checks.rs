@@ -1,6 +1,7 @@
 //! Helper functions for work_hours implementation of data.
 
 use crate::data::{Data, Time};
+use crate::errors::{Result, not_enough_time::NotEnoughTime};
 
 impl Data {
     /// Checks if an entity has not enough time to update a work interval.
@@ -13,16 +14,13 @@ impl Data {
         &self,
         old_duration: Time,
         new_duration: Time,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         if new_duration >= old_duration {
             Ok(())
         } else {
             let required_free_time = old_duration - new_duration;
             if let Some(entity_name) = self.entity_with_free_time_less_than(required_free_time) {
-                Err(format!(
-                    "{} does not have enough free time to reduce this interval.",
-                    entity_name
-                ))
+                Err(NotEnoughTime::work_hours_shortened_for(entity_name))
             } else {
                 Ok(())
             }
@@ -38,12 +36,9 @@ impl Data {
     pub(in super::super::work_hours) fn check_entity_without_enough_time_to_remove_interval(
         &self,
         interval_duration: Time,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         if let Some(entity_name) = self.entity_with_free_time_less_than(interval_duration) {
-            Err(format!(
-                "{} does not have enough time left. Free up their time before removing the work interval.",
-                entity_name
-            ))
+            Err(NotEnoughTime::work_hours_shortened_for(entity_name))
         } else {
             Ok(())
         }

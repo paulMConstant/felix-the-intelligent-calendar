@@ -1,5 +1,6 @@
 use super::Group;
 use std::collections::HashMap;
+use crate::errors::{Result, does_not_exist::DoesNotExist, name_taken::NameTaken};
 
 /// Manages groups.
 ///
@@ -33,10 +34,10 @@ impl Groups {
     ///
     /// Returns Err if the group does not exist.
     #[must_use]
-    pub fn get_by_name(&self, name: &String) -> Result<&Group, String> {
+    pub fn get_by_name(&self, name: &String) -> Result<&Group> {
         match self.groups.get(name) {
             Some(group) => Ok(group),
-            None => Err(format!("The group '{}' does not exist.", name)),
+            None => Err(DoesNotExist::group_does_not_exist(name)),
         }
     }
 
@@ -46,9 +47,9 @@ impl Groups {
     ///
     /// Returns Err if a group with the same name exists.
     #[must_use]
-    pub fn add(&mut self, name: String) -> Result<(), String> {
+    pub fn add(&mut self, name: String) -> Result<()> {
         if self.groups.contains_key(&name) {
-            Err(format!("The group '{}' already exists.", name))
+            Err(NameTaken::name_taken_by_group(name))
         } else {
             self.groups.insert(name.clone(), Group::new(name));
             Ok(())
@@ -61,10 +62,10 @@ impl Groups {
     ///
     /// Returns Err if the group is not found.
     #[must_use]
-    pub fn remove(&mut self, name: &String) -> Result<(), String> {
+    pub fn remove(&mut self, name: &String) -> Result<()> {
         match self.groups.remove(name) {
             Some(_) => Ok(()),
-            None => Err(format!("The group '{}' does not exist.", name)),
+            None => Err(DoesNotExist::group_does_not_exist(name)),
         }
     }
 
@@ -78,13 +79,13 @@ impl Groups {
         &mut self,
         group_name: &String,
         entity_name: String,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
                 group.inner.add_entity(entity_name)?;
                 Ok(())
             }
-            None => Err(format!("The group '{}' does not exist.", group_name)),
+            None => Err(DoesNotExist::group_does_not_exist(group_name)),
         }
     }
 
@@ -98,13 +99,13 @@ impl Groups {
         &mut self,
         group_name: &String,
         entity_name: &String,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
                 group.inner.remove_entity(entity_name)?;
                 Ok(())
             }
-            None => Err(format!("The group '{}' does not exist.", group_name)),
+            None => Err(DoesNotExist::group_does_not_exist(group_name)),
         }
     }
 
@@ -114,12 +115,9 @@ impl Groups {
     ///
     /// Returns Err if the group is not found or if a group already has this name.
     #[must_use]
-    pub fn set_name_of(&mut self, old_name: &String, new_name: String) -> Result<(), String> {
+    pub fn set_name_of(&mut self, old_name: &String, new_name: String) -> Result<()> {
         if self.groups.contains_key(&new_name) {
-            Err(format!(
-                "The name '{}' is already taken by another group.",
-                new_name
-            ))
+            Err(NameTaken::name_taken_by_group(new_name))
         } else {
             // We have to change the key and the value
             match self.groups.remove(old_name) {
@@ -128,7 +126,7 @@ impl Groups {
                     self.groups.insert(new_name, group);
                     Ok(())
                 }
-                None => Err(format!("The group '{}' does not exist.", old_name)),
+                None => Err(DoesNotExist::group_does_not_exist(old_name)),
             }
         }
     }

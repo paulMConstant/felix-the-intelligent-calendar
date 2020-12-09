@@ -1,6 +1,7 @@
 //! Helper functions for entities implementation of data.
 
 use crate::data::{Data, Time};
+use crate::errors::Result;
 
 impl Data {
     /// Returns the time taken by the activities of an entity.
@@ -33,7 +34,7 @@ impl Data {
     pub(in super::super::entities) fn total_available_time(
         &self,
         entity_name: &String,
-    ) -> Result<Time, String> {
+    ) -> Result<Time> {
         Ok(self
             .work_hours_of(entity_name)?
             .iter()

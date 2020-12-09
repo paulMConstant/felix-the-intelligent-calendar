@@ -47,7 +47,7 @@ fn add_entity_to_group_already_in_group() {
                 entities: vec![entity_name]
             }),
         data.add_entity_to_group(group_name, entity_name),
-        "Entity is already a member of the group 'Group'.",
+        "Entity is already in the group 'Group'.",
         "Could add the same entity to the same group twice"
     );
 }
@@ -59,7 +59,7 @@ fn add_nonexistent_entity_to_group() {
         data,
         DataBuilder::new().with_group(Group::default(group_name)),
         data.add_entity_to_group(group_name, "entity"),
-        "The entity 'Entity' does not exist.",
+        "Entity does not exist.",
         "Could add nonexistent entity to group"
     );
 }
@@ -136,7 +136,7 @@ fn add_entity_to_group_not_enough_time_left() {
                 ..Default::default()
             }),
         data.add_entity_to_group(group, entity),
-        "Entity does not have enough time for the activities of the group 'Group'.",
+        "Entity will not have enough time if they take part in the activities of the group 'Group'.",
         "Could add entity with not enough time to group"
     );
 }
@@ -175,7 +175,7 @@ fn remove_entity_not_in_group() {
             .with_entity(entity)
             .with_group(Group::default(group)),
         data.remove_entity_from_group(group, entity),
-        "Entity is not a member of the group 'Group'.",
+        "Entity is not in the group 'Group'.",
         "Could remove entity which is not a member of a group"
     );
 }
@@ -187,7 +187,7 @@ fn remove_nonexistent_entity_from_group() {
         data,
         DataBuilder::new().with_group(Group::default(group)),
         data.remove_entity_from_group(group, "Does not exist"),
-        "The entity 'Does Not Exist' does not exist.",
+        "Does Not Exist does not exist.",
         "Could remove nonexistent entity from group"
     );
 }

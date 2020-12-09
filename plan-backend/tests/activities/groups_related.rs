@@ -110,7 +110,7 @@ fn add_group_activity_does_not_exist() {
         data,
         DataBuilder::new().with_group(Group::default(group_name)),
         data.add_group_to_activity(123, group_name),
-        "Cannot get activity with id 123.",
+        "The activity with id '123' does not exist.",
         "Could add group to nonexistent activity"
     );
 }
@@ -217,7 +217,7 @@ fn add_group_check_entities_have_enough_time() {
             let id = data.activities_sorted()[0].id();
             data.add_group_to_activity(id, group_name)
         },
-        "'Entity' does not have enough time left for this activity.",
+        "Entity will not have enough time if they are added to 'Activity'.",
         "Could add group in which a participant does not have enough free time"
     );
 }
@@ -289,7 +289,7 @@ fn remove_group_from_activity_activity_does_not_exist() {
             .with_group(Group::default(group_name))
             .with_activity(Activity::default()),
         data.remove_group_from_activity(193, group_name),
-        "Cannot get activity with id 193.",
+        "The activity with id '193' does not exist.",
         "Could remove group from activity with empty name"
     );
 }

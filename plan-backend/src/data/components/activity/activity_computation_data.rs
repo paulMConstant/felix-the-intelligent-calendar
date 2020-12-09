@@ -1,5 +1,6 @@
 use crate::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 use std::collections::HashSet;
+use crate::errors::{Result, duration_too_short::DurationTooShort};
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.
@@ -57,9 +58,9 @@ impl ActivityComputationData {
     /// # Errors
     ///
     /// Returns Err if the duration is too short (< MIN\_TIME\_DISCRETIZATION).
-    pub fn set_duration(&mut self, duration: Time) -> Result<(), String> {
+    pub fn set_duration(&mut self, duration: Time) -> Result<()> {
         if duration < MIN_TIME_DISCRETIZATION {
-            Err("The given duration is too short.".to_owned())
+            Err(DurationTooShort::new())
         } else {
             self.duration = duration;
             Ok(())

@@ -2,6 +2,7 @@ mod error_checks;
 
 use super::helpers::clean_string;
 use crate::data::{Data, Group};
+use crate::errors::Result;
 
 /// Operations on groups
 impl Data {
@@ -31,7 +32,7 @@ impl Data {
     /// assert!(data.entity(invalid_name).is_err());
     /// ```
     #[must_use]
-    pub fn group<S>(&self, name: S) -> Result<&Group, String>
+    pub fn group<S>(&self, name: S) -> Result<&Group>
     where
         S: Into<String>,
     {
@@ -55,7 +56,7 @@ impl Data {
     /// assert_eq!(data.groups_sorted().len(), 1);
     /// ```
     #[must_use]
-    pub fn add_group<S>(&mut self, name: S) -> Result<String, String>
+    pub fn add_group<S>(&mut self, name: S) -> Result<String>
     where
         S: Into<String>,
     {
@@ -85,7 +86,7 @@ impl Data {
     /// assert!(data.groups_sorted().is_empty());
     /// ```
     #[must_use]
-    pub fn remove_group<S>(&mut self, name: S) -> Result<(), String>
+    pub fn remove_group<S>(&mut self, name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -123,7 +124,7 @@ impl Data {
         &mut self,
         group_name: S1,
         entity_name: S2,
-    ) -> Result<(), String>
+    ) -> Result<()>
     where
         S1: Into<String>,
         S2: Into<String>,
@@ -170,7 +171,7 @@ impl Data {
         &mut self,
         group_name: S1,
         entity_name: S2,
-    ) -> Result<(), String>
+    ) -> Result<()>
     where
         S1: Into<String>,
         S2: Into<String>,
@@ -192,7 +193,7 @@ impl Data {
     /// Returns Err if the group does not exist, if any formatted name is empty
     /// or if the name is already taken.
     #[must_use]
-    pub fn set_group_name<S1, S2>(&mut self, old_name: S1, new_name: S2) -> Result<String, String>
+    pub fn set_group_name<S1, S2>(&mut self, old_name: S1, new_name: S2) -> Result<String>
     where
         S1: Into<String>,
         S2: Into<String>,

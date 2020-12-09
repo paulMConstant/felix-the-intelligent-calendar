@@ -23,7 +23,7 @@ fn add_overlapping_interval() {
         data,
         DataBuilder::new().with_work_interval(interval),
         data.add_work_interval(overlap),
-        "The given interval overlaps with other work intervals.",
+        "The given interval overlaps with others.",
         "Could add overlapping interval"
     );
 }
@@ -84,7 +84,7 @@ fn remove_nonexistent_time_interval() {
         data,
         DataBuilder::new(),
         data.remove_work_interval(interval),
-        "The given time interval was not found.",
+        "The interval '08:00 - 12:00' does not exist.",
         "Could remove time interval even though there are none"
     );
 }
@@ -97,7 +97,7 @@ fn remove_interval_wrong_beginning() {
         data,
         DataBuilder::new().with_work_interval(interval),
         data.remove_work_interval(same_end),
-        "The given time interval was not found.",
+        "The interval '09:00 - 12:00' does not exist.",
         "Could remove interval with same end but different beginning"
     );
 }
@@ -110,7 +110,7 @@ fn remove_interval_wrong_end() {
         data,
         DataBuilder::new().with_work_interval(interval),
         data.remove_work_interval(same_beginning),
-        "The given time interval was not found.",
+        "The interval '08:00 - 11:00' does not exist.",
         "Could remove interval with same beginning but different end"
     );
 }
@@ -125,7 +125,8 @@ fn remove_time_interval_not_enough_time_for_activities() {
               .with_entity(entity)
               .with_activity(Activity{entities: vec![entity], duration: Time::new(1, 0),
               ..Default::default()}),
-        data.remove_work_interval(interval),"Entity does not have enough time left. Free up their time before removing the work interval.",
+        data.remove_work_interval(interval),
+        "Entity will not have enough time if their work hours are shortened.",
         "Could remove interval which led to entity not having enough time"
     );
 }
@@ -149,7 +150,7 @@ fn update_nonexistent_interval() {
         data,
         DataBuilder::new(),
         data.update_work_interval(interval, interval),
-        "The given time interval was not found.",
+        "The interval '08:00 - 12:00' does not exist.",
         "Could update nonexistent work interval"
     );
 }
@@ -172,7 +173,7 @@ fn update_time_interval_not_enough_time_for_activities() {
             let new_interval_too_short = TimeInterval::new(Time::new(9, 0), Time::new(12, 0));
             data.update_work_interval(interval, new_interval_too_short)
         },
-        "Entity does not have enough free time to reduce this interval.",
+        "Entity will not have enough time if their work hours are shortened.",
         "Could update interval which left entity with not enough time"
     );
 }
@@ -186,7 +187,7 @@ fn update_time_interval_overlaps() {
         data,
         DataBuilder::new().with_work_intervals(vec![interval1, interval2]),
         data.update_work_interval(interval1, new_interval_overlaps),
-        "The given interval overlaps with other work intervals.",
+        "The given interval overlaps with others.",
         "Could add overlapping work interval"
     );
 }

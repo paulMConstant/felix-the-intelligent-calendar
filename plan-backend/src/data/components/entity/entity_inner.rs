@@ -1,5 +1,6 @@
 use super::super::super::WorkHours;
 use crate::data::TimeInterval;
+use crate::errors::Result;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EntityInner {
@@ -66,7 +67,7 @@ impl EntityInner {
     ///
     /// Returns Err if the interval is overlapping with an existing one.
     #[must_use]
-    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
+    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.custom_work_hours.add_work_interval(interval)
     }
 
@@ -76,7 +77,7 @@ impl EntityInner {
     ///
     /// Returns Err if the interval is not found.
     #[must_use]
-    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<(), String> {
+    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.custom_work_hours.remove_work_interval(interval)
     }
 
@@ -91,7 +92,7 @@ impl EntityInner {
         &mut self,
         old_interval: TimeInterval,
         new_interval: TimeInterval,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         self.custom_work_hours
             .update_work_interval(old_interval, new_interval)
     }

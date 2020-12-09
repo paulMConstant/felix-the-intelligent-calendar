@@ -71,7 +71,7 @@ fn add_entity_not_enough_time() {
             let id = data.activities_sorted()[0].id();
             data.add_entity_to_activity(id, name)
         },
-        "Entity does not have enough time left for this activity.",
+        "Entity will not have enough time if they are added to 'Activity'.",
         "Could add entity with not enough time"
     );
 }
@@ -93,7 +93,7 @@ fn add_entity_already_participating() {
             let id = data.activities_sorted()[0].id();
             data.add_entity_to_activity(id, entity_name)
         },
-        "Entity is already taking part in the activity 'Activity'.",
+        "Entity is already in the activity 'Activity'.",
         "Could add the same entity twice"
     );
 }
@@ -108,7 +108,7 @@ fn add_entity_wrong_id() {
             .with_entity(entity_name)
             .with_activity(Activity::default()),
         data.add_entity_to_activity(4, entity_name),
-        "Cannot get activity with id 4.",
+        "The activity with id '4' does not exist.",
         "Could add entity to activity with wrong id"
     );
 }
@@ -124,7 +124,7 @@ fn add_entity_does_not_exist() {
             let id = data.activities_sorted()[0].id();
             data.add_entity_to_activity(id, "Does not exist")
         },
-        "The entity 'Does Not Exist' does not exist.",
+        "Does Not Exist does not exist.",
         "Could add nonexistent entity to activity"
     );
 }
@@ -166,7 +166,7 @@ fn remove_entity_does_not_exist() {
             let id = data.activities_sorted()[0].id();
             data.remove_entity_from_activity(id, "Does not exist")
         },
-        "The entity 'Does Not Exist' does not exist.",
+        "Does Not Exist does not exist.",
         "Could remove nonexistent entity"
     );
 }
@@ -187,7 +187,7 @@ fn remove_entity_not_participating() {
             let id = data.activities_sorted()[0].id();
             data.remove_entity_from_activity(id, entity_name)
         },
-        "Entity is not taking part in the activity 'Activity'.",
+        "Entity is not in the activity 'Activity'.",
         "Could remove entity not taking part in the activity"
     );
 }
@@ -201,7 +201,7 @@ fn remove_entity_wrong_activity_id() {
             .with_activity(Activity::default())
             .with_entity(entity_name),
         data.remove_entity_from_activity(15, entity_name),
-        "Cannot get activity with id 15.",
+        "The activity with id '15' does not exist.",
         "Could remove entity from nonexsistent activity"
     );
 }
@@ -225,7 +225,7 @@ fn set_activity_duration_not_enough_free_time() {
 
             data.set_activity_duration(id, Time::new(2, 0))
         },
-        "Entity does not have enough time for the new duration.",
+        "Entity will not have enough time if the duration of 'Activity' is increased.",
         "Could set duration where an entity has not enough free time"
     );
 }

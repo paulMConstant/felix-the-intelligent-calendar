@@ -3,6 +3,7 @@ mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Data, Entity, Time, TimeInterval};
+use crate::errors::Result;
 
 /// Operations on entities
 impl Data {
@@ -32,7 +33,7 @@ impl Data {
     /// assert!(data.entity(invalid_name).is_err());
     /// ```
     #[must_use]
-    pub fn entity<S>(&self, name: S) -> Result<&Entity, String>
+    pub fn entity<S>(&self, name: S) -> Result<&Entity>
     where
         S: Into<String>,
     {
@@ -58,7 +59,7 @@ impl Data {
     /// assert!(data.add_entity(name).is_err());
     /// ```
     #[must_use]
-    pub fn add_entity<S>(&mut self, name: S) -> Result<String, String>
+    pub fn add_entity<S>(&mut self, name: S) -> Result<String>
     where
         S: Into<String>,
     {
@@ -89,7 +90,7 @@ impl Data {
     /// assert!(data.remove_entity(name).is_err());
     /// ```
     #[must_use]
-    pub fn remove_entity<S>(&mut self, name: S) -> Result<(), String>
+    pub fn remove_entity<S>(&mut self, name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -127,7 +128,7 @@ impl Data {
     /// assert!(data.set_entity_name(invalid_name, "other name").is_err());
     /// ```
     #[must_use]
-    pub fn set_entity_name<S1, S2>(&mut self, old_name: S1, new_name: S2) -> Result<String, String>
+    pub fn set_entity_name<S1, S2>(&mut self, old_name: S1, new_name: S2) -> Result<String>
     where
         S1: Into<String>,
         S2: Into<String>,
@@ -167,7 +168,7 @@ impl Data {
     /// assert_eq!(data.entity(name).unwrap().mail(), mail);
     /// ```
     #[must_use]
-    pub fn set_entity_mail<S1, S2>(&mut self, entity_name: S1, mail: S2) -> Result<(), String>
+    pub fn set_entity_mail<S1, S2>(&mut self, entity_name: S1, mail: S2) -> Result<()>
     where
         S1: Into<String>,
         S2: Into<String>,
@@ -196,7 +197,7 @@ impl Data {
     /// assert!(data.entity(name).unwrap().send_me_a_mail());
     /// ```
     #[must_use]
-    pub fn set_send_mail_to<S>(&mut self, entity_name: S, send: bool) -> Result<(), String>
+    pub fn set_send_mail_to<S>(&mut self, entity_name: S, send: bool) -> Result<()>
     where
         S: Into<String>,
     {
@@ -232,7 +233,7 @@ impl Data {
     /// assert_eq!(data.free_time_of(name).unwrap(), Time::new(3, 0));
     /// ```
     #[must_use]
-    pub fn free_time_of<S>(&self, entity_name: S) -> Result<Time, String>
+    pub fn free_time_of<S>(&self, entity_name: S) -> Result<Time>
     where
         S: Into<String>,
     {
@@ -274,7 +275,7 @@ impl Data {
     /// assert_eq!(data.work_hours_of(name).unwrap(), expected);
     /// ```
     #[must_use]
-    pub fn work_hours_of<S>(&self, entity_name: S) -> Result<Vec<TimeInterval>, String>
+    pub fn work_hours_of<S>(&self, entity_name: S) -> Result<Vec<TimeInterval>>
     where
         S: Into<String>,
     {
@@ -313,7 +314,7 @@ impl Data {
         &mut self,
         entity_name: S,
         interval: TimeInterval,
-    ) -> Result<(), String>
+    ) -> Result<()>
     where
         S: Into<String>,
     {
@@ -358,7 +359,7 @@ impl Data {
         &mut self,
         entity_name: S,
         interval: TimeInterval,
-    ) -> Result<(), String>
+    ) -> Result<()>
     where
         S: Into<String>,
     {
@@ -404,7 +405,7 @@ impl Data {
         entity_name: S,
         old_interval: TimeInterval,
         new_interval: TimeInterval,
-    ) -> Result<(), String>
+    ) -> Result<()>
     where
         S: Into<String>,
     {
