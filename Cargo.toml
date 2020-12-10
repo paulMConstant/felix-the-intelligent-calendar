@@ -3,5 +3,5 @@
 members = [
     "plan-backend",
     "plan-gtk",
-    "plan-test-utils",
+    "plan-backend/test-utils",
 ]

@@ -9,5 +9,5 @@ workspace = "../"
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 
 [dev-dependencies]
-plan-test-utils = { path = "../plan-test-utils" }
+test-utils = { path = "test-utils" }
 assert-not-modified = "1.0.0"

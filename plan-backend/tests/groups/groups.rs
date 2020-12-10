@@ -7,7 +7,7 @@
 //! - Getter
 //! - Edition (name)
 
-use plan_test_utils::data_builder::{DataBuilder, Group};
+use test_utils::data_builder::{DataBuilder, Group};
 
 // Test organization
 // - Add group

@@ -8,7 +8,7 @@
 //! - Getter for activity
 
 use plan_backend::data::Time;
-use plan_test_utils::data_builder::{Activity, DataBuilder};
+use test_utils::data_builder::{Activity, DataBuilder};
 
 // *** Add ***
 #[test]

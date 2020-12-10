@@ -1,7 +1,7 @@
 #[macro_use]
-extern crate plan_test_utils;
+extern crate test_utils;
 
-use plan_test_utils::data_builder::{DataBuilder, Activity, Group};
+use test_utils::data_builder::{DataBuilder, Activity, Group};
 use plan_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 
 #[test]

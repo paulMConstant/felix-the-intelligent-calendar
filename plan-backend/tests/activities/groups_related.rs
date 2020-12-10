@@ -4,7 +4,7 @@
 //! - Addition of groups to the activity
 //! - Deletion of groups from the activity
 
-use plan_test_utils::data_builder::{Activity, DataBuilder, Group};
+use test_utils::data_builder::{Activity, DataBuilder, Group};
 
 // *** Add groups ***
 #[test]
