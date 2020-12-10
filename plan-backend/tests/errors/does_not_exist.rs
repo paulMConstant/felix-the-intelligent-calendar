@@ -1,11 +1,14 @@
 use plan_backend::data::{Time, TimeInterval};
-use plan_backend::errors::does_not_exist::{DoesNotExist, ComponentType};
+use plan_backend::errors::does_not_exist::{ComponentType, DoesNotExist};
 
 #[test]
 fn en_display_interval_does_not_exist() {
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 30));
     let error = DoesNotExist::interval_does_not_exist(interval);
-    assert_eq!(error.to_string(), "The interval '08:00 - 12:30' does not exist.");
+    assert_eq!(
+        error.to_string(),
+        "The interval '08:00 - 12:30' does not exist."
+    );
 }
 
 #[test]
@@ -26,29 +29,24 @@ fn en_display_group_does_not_exist() {
 fn en_display_activity_does_not_exist() {
     let id = 3;
     let error = DoesNotExist::activity_does_not_exist(id);
-    assert_eq!(error.to_string(), "The activity with id '3' does not exist.");
+    assert_eq!(
+        error.to_string(),
+        "The activity with id '3' does not exist."
+    );
 }
 
 // TODO translate
 #[test]
-fn fr_display_interval_does_not_exist() {
-
-}
+fn fr_display_interval_does_not_exist() {}
 
 #[test]
-fn fr_display_entity_does_not_exist() {
-
-}
+fn fr_display_entity_does_not_exist() {}
 
 #[test]
-fn fr_display_group_does_not_exist() {
-
-}
+fn fr_display_group_does_not_exist() {}
 
 #[test]
-fn fr_display_activity_does_not_exist() {
-
-}
+fn fr_display_activity_does_not_exist() {}
 
 #[test]
 fn interval_does_not_exist_getters() {

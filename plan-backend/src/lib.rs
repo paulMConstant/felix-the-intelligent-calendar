@@ -5,7 +5,7 @@
 //! Plan helps schedule multiple activities involving many people, on a daily rate,
 //! with 5-minute precision.
 //!
-//! Use cases include : 
+//! Use cases include :
 //! * Schools
 //! * Summer camps
 //! * Any organization with resources to manage (rooms, meetings...)

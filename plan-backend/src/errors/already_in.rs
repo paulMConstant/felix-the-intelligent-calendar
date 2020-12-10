@@ -1,6 +1,6 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum EntityOrGroup {
@@ -15,7 +15,7 @@ pub enum ActivityOrGroup {
 }
 
 /// Throw this error when the user adds a component into a component which already contains it.
-/// 
+///
 /// # Example
 ///
 /// ```
@@ -44,11 +44,16 @@ impl fmt::Display for AlreadyIn {
         };
         let is_in = tr("is already in");
         match self.what {
-            EntityOrGroup::Entity => 
-                write!(f, "{} {} {} '{}'.", self.who, is_in, in_what, self.in_who),
+            EntityOrGroup::Entity => {
+                write!(f, "{} {} {} '{}'.", self.who, is_in, in_what, self.in_who)
+            }
             EntityOrGroup::Group => {
                 let what = tr("The group");
-                write!(f, "{} '{}' {} {} '{}'.", what, self.who, is_in, in_what, self.in_who)
+                write!(
+                    f,
+                    "{} '{}' {} {} '{}'.",
+                    what, self.who, is_in, in_what, self.in_who
+                )
             }
         }
     }
@@ -59,18 +64,45 @@ impl Error for AlreadyIn {}
 impl AlreadyIn {
     // Constructors
     #[must_use]
-    pub fn entity_already_in_group<S1, S2>(entity_name: S1, group_name: S2) -> Box<AlreadyIn> where S1: Into<String>, S2: Into<String>, {
-        Box::new(AlreadyIn { what: EntityOrGroup::Entity, who: entity_name.into(), in_what: ActivityOrGroup::Group, in_who: group_name.into() })
+    pub fn entity_already_in_group<S1, S2>(entity_name: S1, group_name: S2) -> Box<AlreadyIn>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(AlreadyIn {
+            what: EntityOrGroup::Entity,
+            who: entity_name.into(),
+            in_what: ActivityOrGroup::Group,
+            in_who: group_name.into(),
+        })
     }
 
     #[must_use]
-    pub fn entity_already_in_activity<S1, S2>(entity_name: S1, activity_name: S2) -> Box<AlreadyIn> where S1: Into<String>, S2: Into<String>, {
-        Box::new(AlreadyIn { what: EntityOrGroup::Entity, who: entity_name.into(), in_what: ActivityOrGroup::Activity, in_who: activity_name.into() })
+    pub fn entity_already_in_activity<S1, S2>(entity_name: S1, activity_name: S2) -> Box<AlreadyIn>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(AlreadyIn {
+            what: EntityOrGroup::Entity,
+            who: entity_name.into(),
+            in_what: ActivityOrGroup::Activity,
+            in_who: activity_name.into(),
+        })
     }
 
     #[must_use]
-    pub fn group_already_in_activity<S1, S2>(group_name: S1, activity_name: S2) -> Box<AlreadyIn> where S1: Into<String>, S2: Into<String>, {
-        Box::new(AlreadyIn { what: EntityOrGroup::Group, who: group_name.into(), in_what: ActivityOrGroup::Activity, in_who: activity_name.into() })
+    pub fn group_already_in_activity<S1, S2>(group_name: S1, activity_name: S2) -> Box<AlreadyIn>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(AlreadyIn {
+            what: EntityOrGroup::Group,
+            who: group_name.into(),
+            in_what: ActivityOrGroup::Activity,
+            in_who: activity_name.into(),
+        })
     }
 
     // Getters
@@ -94,4 +126,3 @@ impl AlreadyIn {
         self.in_who.clone()
     }
 }
-

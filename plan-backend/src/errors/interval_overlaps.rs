@@ -1,9 +1,9 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 /// Throw this error when the user creates a time interval which overlaps with others.
-/// 
+///
 ///
 /// # Example
 ///
@@ -15,7 +15,7 @@ use gettextrs::gettext as tr;
 /// assert_eq!(format!("{}", error), "The given interval overlaps with others.");
 /// ```
 #[derive(Debug, Clone)]
-pub struct IntervalOverlaps { }
+pub struct IntervalOverlaps {}
 
 impl fmt::Display for IntervalOverlaps {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -29,7 +29,6 @@ impl IntervalOverlaps {
     // Constructors
     #[must_use]
     pub fn new() -> Box<IntervalOverlaps> {
-        Box::new(IntervalOverlaps { })
+        Box::new(IntervalOverlaps {})
     }
 }
-

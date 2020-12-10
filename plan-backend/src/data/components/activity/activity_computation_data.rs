@@ -1,6 +1,6 @@
 use crate::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use crate::errors::{duration_too_short::DurationTooShort, Result};
 use std::collections::HashSet;
-use crate::errors::{Result, duration_too_short::DurationTooShort};
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.

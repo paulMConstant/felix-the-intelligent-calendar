@@ -1,6 +1,6 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 /// Throw this error when the user sets the duration of an activity to 0.
 ///
@@ -28,7 +28,6 @@ impl DurationTooShort {
     // Constructors
     #[must_use]
     pub fn new() -> Box<DurationTooShort> {
-        Box::new(DurationTooShort { } )
+        Box::new(DurationTooShort {})
     }
 }
-

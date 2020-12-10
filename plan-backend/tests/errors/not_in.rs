@@ -1,4 +1,4 @@
-use plan_backend::errors::not_in::{NotIn, ActivityOrGroup, EntityOrGroup};
+use plan_backend::errors::not_in::{ActivityOrGroup, EntityOrGroup, NotIn};
 
 #[test]
 fn en_display_entity_not_in_group() {
@@ -15,24 +15,21 @@ fn en_display_entity_not_in_activity() {
 #[test]
 fn en_display_group_not_in_activity() {
     let error = NotIn::group_not_in_activity("Group", "A");
-    assert_eq!(error.to_string(), "The group 'Group' is not in the activity 'A'.");
+    assert_eq!(
+        error.to_string(),
+        "The group 'Group' is not in the activity 'A'."
+    );
 }
 
 // TODO translate
 #[test]
-fn fr_display_entity_not_in_group() {
-
-}
+fn fr_display_entity_not_in_group() {}
 
 #[test]
-fn fr_display_entity_not_in_activity() {
-
-}
+fn fr_display_entity_not_in_activity() {}
 
 #[test]
-fn fr_display_group_not_in_activity() {
-
-}
+fn fr_display_group_not_in_activity() {}
 
 #[test]
 fn entity_not_in_group_getters() {
@@ -60,5 +57,3 @@ fn group_not_in_activity_getters() {
     assert_eq!(error.in_what(), ActivityOrGroup::Activity);
     assert_eq!(error.in_who(), "Activity");
 }
-
-

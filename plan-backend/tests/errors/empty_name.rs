@@ -8,4 +8,3 @@ fn en_display_empty_name() {
 // TODO translate
 #[test]
 fn fr_display_empty_name() {}
-

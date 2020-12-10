@@ -31,11 +31,11 @@ mod time {
 
 mod errors {
     mod already_in;
-    mod duration_too_short;
     mod does_not_exist;
-    mod name_taken;
+    mod duration_too_short;
     mod empty_name;
-    mod not_in;
     mod interval_overlaps;
+    mod name_taken;
     mod not_enough_time;
+    mod not_in;
 }

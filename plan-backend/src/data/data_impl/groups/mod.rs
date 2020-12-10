@@ -1,4 +1,5 @@
 mod error_checks;
+mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Data, Group};
@@ -117,14 +118,10 @@ impl Data {
     ///
     /// data.add_entity_to_group(group_name.clone(), entity_name.clone());
     /// let entities = data.group(group_name).unwrap().entities_sorted();
-    /// assert_eq!(entities[0], &entity_name);
+    /// assert_eq!(entities[0], entity_name);
     /// ```
     #[must_use]
-    pub fn add_entity_to_group<S1, S2>(
-        &mut self,
-        group_name: S1,
-        entity_name: S2,
-    ) -> Result<()>
+    pub fn add_entity_to_group<S1, S2>(&mut self, group_name: S1, entity_name: S2) -> Result<()>
     where
         S1: Into<String>,
         S2: Into<String>,
@@ -136,8 +133,12 @@ impl Data {
         // If the groups takes part in activities in which the entity does not,
         // we need to make sure the entity has time for them.
         self.check_has_enough_time_for_group(&group_name, &entity_name)?;
-
-        self.groups.add_entity_to_group(&group_name, entity_name)
+        self.groups
+            .add_entity_to_group(&group_name, entity_name.clone())?;
+        // Add the entity to every activity of the group
+        self.activities
+            .add_entity_to_activities_with_group(&group_name, entity_name);
+        Ok(())
     }
 
     /// Removes the entity with the given name from the group with the given name.
@@ -178,9 +179,21 @@ impl Data {
     {
         // Check if the entity exists & format name
         let entity_name = self.entity(entity_name)?.name();
-        // TODO remove in activities if no other group holds the entity
+        let group_name = self.group(group_name)?.name();
+
         self.groups
-            .remove_entity_from_group(&clean_string(group_name)?, &entity_name)
+            .remove_entity_from_group(&group_name, &entity_name)?;
+
+        // Remove the entity from activities in which it is participating through the group
+        let activity_ids_in_which_to_remove_entity = self
+            .ids_of_activities_in_which_entity_is_participating_only_through_this_group(
+                &entity_name,
+                &group_name,
+            );
+        for id in activity_ids_in_which_to_remove_entity {
+            self.remove_entity_from_activity(id, &entity_name)?;
+        }
+        Ok(())
     }
 
     /// Renames the group with the given name.

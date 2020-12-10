@@ -1,4 +1,4 @@
-use crate::errors::{Result, empty_name::EmptyName};
+use crate::errors::{empty_name::EmptyName, Result};
 
 /// Removes multiple spaces and fix caps.
 ///

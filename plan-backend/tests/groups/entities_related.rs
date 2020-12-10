@@ -27,7 +27,7 @@ fn simple_add_entity_to_group() {
                 .entities_sorted();
             assert_eq!(entities.len(), 1, "Entity was not added to group");
             assert_eq!(
-                entities[0], &entity_name,
+                entities[0], entity_name,
                 "Entity was not added with right name"
             );
         }
@@ -116,8 +116,8 @@ fn add_entity_to_group_check_sorting() {
                 .group(group)
                 .expect("Could not get group")
                 .entities_sorted();
-            assert_eq!(entities[0], &entity1, "Group members are not sorted");
-            assert_eq!(entities[1], &entity2, "Group members are not sorted");
+            assert_eq!(entities[0], entity1, "Group members are not sorted");
+            assert_eq!(entities[1], entity2, "Group members are not sorted");
         }
     );
 }
@@ -161,7 +161,7 @@ fn simple_remove_entity() {
                 .expect("Could not get group by name")
                 .entities_sorted();
             assert_eq!(entities.len(), 1, "Entity was not removed from group");
-            assert_eq!(entities[0], &entity2, "The wrong entity was removed");
+            assert_eq!(entities[0], entity2, "The wrong entity was removed");
         }
     );
 }

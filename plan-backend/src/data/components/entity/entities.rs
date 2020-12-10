@@ -1,6 +1,6 @@
 use crate::data::{Entity, TimeInterval};
+use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use std::collections::HashMap;
-use crate::errors::{Result, does_not_exist::DoesNotExist, name_taken::NameTaken};
 
 /// Manages the entities. Makes sure there are no duplicates.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -98,7 +98,7 @@ impl Entities {
                     entity.inner.set_name(new_name.clone());
                     self.entities.insert(new_name, entity);
                     Ok(())
-                },
+                }
                 None => Err(DoesNotExist::entity_does_not_exist(old_name)),
             }
         }

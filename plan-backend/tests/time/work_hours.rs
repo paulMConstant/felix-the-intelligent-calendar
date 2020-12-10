@@ -121,10 +121,16 @@ fn remove_interval_wrong_end() {
 fn remove_time_interval_not_enough_time_for_activities() {
     let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
     let entity = "Entity";
-    test_err!(data, DataBuilder::new().with_work_interval(interval)
-              .with_entity(entity)
-              .with_activity(Activity{entities: vec![entity], duration: Time::new(1, 0),
-              ..Default::default()}),
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_work_interval(interval)
+            .with_entity(entity)
+            .with_activity(Activity {
+                entities: vec![entity],
+                duration: Time::new(1, 0),
+                ..Default::default()
+            }),
         data.remove_work_interval(interval),
         "Entity will not have enough time if their work hours are shortened.",
         "Could remove interval which led to entity not having enough time"

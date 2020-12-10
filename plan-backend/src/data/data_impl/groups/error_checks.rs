@@ -1,7 +1,7 @@
 //! Helper functions for groups implementation of data.
 
 use crate::data::{Activity, Data, Time};
-use crate::errors::{Result, name_taken::NameTaken, not_enough_time::NotEnoughTime};
+use crate::errors::{name_taken::NameTaken, not_enough_time::NotEnoughTime, Result};
 
 impl Data {
     /// Checks that the given entity has enough time to be added to the group.
@@ -47,10 +47,7 @@ impl Data {
     ///
     /// Returns Err if the name is taken.
     #[must_use]
-    pub(in super::super::groups) fn check_name_taken_by_entity(
-        &self,
-        name: &String,
-    ) -> Result<()> {
+    pub(in super::super::groups) fn check_name_taken_by_entity(&self, name: &String) -> Result<()> {
         if let Some(entity_name) = self
             .entities_sorted()
             .iter()

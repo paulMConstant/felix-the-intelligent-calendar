@@ -1,8 +1,8 @@
 use super::computation::id_computation::{compute_incompatible_ids, generate_next_id};
 use super::ActivityMetadata;
-use std::collections::HashMap;
 use crate::data::{Activity, Time};
-use crate::errors::{Result, does_not_exist::DoesNotExist};
+use crate::errors::{does_not_exist::DoesNotExist, Result};
+use std::collections::HashMap;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
@@ -105,6 +105,24 @@ impl Activities {
         self.update_incompatible_activities();
         Ok(())
         // TODO update possible insertion times
+    }
+
+    /// Adds an entity in every activity which contains the given group.
+    pub fn add_entity_to_activities_with_group(
+        &mut self,
+        group_name: &String,
+        entity_name: String,
+    ) {
+        for activity in self
+            .activities
+            .values_mut()
+            .filter(|activity| activity.groups_sorted().contains(group_name))
+        {
+            // We do not care about errors : we want the activity to contain the entity, if it
+            // is already the case, it is fine
+            let _ = activity.metadata.add_entity(entity_name.clone());
+        }
+        self.update_incompatible_activities();
     }
 
     /// Updates the incompatible activity ids of each activity.

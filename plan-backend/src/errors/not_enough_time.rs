@@ -1,6 +1,6 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 /// Defines the reason why the entity will not have enough time.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -13,7 +13,7 @@ pub enum WhyNotEnoughTime {
 
 /// Throw this error when the requested operation leaves an entity with not enough time.
 ///
-/// The error is built from functions in the form 'reason\_for(entity_name)'. 
+/// The error is built from functions in the form 'reason\_for(entity_name)'.
 ///
 /// # Example
 ///
@@ -41,22 +41,45 @@ impl fmt::Display for NotEnoughTime {
             WhyNotEnoughTime::WorkHoursShortened => tr("if their work hours are shortened"),
 
             WhyNotEnoughTime::ActivityAdded => {
-                let activity_name = self.associated_name.as_ref().expect("Error when adding activity but activity name was not supplied");
+                let activity_name = self
+                    .associated_name
+                    .as_ref()
+                    .expect("Error when adding activity but activity name was not supplied");
                 format!("{} '{}'", tr("if they are added to"), activity_name)
             }
 
             WhyNotEnoughTime::ActivityDurationIncreased => {
-                let activity_name = self.associated_name.as_ref().expect("Error when setting activity duration but activity name was not supplied");
-                    format!("{} '{}' {}", tr("if the duration of"), activity_name, tr("is increased"))
-                    }
+                let activity_name = self.associated_name.as_ref().expect(
+                    "Error when setting activity duration but activity name was not supplied",
+                );
+                format!(
+                    "{} '{}' {}",
+                    tr("if the duration of"),
+                    activity_name,
+                    tr("is increased")
+                )
+            }
 
             WhyNotEnoughTime::AddedToGroup => {
-                let group_name = self.associated_name.as_ref().expect("Error when adding to group but group name was not supplied");
-                format!("{} '{}'", tr("if they take part in the activities of the group"), group_name)
+                let group_name = self
+                    .associated_name
+                    .as_ref()
+                    .expect("Error when adding to group but group name was not supplied");
+                format!(
+                    "{} '{}'",
+                    tr("if they take part in the activities of the group"),
+                    group_name
+                )
             }
         };
 
-        write!(f, "{} {} {}.", self.entity_name, tr("will not have enough time"), reason)
+        write!(
+            f,
+            "{} {} {}.",
+            self.entity_name,
+            tr("will not have enough time"),
+            reason
+        )
     }
 }
 
@@ -64,20 +87,54 @@ impl Error for NotEnoughTime {}
 
 impl NotEnoughTime {
     // Constructors
-    pub fn activity_added_for<S1, S2>(entity_name: S1, activity_name: S2) -> Box<NotEnoughTime> where S1: Into<String>, S2: Into<String> {
-        Box::new(NotEnoughTime { reason: WhyNotEnoughTime::ActivityAdded, entity_name: entity_name.into(), associated_name: Some(activity_name.into()) })
+    pub fn activity_added_for<S1, S2>(entity_name: S1, activity_name: S2) -> Box<NotEnoughTime>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(NotEnoughTime {
+            reason: WhyNotEnoughTime::ActivityAdded,
+            entity_name: entity_name.into(),
+            associated_name: Some(activity_name.into()),
+        })
     }
 
-    pub fn activity_duration_too_long_for<S1, S2>(entity_name: S1, activity_name: S2) -> Box<NotEnoughTime> where S1: Into<String>, S2: Into<String> {
-        Box::new(NotEnoughTime { reason: WhyNotEnoughTime::ActivityDurationIncreased, entity_name: entity_name.into(), associated_name: Some(activity_name.into())})
+    pub fn activity_duration_too_long_for<S1, S2>(
+        entity_name: S1,
+        activity_name: S2,
+    ) -> Box<NotEnoughTime>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(NotEnoughTime {
+            reason: WhyNotEnoughTime::ActivityDurationIncreased,
+            entity_name: entity_name.into(),
+            associated_name: Some(activity_name.into()),
+        })
     }
 
-    pub fn work_hours_shortened_for<S>(entity_name: S) -> Box<NotEnoughTime> where S: Into<String> {
-        Box::new(NotEnoughTime { reason: WhyNotEnoughTime::WorkHoursShortened, entity_name: entity_name.into(), associated_name: None })
+    pub fn work_hours_shortened_for<S>(entity_name: S) -> Box<NotEnoughTime>
+    where
+        S: Into<String>,
+    {
+        Box::new(NotEnoughTime {
+            reason: WhyNotEnoughTime::WorkHoursShortened,
+            entity_name: entity_name.into(),
+            associated_name: None,
+        })
     }
 
-    pub fn added_to_group<S1, S2>(entity_name: S1, group_name: S2) -> Box<NotEnoughTime> where S1: Into<String>, S2: Into<String> {
-        Box::new(NotEnoughTime { reason: WhyNotEnoughTime::AddedToGroup, entity_name: entity_name.into(), associated_name: Some(group_name.into()) })
+    pub fn added_to_group<S1, S2>(entity_name: S1, group_name: S2) -> Box<NotEnoughTime>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(NotEnoughTime {
+            reason: WhyNotEnoughTime::AddedToGroup,
+            entity_name: entity_name.into(),
+            associated_name: Some(group_name.into()),
+        })
     }
 
     // Getters
@@ -89,4 +146,3 @@ impl NotEnoughTime {
         self.reason
     }
 }
-

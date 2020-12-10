@@ -1,4 +1,4 @@
-use plan_backend::errors::already_in::{AlreadyIn, ActivityOrGroup, EntityOrGroup};
+use plan_backend::errors::already_in::{ActivityOrGroup, AlreadyIn, EntityOrGroup};
 
 #[test]
 fn en_display_entity_already_in_group() {
@@ -15,24 +15,21 @@ fn en_display_entity_already_in_activity() {
 #[test]
 fn en_display_group_already_in_activity() {
     let error = AlreadyIn::group_already_in_activity("Group", "A");
-    assert_eq!(error.to_string(), "The group 'Group' is already in the activity 'A'.");
+    assert_eq!(
+        error.to_string(),
+        "The group 'Group' is already in the activity 'A'."
+    );
 }
 
 // TODO translate
 #[test]
-fn fr_display_entity_already_in_group() {
-
-}
+fn fr_display_entity_already_in_group() {}
 
 #[test]
-fn fr_display_entity_already_in_activity() {
-
-}
+fn fr_display_entity_already_in_activity() {}
 
 #[test]
-fn fr_display_group_already_in_activity() {
-
-}
+fn fr_display_group_already_in_activity() {}
 
 #[test]
 fn entity_already_in_group_getters() {
@@ -60,4 +57,3 @@ fn group_already_in_activity_getters() {
     assert_eq!(error.in_what(), ActivityOrGroup::Activity);
     assert_eq!(error.in_who(), "Activity");
 }
-

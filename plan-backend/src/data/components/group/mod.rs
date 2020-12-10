@@ -32,8 +32,8 @@ impl Group {
 
     /// Simple getter for the entities, sorted by name.
     #[must_use]
-    pub fn entities_sorted(&self) -> Vec<&String> {
-        self.inner.entities_sorted()
+    pub fn entities_sorted(&self) -> Vec<String> {
+        self.inner.entities_sorted().into_iter().cloned().collect()
     }
 }
 

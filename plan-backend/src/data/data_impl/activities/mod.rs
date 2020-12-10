@@ -180,7 +180,7 @@ impl Data {
         // Check that the group exists and get name formatted
         let group = self.group(group_name)?;
         // Fetch group and entities here as copies (dropping group reference for borrow checker)
-        let entities: Vec<String> = group.entities_sorted().into_iter().cloned().collect();
+        let entities = group.entities_sorted();
         let group_name = group.name();
 
         self.check_entity_without_enough_time_for_activity(id, &entities)?;

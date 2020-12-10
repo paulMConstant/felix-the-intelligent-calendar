@@ -1,5 +1,7 @@
 use crate::data::{Data, Time, TimeInterval};
-use crate::errors::{Result, name_taken::NameTaken, not_enough_time::NotEnoughTime, does_not_exist::DoesNotExist};
+use crate::errors::{
+    does_not_exist::DoesNotExist, name_taken::NameTaken, not_enough_time::NotEnoughTime, Result,
+};
 
 impl Data {
     /// Checks if the given name is taken by a group.

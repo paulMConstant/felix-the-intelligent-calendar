@@ -1,5 +1,5 @@
+use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
-use crate::errors::{Result, already_in::AlreadyIn, not_in::NotIn, name_taken::NameTaken};
 
 /// Simple structure holding non-computation related data : id, name, entities.
 ///
@@ -107,7 +107,7 @@ impl ActivityMetadata {
     #[must_use]
     pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<()> {
         if self.entities.contains(&new_name) {
-            return Err(NameTaken::name_taken_by_entity(new_name)); 
+            return Err(NameTaken::name_taken_by_entity(new_name));
         };
 
         if self.entities.remove(old_name) {

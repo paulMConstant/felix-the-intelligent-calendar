@@ -1,6 +1,6 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 /// Throw this error when a given name is empty.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -16,6 +16,6 @@ impl fmt::Display for EmptyName {
 
 impl EmptyName {
     pub fn new() -> Box<EmptyName> {
-        Box::new(EmptyName { } )
+        Box::new(EmptyName {})
     }
 }

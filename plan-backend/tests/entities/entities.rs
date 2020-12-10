@@ -215,7 +215,11 @@ fn simple_rename_entity() {
         // Check that the entity with old name is removed
         assert_not_modified!(data, {
             assert_eq!(
-                format!("{}", data.entity(name).expect_err("Could get renamed entity with old name")),
+                format!(
+                    "{}",
+                    data.entity(name)
+                        .expect_err("Could get renamed entity with old name")
+                ),
                 "Name does not exist.",
                 "Got wrong error message"
             );

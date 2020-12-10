@@ -1,7 +1,7 @@
 //! Helper functions for work_hours implementation of data.
 
 use crate::data::{Data, Time};
-use crate::errors::{Result, not_enough_time::NotEnoughTime};
+use crate::errors::{not_enough_time::NotEnoughTime, Result};
 
 impl Data {
     /// Checks if an entity has not enough time to update a work interval.

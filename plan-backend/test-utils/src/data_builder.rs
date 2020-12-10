@@ -12,7 +12,10 @@ macro_rules! test_err {
         assert_not_modified!(
             $data,
             assert_eq!(
-                format!("{}", $test_block.expect_err("This block should have returned an error, got:")),
+                format!(
+                    "{}",
+                    $test_block.expect_err("This block should have returned an error, got:")
+                ),
                 $expected_error,
                 $failure_message
             )
@@ -100,21 +103,34 @@ impl DataBuilder {
     }
 
     #[must_use]
-    pub fn with_custom_work_interval_for<S>(&mut self, entity: S, interval: TimeInterval) -> &mut DataBuilder
-    where S: Into<String>,
+    pub fn with_custom_work_interval_for<S>(
+        &mut self,
+        entity: S,
+        interval: TimeInterval,
+    ) -> &mut DataBuilder
+    where
+        S: Into<String>,
     {
-        self.data.add_custom_work_interval_for(entity, interval).expect("Could not add custom work interval");
+        self.data
+            .add_custom_work_interval_for(entity, interval)
+            .expect("Could not add custom work interval");
         self
     }
 
     #[must_use]
-    pub fn with_custom_work_intervals_for<S>(&mut self, entity: S, intervals: Vec<TimeInterval>) ->
-        &mut DataBuilder where S: Into<String> + Clone, {
-            for interval in intervals {
-                let _ = self.with_custom_work_interval_for(entity.clone(), interval);
-            }
-            self
+    pub fn with_custom_work_intervals_for<S>(
+        &mut self,
+        entity: S,
+        intervals: Vec<TimeInterval>,
+    ) -> &mut DataBuilder
+    where
+        S: Into<String> + Clone,
+    {
+        for interval in intervals {
+            let _ = self.with_custom_work_interval_for(entity.clone(), interval);
         }
+        self
+    }
 
     #[must_use]
     pub fn with_group(&mut self, group: Group) -> &mut DataBuilder {
@@ -180,7 +196,9 @@ impl DataBuilder {
                 .add_group_to_activity(id, group)
                 .expect("Could not add group to activity");
         }
-        self.data.set_activity_duration(id, activity.duration).expect("Could not set activity duration");
+        self.data
+            .set_activity_duration(id, activity.duration)
+            .expect("Could not set activity duration");
 
         self
     }

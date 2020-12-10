@@ -1,6 +1,6 @@
 use super::Group;
+use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use std::collections::HashMap;
-use crate::errors::{Result, does_not_exist::DoesNotExist, name_taken::NameTaken};
 
 /// Manages groups.
 ///
@@ -75,11 +75,7 @@ impl Groups {
     ///
     /// Returns Err if the group is not found or if the entity is already in the group.
     #[must_use]
-    pub fn add_entity_to_group(
-        &mut self,
-        group_name: &String,
-        entity_name: String,
-    ) -> Result<()> {
+    pub fn add_entity_to_group(&mut self, group_name: &String, entity_name: String) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
                 group.inner.add_entity(entity_name)?;

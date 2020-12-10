@@ -1,5 +1,5 @@
+use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
-use crate::errors::{Result, already_in::AlreadyIn, not_in::NotIn, name_taken::NameTaken};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupInner {

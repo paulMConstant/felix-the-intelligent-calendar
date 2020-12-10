@@ -1,9 +1,9 @@
 //! Helper functions for activity implementation of data.
 
-use std::collections::HashSet;
-use std::iter::FromIterator;
 use crate::data::Data;
 use crate::errors::Result;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 impl Data {
     /// Returns all entities which participate in the given activity in more than one group.
@@ -28,11 +28,11 @@ impl Data {
                 // Expect is safe to use here: we are sure that the activtiy contains valid groups
                 self.group(group_name).expect("Could not get group which is in an activity").entities_sorted()
                 )
-            .collect::<HashSet<&String>>();
+            .collect::<HashSet<String>>();
 
         Ok(entities_of_group
             .difference(&entities_in_other_groups)
-            .map(|&entity| entity.clone())
+            .cloned()
             .collect())
     }
 }

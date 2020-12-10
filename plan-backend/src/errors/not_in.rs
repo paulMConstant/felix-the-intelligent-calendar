@@ -1,6 +1,6 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 /// Defines the component type which is not found.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -17,7 +17,7 @@ pub enum ActivityOrGroup {
 }
 
 /// Throw this error when the user asks for a component which is not present in the activity/group.
-/// 
+///
 /// # Example
 ///
 /// ```
@@ -47,12 +47,23 @@ impl fmt::Display for NotIn {
         };
         let is_not_in = tr("is not in");
         match self.what {
-            EntityOrGroup::Entity => 
-                write!(f, "{} {} {} '{}'.", self.who, is_not_in, in_what, self.in_who),
+            EntityOrGroup::Entity => write!(
+                f,
+                "{} {} {} '{}'.",
+                self.who, is_not_in, in_what, self.in_who
+            ),
             EntityOrGroup::Group => {
                 let what = tr("The group");
-        write!(f, "{} '{}' {} {} '{}'.", what, self.who, tr("is not in"), in_what, self.in_who)
-            },
+                write!(
+                    f,
+                    "{} '{}' {} {} '{}'.",
+                    what,
+                    self.who,
+                    tr("is not in"),
+                    in_what,
+                    self.in_who
+                )
+            }
         }
     }
 }
@@ -62,18 +73,45 @@ impl Error for NotIn {}
 impl NotIn {
     // Constructors
     #[must_use]
-    pub fn entity_not_in_group<S1, S2>(entity_name: S1, group_name: S2) -> Box<NotIn> where S1: Into<String>, S2: Into<String> {
-        Box::new(NotIn { what: EntityOrGroup::Entity, who: entity_name.into(), in_what: ActivityOrGroup::Group, in_who: group_name.into() })
+    pub fn entity_not_in_group<S1, S2>(entity_name: S1, group_name: S2) -> Box<NotIn>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(NotIn {
+            what: EntityOrGroup::Entity,
+            who: entity_name.into(),
+            in_what: ActivityOrGroup::Group,
+            in_who: group_name.into(),
+        })
     }
 
     #[must_use]
-    pub fn entity_not_in_activity<S1, S2>(entity_name: S1, activity_name: S2) -> Box<NotIn> where S1: Into<String>, S2: Into<String> {
-        Box::new(NotIn { what: EntityOrGroup::Entity, who: entity_name.into(), in_what: ActivityOrGroup::Activity, in_who: activity_name.into() })
+    pub fn entity_not_in_activity<S1, S2>(entity_name: S1, activity_name: S2) -> Box<NotIn>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(NotIn {
+            what: EntityOrGroup::Entity,
+            who: entity_name.into(),
+            in_what: ActivityOrGroup::Activity,
+            in_who: activity_name.into(),
+        })
     }
 
     #[must_use]
-    pub fn group_not_in_activity<S1, S2>(group_name: S1, activity_name: S2) -> Box<NotIn> where S1: Into<String>, S2: Into<String> {
-        Box::new(NotIn { what: EntityOrGroup::Group, who: group_name.into(), in_what: ActivityOrGroup::Activity, in_who: activity_name.into() })
+    pub fn group_not_in_activity<S1, S2>(group_name: S1, activity_name: S2) -> Box<NotIn>
+    where
+        S1: Into<String>,
+        S2: Into<String>,
+    {
+        Box::new(NotIn {
+            what: EntityOrGroup::Group,
+            who: group_name.into(),
+            in_what: ActivityOrGroup::Activity,
+            in_who: activity_name.into(),
+        })
     }
 
     // Getters
@@ -95,4 +133,3 @@ impl NotIn {
         self.in_who.clone()
     }
 }
-

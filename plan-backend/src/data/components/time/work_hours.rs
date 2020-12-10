@@ -1,5 +1,5 @@
 use crate::data::TimeInterval;
-use crate::errors::{Result, interval_overlaps::IntervalOverlaps, does_not_exist::DoesNotExist};
+use crate::errors::{does_not_exist::DoesNotExist, interval_overlaps::IntervalOverlaps, Result};
 
 /// Contains work hours represented as time intervals.
 /// Stays sorted by ascending order and prevents work intervals from overlapping.

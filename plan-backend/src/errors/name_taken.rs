@@ -1,6 +1,6 @@
+use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
-use gettextrs::gettext as tr;
 
 /// Defines the component type by which the name is taken.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -37,7 +37,14 @@ impl fmt::Display for NameTaken {
             GroupOrEntity::Entity => tr("an entity"),
             GroupOrEntity::Group => tr("a group"),
         };
-        write!(f, "{} '{}' {} {}.", tr("The name"), self.name, tr("is already taken by"), by)
+        write!(
+            f,
+            "{} '{}' {} {}.",
+            tr("The name"),
+            self.name,
+            tr("is already taken by"),
+            by
+        )
     }
 }
 
@@ -45,12 +52,24 @@ impl Error for NameTaken {}
 
 impl NameTaken {
     // Constructors
-    pub fn name_taken_by_entity<S>(name: S) -> Box<NameTaken> where S: Into<String>, {
-        Box::new(NameTaken { by: GroupOrEntity::Entity, name: name.into() })
+    pub fn name_taken_by_entity<S>(name: S) -> Box<NameTaken>
+    where
+        S: Into<String>,
+    {
+        Box::new(NameTaken {
+            by: GroupOrEntity::Entity,
+            name: name.into(),
+        })
     }
 
-    pub fn name_taken_by_group<S>(name: S) -> Box<NameTaken> where S: Into<String>, {
-        Box::new(NameTaken { by: GroupOrEntity::Group, name: name.into() })
+    pub fn name_taken_by_group<S>(name: S) -> Box<NameTaken>
+    where
+        S: Into<String>,
+    {
+        Box::new(NameTaken {
+            by: GroupOrEntity::Group,
+            name: name.into(),
+        })
     }
 
     // Getters

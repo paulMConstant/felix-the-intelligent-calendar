@@ -56,7 +56,7 @@ fn rename_entity_check_renamed_in_group() {
                 "Entity was not renamed in group or names are not sorted"
             );
             assert_eq!(
-                group_members[1], &entity3,
+                group_members[1], entity3,
                 "Entity was not renamed in group or names are not sorted"
             );
         }

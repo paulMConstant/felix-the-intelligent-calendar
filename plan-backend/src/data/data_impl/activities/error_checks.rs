@@ -1,7 +1,7 @@
 //! Helper functions for activity implementation of data.
 
 use crate::data::{Data, Time};
-use crate::errors::{Result, not_enough_time::NotEnoughTime};
+use crate::errors::{not_enough_time::NotEnoughTime, Result};
 
 impl Data {
     /// Returns the first entity which does not have enough time to change the duration of the
@@ -35,7 +35,10 @@ impl Data {
                 })
                 .cloned()
             {
-                Err(NotEnoughTime::activity_duration_too_long_for(entity_name, activity.name()))
+                Err(NotEnoughTime::activity_duration_too_long_for(
+                    entity_name,
+                    activity.name(),
+                ))
             } else {
                 Ok(())
             }
@@ -58,7 +61,10 @@ impl Data {
             Ok(())
         } else {
             let activity = self.activity(activity_id)?;
-            Err(NotEnoughTime::activity_added_for(entity_name, activity.name()))
+            Err(NotEnoughTime::activity_added_for(
+                entity_name,
+                activity.name(),
+            ))
         }
     }
 
@@ -79,7 +85,10 @@ impl Data {
         for entity_name in entities {
             if self.has_enough_time_for_activity(activity_id, entity_name)? == false {
                 let activity = self.activity(activity_id)?;
-                return Err(NotEnoughTime::activity_added_for(entity_name, activity.name()));
+                return Err(NotEnoughTime::activity_added_for(
+                    entity_name,
+                    activity.name(),
+                ));
             }
         }
         Ok(())
@@ -91,11 +100,7 @@ impl Data {
     ///
     /// Returns Err if the entity or activity does not exist.
     #[must_use]
-    fn has_enough_time_for_activity(
-        &self,
-        activity_id: u16,
-        entity_name: &String,
-    ) -> Result<bool> {
+    fn has_enough_time_for_activity(&self, activity_id: u16, entity_name: &String) -> Result<bool> {
         let free_time = self.free_time_of(entity_name)?;
         Ok(free_time >= self.activity(activity_id)?.duration())
     }
