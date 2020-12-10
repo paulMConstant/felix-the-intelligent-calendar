@@ -266,6 +266,28 @@ fn remove_entity_from_group_check_stays_in_activity_if_not_in_any_group() {
 
 #[test]
 fn remove_entity_from_group_check_not_removed_in_activity_where_excluded_from_group() {
-
-    // TODO
+    // If the user has added the group to the activity then removed the entity, the entity is
+    // excluded from the group
+    let (group, entity) = ("Group", "Entity");
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_work_interval_of_duration(4)
+            .with_entity(entity)
+            .with_group(Group {
+                name: group,
+                entities: vec![entity]
+            })
+            .with_activity(Activity {
+                groups: vec![group],
+                ..Default::default()
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.remove_entity_from_activity(id, entity)
+                .expect("Could not remove entity from activity");
+            data.remove_group_from_activity(id, group).expect("May have thrown because an entity of the group is not in the activity anymore. \
+                                                              This behaviour is standard and should not throw");
+        }
+    );
 }

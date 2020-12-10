@@ -233,11 +233,11 @@ impl Data {
             self.entities_participating_through_this_group_only(id, &group_name)?;
 
         for entity_name in &entities_to_remove {
-            self.activities.remove_entity(id, entity_name)?;
+            // The entity may not be in the activity if excluded from group.
+            let _ = self.activities.remove_entity(id, entity_name);
         }
 
         self.activities.remove_group(id, &group_name)
-        // TODO update possible insertion times
     }
 
     /// Sets the name of the activity with given id with the formatted given name.
