@@ -51,20 +51,30 @@ impl AppData {
 
         self.state.current_entity = Some(entity.name());
 
-        with_blocked_signals!(self, {
-        entity_name_entry.set_text(&entity.name());
-        entity_mail_entry.set_text(&entity.mail());
-        entity_custom_work_hours_switch.set_active(entity.custom_work_hours().is_empty() == false);
-        entity_send_mail_switch.set_active(entity.send_me_a_mail());
-        },
-        entity_name_entry, entity_mail_entry, entity_custom_work_hours_switch, entity_send_mail_switch);
+        with_blocked_signals!(
+            self,
+            {
+                entity_name_entry.set_text(&entity.name());
+                entity_mail_entry.set_text(&entity.mail());
+                entity_custom_work_hours_switch
+                    .set_active(entity.custom_work_hours().is_empty() == false);
+                entity_send_mail_switch.set_active(entity.send_me_a_mail());
+            },
+            entity_name_entry,
+            entity_mail_entry,
+            entity_custom_work_hours_switch,
+            entity_send_mail_switch
+        );
     }
 
     pub fn set_entity_mail_event(&mut self) {
         fetch_from!(self, entity_mail_entry);
 
         let mail = entity_mail_entry.get_text();
-        let entity = self.state.current_entity.as_ref().expect("Current entity should be selected before accessing any entity-related field");
+        let entity =
+            self.state.current_entity.as_ref().expect(
+                "Current entity should be selected before accessing any entity-related field",
+            );
         notify_if_err!(self.data.set_entity_mail(entity, mail));
     }
 
@@ -72,7 +82,10 @@ impl AppData {
         fetch_from!(self, entity_send_mail_switch);
 
         let send = entity_send_mail_switch.get_active();
-        let entity = self.state.current_entity.as_ref().expect("Current entity should be selected before accessing any entity-related field");
+        let entity =
+            self.state.current_entity.as_ref().expect(
+                "Current entity should be selected before accessing any entity-related field",
+            );
         notify_if_err!(self.data.set_send_mail_to(entity, send));
     }
 }

@@ -1,5 +1,5 @@
 /// Should be used only in the App impl.
-/// 
+///
 /// # Arguments
 ///
 /// $self: self, $widget: name of the widget, $connection: normal connection expression
@@ -14,7 +14,11 @@
 macro_rules! app_register_signal {
     ($self: ident, $widget: ident, $connection: expr) => {
         let signal = $connection;
-        $self.app_data.lock().unwrap().register_signal($widget, signal);
+        $self
+            .app_data
+            .lock()
+            .unwrap()
+            .register_signal($widget, signal);
     };
 }
 
@@ -29,7 +33,6 @@ mod entities;
 mod header;
 
 use crate::app::App;
-
 
 impl App {
     pub fn connect_gtk(&self) {

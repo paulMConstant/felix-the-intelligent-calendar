@@ -3,7 +3,7 @@ macro_rules! block_signals {
     ($self:ident, $widget:ident) => {
         if let Some(signals) = $self.get_registered_signals(&$widget) {
             for signal_id in signals {
-                $widget.block_signal(&signal_id);  
+                $widget.block_signal(&signal_id);
             }
         }
     };
@@ -19,7 +19,7 @@ macro_rules! unblock_signals {
     ($self:ident, $widget:ident) => {
         if let Some(signals) = $self.get_registered_signals(&$widget) {
             for signal_id in signals {
-                $widget.unblock_signal(&signal_id);  
+                $widget.unblock_signal(&signal_id);
             }
         }
     };

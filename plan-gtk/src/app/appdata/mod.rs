@@ -2,10 +2,10 @@
 pub mod fetch_ui;
 mod events;
 
-use std::collections::HashMap;
-use gtk::prelude::*;
 use glib::signal::SignalHandlerId;
+use gtk::prelude::*;
 use plan_backend::data::Data;
+use std::collections::HashMap;
 
 struct AppCurrentState {
     current_entity: Option<String>,
@@ -20,8 +20,14 @@ pub struct AppData {
     signals: HashMap<String, Vec<SignalHandlerId>>,
 }
 
-fn get_widget_id<T>(widget: &T) -> String where T: IsA<gtk::Buildable> {
-    widget.get_buildable_name().expect("Widget has no ID !").to_string()
+fn get_widget_id<T>(widget: &T) -> String
+where
+    T: IsA<gtk::Buildable>,
+{
+    widget
+        .get_buildable_name()
+        .expect("Widget has no ID !")
+        .to_string()
 }
 
 impl AppData {
@@ -43,15 +49,19 @@ impl AppData {
         main_window.show_all();
     }
 
-    pub fn register_signal<T>(&mut self, widget: T, signal: SignalHandlerId) 
-    where T: IsA<gtk::Buildable> {
+    pub fn register_signal<T>(&mut self, widget: T, signal: SignalHandlerId)
+    where
+        T: IsA<gtk::Buildable>,
+    {
         let widget_id = get_widget_id(&widget);
         self.signals.entry(widget_id).or_default().push(signal);
     }
 
-    pub fn get_registered_signals<T>(&self, widget: &T)
-        -> Option<&Vec<SignalHandlerId>> where T: IsA<gtk::Buildable> {
-            let widget_id = get_widget_id(widget);
-            self.signals.get(&widget_id)
-        }
+    pub fn get_registered_signals<T>(&self, widget: &T) -> Option<&Vec<SignalHandlerId>>
+    where
+        T: IsA<gtk::Buildable>,
+    {
+        let widget_id = get_widget_id(widget);
+        self.signals.get(&widget_id)
+    }
 }

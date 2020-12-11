@@ -5,9 +5,9 @@ pub mod notify;
 pub mod appdata;
 pub mod connect;
 
-use gtk::prelude::*;
-use std::sync::{Mutex, Arc};
 use super::config::APP_NAME;
+use gtk::prelude::*;
+use std::sync::{Arc, Mutex};
 
 use appdata::AppData;
 
