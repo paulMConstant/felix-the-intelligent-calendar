@@ -27,7 +27,7 @@ macro_rules! notify_if_err {
 }
 
 pub fn notify_err(error: Box<dyn std::error::Error>) {
-    toast_notify(tr("Error"), error.to_string(), 3000);
+    toast_notify(tr("Uh-Oh..."), error.to_string(), 3000);
 }
 
 pub fn toast_notify<S1, S2>(summary: S1, body: S2, timeout_ms: i32)

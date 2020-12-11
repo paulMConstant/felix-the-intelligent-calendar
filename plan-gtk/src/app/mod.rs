@@ -6,13 +6,13 @@ pub mod appdata;
 pub mod connect;
 
 use gtk::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Mutex, Arc};
+use super::config::APP_NAME;
 
 use appdata::AppData;
 
 pub struct App {
-    app_data: Rc<RefCell<AppData>>,
+    app_data: Arc<Mutex<AppData>>,
 }
 
 impl App {
@@ -36,14 +36,14 @@ impl App {
             .expect("Could not get MainWindow from ui file.");
 
         main_window.set_application(Some(application));
-        main_window.set_title("Plan");
+        main_window.set_title(APP_NAME);
 
         App {
-            app_data: Rc::new(RefCell::new(AppData::new(builder))),
+            app_data: Arc::new(Mutex::new(AppData::new(builder))),
         }
     }
 
     pub fn show_mainwindow(&self) {
-        self.app_data.borrow().show_mainwindow();
+        self.app_data.lock().unwrap().show_mainwindow();
     }
 }
