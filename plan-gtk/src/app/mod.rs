@@ -1,10 +1,18 @@
 pub mod app_builder;
+#[macro_use]
+pub mod notify;
+#[macro_use]
+pub mod appdata;
 pub mod connect;
 
 use gtk::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use appdata::AppData;
 
 pub struct App {
-    pub builder: gtk::Builder,
+    app_data: Rc<RefCell<AppData>>,
 }
 
 impl App {
@@ -30,14 +38,12 @@ impl App {
         main_window.set_application(Some(application));
         main_window.set_title("Plan");
 
-        App { builder }
+        App {
+            app_data: Rc::new(RefCell::new(AppData::new(builder))),
+        }
     }
 
     pub fn show_mainwindow(&self) {
-        let main_window: gtk::ApplicationWindow = self
-            .builder
-            .get_object("MainWindow")
-            .expect("Could not get MainWindow from ui file.");
-        main_window.show_all();
+        self.app_data.borrow().show_mainwindow();
     }
 }

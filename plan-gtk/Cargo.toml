@@ -10,6 +10,8 @@ build = "build.rs"
 [dependencies]
 plan-backend = { path = "../plan-backend" }
 glib = "0.10.3"
+notify-rust = "4.0.0"
+gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 
 [dependencies.gtk]
 version = "0.9.0"
