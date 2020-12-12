@@ -1,5 +1,5 @@
 mod activities;
 mod entities;
 mod groups;
-mod helpers;
+pub mod helpers;
 mod work_hours;

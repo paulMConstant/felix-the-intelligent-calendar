@@ -12,6 +12,8 @@ pub use components::{
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
 
+pub use data_impl::helpers::clean_string;
+
 /// Stores, calculates and maintains coherency between entities, work hours and activities.
 ///
 /// This is the only mutable object in the data module.
