@@ -1,7 +1,7 @@
 pub mod update_ui_state;
 
 use crate::app::appdata::AppData;
-use plan_backend::data::Entity;
+use plan_backend::data::{clean_string, Entity};
 
 use gtk::prelude::*;
 use std::convert::TryFrom;
@@ -16,11 +16,7 @@ impl AppData {
         let entity_name = add_entity_entry.get_text();
         add_entity_entry.set_text("");
 
-        if entity_name.trim().is_empty() {
-            return;
-        }
-
-        let entity_name = entity_name.to_string();
+        no_notify_assign_or_return!(entity_name, clean_string(entity_name));
         assign_or_return!(entity_name, self.data.add_entity(&entity_name));
         assign_or_return!(entity, self.data.entity(&entity_name));
 
@@ -40,13 +36,16 @@ impl AppData {
         self.update_entities_treeview(Some(position_of_new_entity));
     }
 
-    pub fn event_entity_selected(&mut self, path: &gtk::TreePath) {
-        fetch_from!(self, entities_list_store);
+    pub fn event_entity_selected(&mut self) {
+        fetch_from!(self, entities_tree_view);
 
-        let iter = entities_list_store
-            .get_iter(path)
-            .expect("Invalid selection path");
-        let value = entities_list_store.get_value(&iter, 0);
+        let selection = entities_tree_view.get_selection().get_selected();
+        if selection.is_none() {
+            return;
+        }
+
+        let (model, iter) = selection.expect("We treated the None case above");
+        let value = model.get_value(&iter, 0);
         let selected_entity: &str = value
             .get()
             .expect("Value in list store should be gchararray")
@@ -60,7 +59,7 @@ impl AppData {
     pub fn event_remove_entity(&mut self) {
         let entity_to_remove =
             self.state.current_entity.as_ref().expect(
-                "Current entity should be selected before accessing any entity_related filed",
+                "Current entity should be selected before accessing any entity-related filed",
             );
         let position_of_removed_entity = self
             .data
@@ -95,6 +94,25 @@ impl AppData {
 
         self.update_current_entity(&new_current_entity);
         self.update_entities_treeview(position_of_new_current_entity);
+    }
+
+    pub fn event_rename_entity(&mut self) {
+        fetch_from!(self, entity_name_entry);
+        let entity_to_rename =
+            self.state.current_entity.as_ref().expect(
+                "Current entity should be selected before accessing any entity-related field",
+            );
+        let new_name = entity_name_entry.get_text();
+        no_notify_assign_or_return!(new_name, clean_string(new_name));
+        no_notify_assign_or_return!(
+            new_name,
+            self.data.set_entity_name(entity_to_rename, new_name)
+        );
+        assign_or_return!(new_entity, self.data.entity(new_name));
+
+        let new_entity = new_entity.clone();
+        self.update_current_entity(&Some(new_entity));
+        self.update_entities_treeview(None);
     }
 
     pub fn event_set_entity_mail(&mut self) {

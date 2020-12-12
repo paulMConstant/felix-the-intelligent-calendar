@@ -8,8 +8,8 @@ use std::collections::HashMap;
 
 struct AppCurrentState {
     current_entity: Option<String>,
-    current_group: Option<String>,
-    current_activity_id: Option<u16>,
+    //current_group: Option<String>,
+    //current_activity_id: Option<u16>,
 }
 
 pub struct AppData {
@@ -26,8 +26,8 @@ impl AppData {
             data: Data::new(),
             state: AppCurrentState {
                 current_entity: None,
-                current_group: None,
-                current_activity_id: None,
+                //current_group: None,
+                //current_activity_id: None,
             },
             signals: HashMap::new(),
         };

@@ -101,6 +101,18 @@ macro_rules! assign_or_return {
     };
 }
 
+/// If the given expression fails, returns.
+/// Else, assigns the variable with given name to the result.
+macro_rules! no_notify_assign_or_return {
+    ($var: ident, $expr: expr) => {
+        let res = $expr;
+        if res.is_err() {
+            return;
+        }
+        let $var = res.expect("Error case should have been taken care of in macro above");
+    };
+}
+
 /// If the given expression fails, notifies the user.
 macro_rules! return_if_err {
     ($expr: expr) => {

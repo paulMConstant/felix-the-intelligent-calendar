@@ -8,6 +8,7 @@ impl App {
         self.connect_add_entity();
         self.connect_entity_selected();
         self.connect_remove_entity();
+        self.connect_rename_entity();
         self.connect_set_entity_mail();
         self.connect_set_send_mail_to();
     }
@@ -44,11 +45,9 @@ impl App {
         app_register_signal!(
             self,
             entities_tree_view,
-            entities_tree_view.connect_row_activated(
-                clone!(@strong app_data => move |_self, path, _col| {
-                    app_data.lock().unwrap().event_entity_selected(path);
-                }),
-            )
+            entities_tree_view.connect_cursor_changed(clone!(@strong app_data => move |_| {
+                app_data.lock().unwrap().event_entity_selected();
+            }),)
         );
     }
 
@@ -65,6 +64,19 @@ impl App {
         );
     }
 
+    fn connect_rename_entity(&self) {
+        fetch_from!(self.app_data.lock().unwrap(), entity_name_entry);
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            entity_name_entry,
+            entity_name_entry.connect_changed(clone!(@strong app_data => move |_| {
+                app_data.lock().unwrap().event_rename_entity();
+            }))
+        );
+    }
+
     fn connect_set_entity_mail(&self) {
         fetch_from!(self.app_data.lock().unwrap(), entity_mail_entry);
 
@@ -72,9 +84,8 @@ impl App {
         app_register_signal!(
             self,
             entity_mail_entry,
-            entity_mail_entry.connect_key_release_event(clone!(@strong app_data => move |_, _| {
+            entity_mail_entry.connect_changed(clone!(@strong app_data => move |_| {
                 app_data.lock().unwrap().event_set_entity_mail();
-                glib::signal::Inhibit(false)
             }))
         );
     }
