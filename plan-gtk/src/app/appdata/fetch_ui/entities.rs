@@ -39,6 +39,13 @@ impl AppData {
     }
 
     #[must_use]
+    pub fn entity_remove_button(&self) -> gtk::Button {
+        self.builder
+            .get_object("EntityRemoveButton")
+            .expect("Could not load EntityRemoveButton from ui file.")
+    }
+
+    #[must_use]
     pub fn entity_send_mail_switch(&self) -> gtk::Switch {
         self.builder
             .get_object("EntitySendMailSwitch")
@@ -57,5 +64,12 @@ impl AppData {
         self.builder
             .get_object("EntityCustomWorkHoursSwitch")
             .expect("Could not load EntityCustomWorkHoursSwitch from ui file.")
+    }
+
+    #[must_use]
+    pub fn entity_specific_box(&self) -> gtk::Box {
+        self.builder
+            .get_object("EntitySpecificBox")
+            .expect("Could not load EntitySpecificBox from ui file.")
     }
 }

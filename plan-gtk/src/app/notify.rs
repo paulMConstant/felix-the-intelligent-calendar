@@ -2,30 +2,6 @@ use crate::config;
 use gettextrs::gettext as tr;
 use notify_rust::Notification;
 
-/// If the given expression fails, notifies the user and returns.
-/// Else, assigns the variable with given name to the result.
-macro_rules! assign_or_return {
-    ($var: ident, $expr: expr) => {
-        let res = $expr;
-        if let Err(e) = res {
-            use crate::app::notify::notify_err;
-            notify_err(e);
-            return;
-        }
-        let $var = res.expect("Error case should have been taken care of in macro above");
-    };
-}
-
-/// If the given expression fails, notifies the user.
-macro_rules! notify_if_err {
-    ($expr: expr) => {
-        use crate::app::notify::notify_err;
-        if let Err(e) = $expr {
-            notify_err(e)
-        }
-    };
-}
-
 pub fn notify_err(error: Box<dyn std::error::Error>) {
     toast_notify(tr("Uh-Oh..."), error.to_string(), 3000);
 }

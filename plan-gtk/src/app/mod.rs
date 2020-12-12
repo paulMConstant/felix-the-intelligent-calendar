@@ -1,9 +1,10 @@
+#[macro_use]
+pub mod macros;
+
 pub mod app_builder;
-#[macro_use]
-pub mod notify;
-#[macro_use]
 pub mod appdata;
 pub mod connect;
+pub mod notify;
 
 use super::config::APP_NAME;
 use gtk::prelude::*;
@@ -31,15 +32,14 @@ impl App {
             .add_from_resource("/com/github/paulmconstant/plan/ui/time_interval.ui")
             .expect("Could not load ui file: time_interval.ui");
 
-        let main_window: gtk::ApplicationWindow = builder
-            .get_object("MainWindow")
-            .expect("Could not get MainWindow from ui file.");
+        let app_data = AppData::new(builder);
 
+        fetch_from!(app_data, main_window);
         main_window.set_application(Some(application));
         main_window.set_title(APP_NAME);
 
         App {
-            app_data: Arc::new(Mutex::new(AppData::new(builder))),
+            app_data: Arc::new(Mutex::new(app_data)),
         }
     }
 

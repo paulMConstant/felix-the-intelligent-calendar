@@ -1,6 +1,5 @@
-#[macro_use]
+pub mod events;
 pub mod fetch_ui;
-mod events;
 
 use glib::signal::SignalHandlerId;
 use gtk::prelude::*;
@@ -20,19 +19,9 @@ pub struct AppData {
     signals: HashMap<String, Vec<SignalHandlerId>>,
 }
 
-fn get_widget_id<T>(widget: &T) -> String
-where
-    T: IsA<gtk::Buildable>,
-{
-    widget
-        .get_buildable_name()
-        .expect("Widget has no ID !")
-        .to_string()
-}
-
 impl AppData {
     pub fn new(builder: gtk::Builder) -> AppData {
-        AppData {
+        let mut app_data = AppData {
             builder,
             data: Data::new(),
             state: AppCurrentState {
@@ -41,7 +30,9 @@ impl AppData {
                 current_activity_id: None,
             },
             signals: HashMap::new(),
-        }
+        };
+        app_data.event_init();
+        app_data
     }
 
     pub fn show_mainwindow(&self) {
@@ -57,11 +48,21 @@ impl AppData {
         self.signals.entry(widget_id).or_default().push(signal);
     }
 
-    pub fn get_registered_signals<T>(&self, widget: &T) -> Option<&Vec<SignalHandlerId>>
+    fn get_registered_signals<T>(&self, widget: &T) -> Option<&Vec<SignalHandlerId>>
     where
         T: IsA<gtk::Buildable>,
     {
         let widget_id = get_widget_id(widget);
         self.signals.get(&widget_id)
     }
+}
+
+fn get_widget_id<T>(widget: &T) -> String
+where
+    T: IsA<gtk::Buildable>,
+{
+    widget
+        .get_buildable_name()
+        .expect("Widget has no ID !")
+        .to_string()
 }

@@ -1,8 +1,8 @@
 extern crate gio;
 extern crate gtk;
 
-mod app;
-mod config;
+pub mod app;
+pub mod config;
 
 use app::app_builder::build_app;
 use gio::prelude::*;
