@@ -30,6 +30,20 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="GroupMembersListStore">
+    <columns>
+      <!-- column-name EntityName -->
+      <column type="gchararray"/>
+      <!-- column-name DeleteIconName -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="GroupsListStore">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="DataWindow">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Plan - Add Data</property>
@@ -464,7 +478,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton">
+                          <object class="GtkButton" id="AddGroupButton">
                             <property name="label" translatable="yes">Add Group</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
@@ -484,11 +498,23 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkTreeView" id="GroupsTree">
+                      <object class="GtkTreeView" id="GroupsTreeView">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="model">GroupsListStore</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="GroupName">
+                            <property name="title" translatable="yes">Groups</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="GroupNameColumn"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
                         </child>
                       </object>
                       <packing>
@@ -504,7 +530,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="GroupSpecificBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
@@ -524,7 +550,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton">
+                          <object class="GtkButton" id="RemoveGroupButton">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
@@ -551,7 +577,11 @@
                           <object class="GtkLabel">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Create entities on the fly</property>
+                            <property name="margin-start">7</property>
+                            <property name="margin-end">7</property>
+                            <property name="margin-top">3</property>
+                            <property name="margin-bottom">3</property>
+                            <property name="label" translatable="yes">Create entities before adding them to the group</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -560,13 +590,17 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSwitch">
+                          <object class="GtkSwitch" id="CreateEntitiesBeforeAddingToGroupSwitch">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">3</property>
+                            <property name="margin-bottom">3</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">True</property>
+                            <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -578,11 +612,11 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="GroupSpecificBox">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="EntityIntoGroupNameEntry">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="placeholder-text" translatable="yes">Entity Name</property>
@@ -614,16 +648,45 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkTreeView" id="GroupMembersTree">
+                      <object class="GtkTreeView" id="GroupMembersTreeView">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="model">GroupMembersListStore</property>
+                        <property name="headers-clickable">False</property>
+                        <property name="search-column">0</property>
                         <property name="show-expanders">False</property>
+                        <property name="activate-on-single-click">True</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="GroupMembersColumn">
+                            <property name="resizable">True</property>
+                            <property name="sizing">autosize</property>
                             <property name="title" translatable="yes">Group Members</property>
+                            <property name="sort-column-id">0</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="GroupMemberName"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="DeleteColumn">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed-width">25</property>
+                            <property name="min-width">25</property>
+                            <property name="max-width">25</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererPixbuf" id="DeleteIconRenderer"/>
+                              <attributes>
+                                <attribute name="icon-name">1</attribute>
+                              </attributes>
+                            </child>
                           </object>
                         </child>
                       </object>

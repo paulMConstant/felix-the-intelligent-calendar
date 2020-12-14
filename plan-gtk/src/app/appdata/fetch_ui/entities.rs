@@ -5,71 +5,51 @@ use crate::app::appdata::AppData;
 impl AppData {
     #[must_use]
     pub fn entities_tree_view(&self) -> gtk::TreeView {
-        self.builder
-            .get_object("EntitiesTreeView")
-            .expect("Could not load EntitiesTreeView from ui file.")
+        fetch_ui_from_builder!(self, "EntitiesTreeView")
     }
 
     #[must_use]
     pub fn entities_list_store(&self) -> gtk::ListStore {
-        self.builder
-            .get_object("EntitiesListStore")
-            .expect("Could not load EntitiesListStore from ui file.")
+        fetch_ui_from_builder!(self, "EntitiesListStore")
     }
 
     #[must_use]
     pub fn entity_name_entry(&self) -> gtk::Entry {
-        self.builder
-            .get_object("EntityNameEntry")
-            .expect("Could not load EntityNameEntry from ui file.")
+        fetch_ui_from_builder!(self, "EntityNameEntry")
     }
 
     #[must_use]
-    pub fn add_entity_button(&self) -> gtk::Button {
-        self.builder
-            .get_object("AddEntityButton")
-            .expect("Could not load AddEntityButton from ui file.")
+    pub fn entity_add_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "AddEntityButton")
     }
 
     #[must_use]
-    pub fn add_entity_entry(&self) -> gtk::Entry {
-        self.builder
-            .get_object("AddEntityEntry")
-            .expect("Could not load AddEntityEntry from ui file.")
+    pub fn entity_add_entry(&self) -> gtk::Entry {
+        fetch_ui_from_builder!(self, "AddEntityEntry")
     }
 
     #[must_use]
     pub fn entity_remove_button(&self) -> gtk::Button {
-        self.builder
-            .get_object("EntityRemoveButton")
-            .expect("Could not load EntityRemoveButton from ui file.")
+        fetch_ui_from_builder!(self, "EntityRemoveButton")
     }
 
     #[must_use]
     pub fn entity_send_mail_switch(&self) -> gtk::Switch {
-        self.builder
-            .get_object("EntitySendMailSwitch")
-            .expect("Could not load EntitySendMailSwitch from ui file.")
+        fetch_ui_from_builder!(self, "EntitySendMailSwitch")
     }
 
     #[must_use]
     pub fn entity_mail_entry(&self) -> gtk::Entry {
-        self.builder
-            .get_object("EntityMailEntry")
-            .expect("Could not load EntityMailEntry from ui file.")
+        fetch_ui_from_builder!(self, "EntityMailEntry")
     }
 
     #[must_use]
     pub fn entity_custom_work_hours_switch(&self) -> gtk::Switch {
-        self.builder
-            .get_object("EntityCustomWorkHoursSwitch")
-            .expect("Could not load EntityCustomWorkHoursSwitch from ui file.")
+        fetch_ui_from_builder!(self, "EntityCustomWorkHoursSwitch")
     }
 
     #[must_use]
     pub fn entity_specific_box(&self) -> gtk::Box {
-        self.builder
-            .get_object("EntitySpecificBox")
-            .expect("Could not load EntitySpecificBox from ui file.")
+        fetch_ui_from_builder!(self, "EntitySpecificBox")
     }
 }

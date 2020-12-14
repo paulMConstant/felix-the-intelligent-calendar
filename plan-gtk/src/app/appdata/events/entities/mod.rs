@@ -1,5 +1,6 @@
 pub mod update_ui_state;
 
+use super::helpers::get_selection_from_treeview;
 use crate::app::appdata::AppData;
 use plan_backend::data::{clean_string, Entity};
 
@@ -7,14 +8,14 @@ use gtk::prelude::*;
 use std::convert::TryFrom;
 
 impl AppData {
-    pub(super) fn init_entity_events(&mut self) {
+    pub(super) fn event_init_entities(&mut self) {
         self.update_current_entity(&None);
     }
 
     pub fn event_add_entity(&mut self) {
-        fetch_from!(self, add_entity_entry);
-        let entity_name = add_entity_entry.get_text();
-        add_entity_entry.set_text("");
+        fetch_from!(self, entity_add_entry);
+        let entity_name = entity_add_entry.get_text();
+        entity_add_entry.set_text("");
 
         no_notify_assign_or_return!(entity_name, clean_string(entity_name));
         assign_or_return!(entity_name, self.data.add_entity(&entity_name));
@@ -38,25 +39,16 @@ impl AppData {
 
     pub fn event_entity_selected(&mut self) {
         fetch_from!(self, entities_tree_view);
-
-        let selection = entities_tree_view.get_selection().get_selected();
-        if selection.is_none() {
-            return;
+        let selected_entity = get_selection_from_treeview(entities_tree_view);
+        if let Some(entity_name) = selected_entity {
+            assign_or_return!(entity, self.data.entity(entity_name));
+            let entity = entity.clone();
+            self.update_current_entity(&Some(entity));
         }
-
-        let (model, iter) = selection.expect("We treated the None case above");
-        let value = model.get_value(&iter, 0);
-        let selected_entity: &str = value
-            .get()
-            .expect("Value in list store should be gchararray")
-            .expect("Value in list store should be gchararray");
-
-        assign_or_return!(entity, self.data.entity(selected_entity));
-        let entity = entity.clone();
-        self.update_current_entity(&Some(entity));
     }
 
     pub fn event_remove_entity(&mut self) {
+        // TODO same as groups
         let entity_to_remove =
             self.state.current_entity.as_ref().expect(
                 "Current entity should be selected before accessing any entity-related filed",
@@ -103,7 +95,6 @@ impl AppData {
                 "Current entity should be selected before accessing any entity-related field",
             );
         let new_name = entity_name_entry.get_text();
-        no_notify_assign_or_return!(new_name, clean_string(new_name));
         no_notify_assign_or_return!(
             new_name,
             self.data.set_entity_name(entity_to_rename, new_name)
@@ -113,6 +104,8 @@ impl AppData {
         let new_entity = new_entity.clone();
         self.update_current_entity(&Some(new_entity));
         self.update_entities_treeview(None);
+        self.update_current_group_members();
+        // self.update_current_activity_members();
     }
 
     pub fn event_set_entity_mail(&mut self) {

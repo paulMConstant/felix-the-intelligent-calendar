@@ -1,4 +1,4 @@
-use crate::app::appdata::AppData;
+use crate::app::appdata::{events::helpers::tree_path_from_selection_index, AppData};
 use plan_backend::data::Entity;
 
 use gtk::prelude::*;
@@ -22,7 +22,7 @@ impl AppData {
     /// If the given row is None, keeps the original row.
     pub(super) fn update_entities_treeview(&self, selection_row: Option<i32>) {
         self.update_entities_list_store();
-        self.update_treeview_selection(selection_row);
+        self.update_entities_treeview_selection(selection_row);
     }
 
     fn update_entities_list_store(&self) {
@@ -46,22 +46,14 @@ impl AppData {
     }
 
     /// Selects the row with given index.
-    fn update_treeview_selection(&self, selection_index: Option<i32>) {
-        // Select the corresponding entity in tree view
-        fetch_from!(self, entities_tree_view);
+    fn update_entities_treeview_selection(&self, selection_index: Option<i32>) {
+        fetch_from!(self, entities_tree_view, entities_list_store);
 
-        let selection_index = selection_index.or_else(|| {
-            if let Some(current_entity_name) = self.state.current_entity.as_ref() {
-                self.index_of_row_containing(&current_entity_name)
-            } else {
-                None
-            }
-        });
-
-        let selection_tree_path = match selection_index {
-            Some(index) => gtk::TreePath::from_indicesv(&[index]),
-            None => gtk::TreePath::new(),
-        };
+        let selection_tree_path = tree_path_from_selection_index(
+            selection_index,
+            entities_list_store,
+            self.state.current_entity.as_ref(),
+        );
         let focus_column = None::<&gtk::TreeViewColumn>;
         with_blocked_signals!(
             self,
@@ -70,31 +62,7 @@ impl AppData {
         );
     }
 
-    fn index_of_row_containing(&self, text: &String) -> Option<i32> {
-        fetch_from!(self, entities_list_store);
-        let iter = entities_list_store.get_iter_first();
-        let mut index = 0;
-        if let Some(iter) = iter {
-            loop {
-                let text_entities_list_store = entities_list_store
-                    .get_value(&iter, 0)
-                    .get::<String>()
-                    .expect("Iter should be valid; if it is not, we break out of the loop")
-                    .expect("Value should be of type gchararray, no problem to convert to string");
-                if text_entities_list_store == *text {
-                    return Some(index);
-                }
-                if entities_list_store.iter_next(&iter) == false {
-                    return None;
-                }
-                index += 1;
-            }
-        };
-        // We should never reach this point. This is here for the compiler.
-        return None;
-    }
-
-    fn update_current_entity_view(&mut self, entity: &Entity) {
+    fn update_current_entity_view(&self, entity: &Entity) {
         fetch_from!(
             self,
             entity_specific_box,
@@ -122,7 +90,7 @@ impl AppData {
         );
     }
 
-    fn hide_current_entity_view(&mut self) {
+    fn hide_current_entity_view(&self) {
         fetch_from!(self, entity_specific_box);
         entity_specific_box.hide();
     }

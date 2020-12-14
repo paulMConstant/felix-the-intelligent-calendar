@@ -16,23 +16,23 @@ impl App {
     fn connect_add_entity(&self) {
         fetch_from!(
             self.app_data.lock().unwrap(),
-            add_entity_button,
-            add_entity_entry
+            entity_add_button,
+            entity_add_entry
         );
 
         let app_data = self.app_data.clone();
         app_register_signal!(
             self,
-            add_entity_button,
-            add_entity_button.connect_clicked(clone!(@strong app_data => move |_| {
+            entity_add_button,
+            entity_add_button.connect_clicked(clone!(@strong app_data => move |_| {
                 app_data.lock().unwrap().event_add_entity()
             }))
         );
 
         app_register_signal!(
             self,
-            add_entity_entry,
-            add_entity_entry.connect_activate(clone!(@strong app_data => move |_| {
+            entity_add_entry,
+            entity_add_entry.connect_activate(clone!(@strong app_data => move |_| {
                 app_data.lock().unwrap().event_add_entity();
             }))
         );
