@@ -1,7 +1,8 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::Data;
+use crate::data::{ActivityID, Data};
 use crate::errors::Result;
+
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
@@ -14,7 +15,7 @@ impl Data {
     #[must_use]
     pub(in super::super::activities) fn entities_participating_through_this_group_only(
         &self,
-        activity_id: u16,
+        activity_id: ActivityID,
         group_name: &String,
     ) -> Result<HashSet<String>> {
         let all_participating_groups = self.activity(activity_id)?.groups_sorted();

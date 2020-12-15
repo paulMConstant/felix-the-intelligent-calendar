@@ -1,4 +1,4 @@
-pub mod update_ui_state;
+mod update_ui_state;
 
 use super::helpers::{get_next_element, get_selection_from_treeview};
 use crate::app::appdata::AppData;

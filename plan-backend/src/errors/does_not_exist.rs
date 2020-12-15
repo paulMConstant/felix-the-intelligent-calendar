@@ -2,7 +2,7 @@ use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
 
-use crate::data::TimeInterval;
+use crate::data::{ActivityID, TimeInterval};
 
 /// Defines the component type which does not exist.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -86,7 +86,7 @@ impl DoesNotExist {
     }
 
     #[must_use]
-    pub fn activity_does_not_exist(id: u16) -> Box<DoesNotExist> {
+    pub fn activity_does_not_exist(id: ActivityID) -> Box<DoesNotExist> {
         Box::new(DoesNotExist {
             what: ComponentType::Activity,
             who: id.to_string(),

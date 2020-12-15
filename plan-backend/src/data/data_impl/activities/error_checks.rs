@@ -1,6 +1,6 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::{Data, Time};
+use crate::data::{ActivityID, Data, Time};
 use crate::errors::{not_enough_time::NotEnoughTime, Result};
 
 impl Data {
@@ -13,7 +13,7 @@ impl Data {
     #[must_use]
     pub(in super::super::activities) fn check_entity_without_enough_time_to_set_duration(
         &self,
-        id: u16,
+        id: ActivityID,
         new_duration: Time,
     ) -> Result<()> {
         let activity = self.activity(id)?;
@@ -54,7 +54,7 @@ impl Data {
     #[must_use]
     pub(in super::super::activities) fn check_has_enough_time_for_activity(
         &self,
-        activity_id: u16,
+        activity_id: ActivityID,
         entity_name: &String,
     ) -> Result<()> {
         if self.has_enough_time_for_activity(activity_id, &entity_name)? {
@@ -77,7 +77,7 @@ impl Data {
     #[must_use]
     pub(in super::super::activities) fn check_entity_without_enough_time_for_activity(
         &self,
-        activity_id: u16,
+        activity_id: ActivityID,
         entities: &Vec<String>,
     ) -> Result<()> {
         // TODO use try_find
@@ -100,7 +100,11 @@ impl Data {
     ///
     /// Returns Err if the entity or activity does not exist.
     #[must_use]
-    fn has_enough_time_for_activity(&self, activity_id: u16, entity_name: &String) -> Result<bool> {
+    fn has_enough_time_for_activity(
+        &self,
+        activity_id: ActivityID,
+        entity_name: &String,
+    ) -> Result<bool> {
         let free_time = self.free_time_of(entity_name)?;
         Ok(free_time >= self.activity(activity_id)?.duration())
     }

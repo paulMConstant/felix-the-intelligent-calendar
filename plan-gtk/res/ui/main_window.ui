@@ -6,6 +6,16 @@
     <columns>
       <!-- column-name Name -->
       <column type="gchararray"/>
+      <!-- column-name ID1 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="ActivityEntitiesListStore">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name gboolean1 -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkImage" id="DeleteIcon">
@@ -22,6 +32,12 @@
     <property name="upper">55</property>
     <property name="step-increment">5</property>
     <property name="page-increment">5</property>
+  </object>
+  <object class="GtkListStore" id="GroupsListStore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkImage" id="SettingsIcon">
     <property name="visible">True</property>
@@ -108,7 +124,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkEntry" id="AddActivityEntry">
+                          <object class="GtkEntry" id="ActivityAddEntry">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="placeholder-text" translatable="yes">Activity Name</property>
@@ -140,12 +156,23 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkTreeView" id="ActivitiesTree">
+                      <object class="GtkTreeView" id="ActivitiesTreeView">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="headers-visible">False</property>
+                        <property name="model">ActivitiesListStore</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="ActivityNameCol">
+                            <property name="title" translatable="yes">Activities</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="ActivityNameRenderer"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
                         </child>
                       </object>
                       <packing>
@@ -558,12 +585,12 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="resize">True</property>
-                        <property name="shrink">False</property>
+                        <property name="resize">False</property>
+                        <property name="shrink">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkBox" id="ActivitySpecificBoxRight">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
@@ -572,7 +599,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkEntry" id="ActivityAdderEntry">
+                              <object class="GtkEntry" id="ActivityAddToEntry">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="placeholder-text" translatable="yes">Entity or Group</property>
@@ -584,7 +611,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton">
+                              <object class="GtkButton" id="ActivityAddToButton">
                                 <property name="label" translatable="yes">Add to Activity</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
@@ -604,36 +631,59 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkTreeView">
+                          <object class="GtkPaned" id="ActivityContentsPane">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkTreeViewColumn" id="ActivityMemberColumn">
-                                <property name="title" translatable="yes">Members</property>
+                              <object class="GtkTreeView" id="ActivityGroupsTreeView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">GroupsListStore</property>
                                 <child>
-                                  <object class="GtkCellRendererText" id="Name"/>
+                                  <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
+                                    <property name="title" translatable="yes">Groups</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="ActivityGroupsNameRenderer"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
+                              <packing>
+                                <property name="resize">True</property>
+                                <property name="shrink">False</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkTreeView" id="ActivityEntitiesTreeView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">ActivityEntitiesListStore</property>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
+                                    <property name="title" translatable="yes">Entities</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="ActivityEntitiesNameRenderer"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="resize">True</property>
+                                <property name="shrink">False</property>
+                              </packing>
                             </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkTreeView">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>

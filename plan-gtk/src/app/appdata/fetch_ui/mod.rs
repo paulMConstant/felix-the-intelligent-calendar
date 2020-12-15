@@ -1,5 +1,6 @@
-pub mod entities;
-pub mod groups;
+mod activities;
+mod entities;
+mod groups;
 
 use crate::app::appdata::AppData;
 use gtk::prelude::*;

@@ -8,6 +8,8 @@ use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
 use std::collections::HashSet;
 
+pub type ActivityID = u32;
+
 /// An activity represents a group of entities which must meet during a defined period of time.
 ///
 /// This structure is read-only. To modify an activity, use the Data structure.
@@ -25,7 +27,7 @@ impl Activity {
     /// * computation data (duration, time interval if inserted,
     /// incompatible activities, possible insertion times)
     #[must_use]
-    fn new(id: u16, name: String) -> Activity {
+    fn new(id: ActivityID, name: String) -> Activity {
         Activity {
             metadata: ActivityMetadata::new(id, name),
             computation_data: ActivityComputationData::new(),
@@ -36,7 +38,7 @@ impl Activity {
 
     /// Simple getter for the unique id.
     #[must_use]
-    pub fn id(&self) -> u16 {
+    pub fn id(&self) -> ActivityID {
         self.metadata.id()
     }
 

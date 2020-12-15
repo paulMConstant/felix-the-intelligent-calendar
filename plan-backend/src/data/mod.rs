@@ -7,6 +7,7 @@ use components::{
 };
 pub use components::{
     activity::Activity,
+    activity::ActivityID,
     entity::Entity,
     group::Group,
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},

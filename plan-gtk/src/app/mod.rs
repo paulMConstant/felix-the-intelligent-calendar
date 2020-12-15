@@ -45,5 +45,6 @@ impl App {
 
     pub fn show_mainwindow(&self) {
         self.app_data.lock().unwrap().show_mainwindow();
+        self.app_data.lock().unwrap().event_init();
     }
 }

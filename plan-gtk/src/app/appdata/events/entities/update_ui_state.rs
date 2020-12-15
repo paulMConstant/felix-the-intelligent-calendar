@@ -19,7 +19,7 @@ impl AppData {
     }
 
     /// Updates the treeview of entities and selects the given row if not None.
-    /// If the given row is None, keeps the original row.
+    /// If the given row is None, keeps the originally selected row.
     pub(in super::super) fn update_entities_treeview(&self, selection_row: Option<i32>) {
         self.update_entities_list_store();
         self.update_entities_treeview_selection(selection_row);

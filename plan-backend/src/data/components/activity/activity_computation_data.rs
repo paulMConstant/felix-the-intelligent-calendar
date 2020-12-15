@@ -1,4 +1,4 @@
-use crate::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use crate::data::{ActivityID, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 use crate::errors::{duration_too_short::DurationTooShort, Result};
 use std::collections::HashSet;
 
@@ -9,7 +9,7 @@ pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
     possible_insertion_beginnings_if_no_conflict: HashSet<Time>,
-    incompatible_activity_ids: Vec<u16>,
+    incompatible_activity_ids: Vec<ActivityID>,
 }
 
 impl ActivityComputationData {
@@ -47,7 +47,7 @@ impl ActivityComputationData {
     /// Getter for incompatible activities, used for testing. Should not go out of this module.
     #[cfg(test)]
     #[must_use]
-    pub fn incompatible_activity_ids(&self) -> &Vec<u16> {
+    pub fn incompatible_activity_ids(&self) -> &Vec<ActivityID> {
         &self.incompatible_activity_ids
     }
 
@@ -70,7 +70,7 @@ impl ActivityComputationData {
     /// Simple setter for incompatible activity ids.
     ///
     /// Does not perform any checks, the activities collection does it.
-    pub fn set_incompatible_activity_ids(&mut self, incompatible_ids: Vec<u16>) {
+    pub fn set_incompatible_activity_ids(&mut self, incompatible_ids: Vec<ActivityID>) {
         self.incompatible_activity_ids = incompatible_ids;
     }
 }

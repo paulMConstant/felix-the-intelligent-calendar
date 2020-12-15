@@ -11,6 +11,7 @@ impl App {
         self.connect_rename_entity();
         self.connect_set_entity_mail();
         self.connect_set_send_mail_to();
+
         self.connect_clean_add_entity_entry();
         self.connect_clean_entity_name_entry();
     }

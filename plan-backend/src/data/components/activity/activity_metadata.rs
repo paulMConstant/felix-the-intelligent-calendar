@@ -1,3 +1,4 @@
+use crate::data::ActivityID;
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
 
@@ -7,7 +8,7 @@ use std::collections::HashSet;
 /// the entities are not directly computation-related.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ActivityMetadata {
-    id: u16,
+    id: ActivityID,
     name: String,
     entities: HashSet<String>,
     groups: HashSet<String>,
@@ -16,7 +17,7 @@ pub struct ActivityMetadata {
 impl ActivityMetadata {
     /// Creates new activity metadata.
     #[must_use]
-    pub fn new(id: u16, name: String) -> ActivityMetadata {
+    pub fn new(id: ActivityID, name: String) -> ActivityMetadata {
         ActivityMetadata {
             id,
             name,
@@ -29,7 +30,7 @@ impl ActivityMetadata {
 
     /// Simple getter for the id.
     #[must_use]
-    pub fn id(&self) -> u16 {
+    pub fn id(&self) -> ActivityID {
         self.id
     }
 

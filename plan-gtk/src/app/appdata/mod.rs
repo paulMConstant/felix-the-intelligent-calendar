@@ -1,15 +1,16 @@
 pub mod events;
 pub mod fetch_ui;
 
+use plan_backend::data::{ActivityID, Data};
+
 use glib::signal::SignalHandlerId;
 use gtk::prelude::*;
-use plan_backend::data::Data;
 use std::collections::HashMap;
 
 struct AppCurrentState {
     current_entity: Option<String>,
     current_group: Option<String>,
-    //current_activity_id: Option<u16>,
+    current_activity_id: Option<ActivityID>,
 }
 
 pub struct AppData {
@@ -21,18 +22,16 @@ pub struct AppData {
 
 impl AppData {
     pub fn new(builder: gtk::Builder) -> AppData {
-        let mut app_data = AppData {
+        AppData {
             builder,
             data: Data::new(),
             state: AppCurrentState {
                 current_entity: None,
                 current_group: None,
-                //current_activity_id: None,
+                current_activity_id: None,
             },
             signals: HashMap::new(),
-        };
-        app_data.event_init();
-        app_data
+        }
     }
 
     pub fn show_mainwindow(&self) {

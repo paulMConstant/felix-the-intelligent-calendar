@@ -11,6 +11,7 @@ impl App {
         self.connect_remove_group();
         self.connect_rename_group();
         self.connect_remove_entity_from_group();
+
         self.connect_clean_add_entity_to_group_entry();
         self.connect_clean_add_group_entry();
         self.connect_clean_group_name_entry();
