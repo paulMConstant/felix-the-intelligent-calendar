@@ -1,8 +1,8 @@
 pub mod update_ui_state;
 
-use super::helpers::get_selection_from_treeview;
+use super::helpers::{get_next_element, get_selection_from_treeview};
 use crate::app::appdata::AppData;
-use plan_backend::data::{clean_string, Entity};
+use plan_backend::data::clean_string;
 
 use gtk::prelude::*;
 use std::convert::TryFrom;
@@ -48,11 +48,11 @@ impl AppData {
     }
 
     pub fn event_remove_entity(&mut self) {
-        // TODO same as groups
         let entity_to_remove =
             self.state.current_entity.as_ref().expect(
                 "Current entity should be selected before accessing any entity-related filed",
             );
+
         let position_of_removed_entity = self
             .data
             .entities_sorted()
@@ -62,28 +62,9 @@ impl AppData {
 
         let position_of_removed_entity = position_of_removed_entity
             .expect("Entity existed because it was removed, therefore this is valid");
-        let entities = self.data.entities_sorted();
-        let len = entities.len();
 
-        let (new_current_entity, position_of_new_current_entity) = if len == 0 {
-            // No entities left
-            (None::<Entity>, None::<i32>)
-        } else {
-            let position_of_new_current_entity = if len <= position_of_removed_entity {
-                // The removed entity was the last. Show the previous entity.
-                position_of_removed_entity - 1
-            } else {
-                // Show the next entity
-                position_of_removed_entity
-            };
-
-            let new_current_entity = Some(entities[position_of_new_current_entity].clone());
-            let position_of_next_entity = i32::try_from(position_of_new_current_entity)
-                .expect("There should not be 2 billion entities, we should be safe");
-
-            (new_current_entity, Some(position_of_next_entity))
-        };
-
+        let (new_current_entity, position_of_new_current_entity) =
+            get_next_element(position_of_removed_entity, self.data.entities_sorted());
         self.update_current_entity(&new_current_entity);
         self.update_entities_treeview(position_of_new_current_entity);
     }

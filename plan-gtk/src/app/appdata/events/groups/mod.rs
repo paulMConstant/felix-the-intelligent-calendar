@@ -1,8 +1,8 @@
 pub mod update_ui_state;
 
-use super::helpers::get_selection_from_treeview;
+use super::helpers::{get_next_element, get_selection_from_treeview};
 use crate::app::appdata::AppData;
-use plan_backend::data::{clean_string, Group};
+use plan_backend::data::clean_string;
 
 use gtk::prelude::*;
 use std::convert::TryFrom;
@@ -57,7 +57,6 @@ impl AppData {
     }
 
     pub fn event_remove_group(&mut self) {
-        // TODO same as entities
         let group_to_remove =
             self.state.current_group.as_ref().expect(
                 "Current group should be selected before accessing any group-related filed",
@@ -71,28 +70,9 @@ impl AppData {
 
         let position_of_removed_group = position_of_removed_group
             .expect("Group existed because it was removed, therefore this is valid");
-        let groups = self.data.groups_sorted();
-        let len = groups.len();
 
-        let (new_current_group, position_of_new_current_group) = if len == 0 {
-            //No group left
-            (None::<Group>, None::<i32>)
-        } else {
-            let position_of_new_current_group = if len <= position_of_removed_group {
-                // The removed group was the last. Show the previous one.
-                position_of_removed_group - 1
-            } else {
-                // Show the next group
-                position_of_removed_group
-            };
-
-            let new_current_group = Some(groups[position_of_new_current_group].clone());
-            let position_of_next_group = i32::try_from(position_of_new_current_group)
-                .expect("There should not be 2 billion groups, we should be safe");
-
-            (new_current_group, Some(position_of_next_group))
-        };
-
+        let (new_current_group, position_of_new_current_group) =
+            get_next_element(position_of_removed_group, self.data.groups_sorted());
         self.update_current_group(&new_current_group);
         self.update_groups_treeview(position_of_new_current_group);
     }
