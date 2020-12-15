@@ -1,5 +1,7 @@
 use gtk::prelude::*;
 
+use plan_backend::data::clean_string;
+
 /// Gets the selected string from the tree view.
 pub fn get_selection_from_treeview(treeview: gtk::TreeView) -> Option<String> {
     let selection = treeview.get_selection().get_selected();
@@ -63,4 +65,20 @@ fn index_of_row_containing(model: gtk::ListStore, text: &String) -> Option<i32> 
     };
     // We should never reach this point. This is here for the compiler.
     return None;
+}
+
+pub fn cleaned_input<S>(input: S) -> String
+where
+    S: Into<String>,
+{
+    let input = input.into();
+    if let Ok(clean_input) = clean_string(&input) {
+        if clean_input == input.trim() {
+            input
+        } else {
+            clean_input
+        }
+    } else {
+        input
+    }
 }

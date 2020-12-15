@@ -10,6 +10,10 @@ use std::convert::TryFrom;
 impl AppData {
     pub(super) fn event_init_groups(&mut self) {
         self.update_current_group(&None);
+        self.expand_group_members_tree_view_name_col();
+    }
+
+    fn expand_group_members_tree_view_name_col(&self) {
         fetch_from!(self, group_members_tree_view);
         group_members_tree_view
             .get_column(0)
@@ -20,7 +24,7 @@ impl AppData {
     pub fn event_add_group(&mut self) {
         fetch_from!(self, group_add_entry);
         let group_to_add = group_add_entry.get_text();
-        group_add_entry.set_text("");
+        with_blocked_signals!(self, group_add_entry.set_text(""), group_add_entry);
 
         no_notify_assign_or_return!(group_to_add, clean_string(group_to_add));
         assign_or_return!(group_name, self.data.add_group(group_to_add));
@@ -104,23 +108,35 @@ impl AppData {
             new_name,
             self.data.set_group_name(group_to_rename, new_name)
         );
-        assign_or_return!(new_group, self.data.group(new_name));
-
-        let new_group = new_group.clone();
-        self.update_current_group(&Some(new_group));
+        self.update_current_group_without_ui(Some(new_name));
         self.update_groups_treeview(None);
     }
 
     pub fn event_add_entity_to_group(&mut self) {
-        fetch_from!(self, entity_into_group_name_entry);
+        fetch_from!(
+            self,
+            entity_into_group_name_entry,
+            create_entity_before_adding_to_group_switch
+        );
         let group_in_which_to_add =
             self.state.current_group.as_ref().expect(
                 "Current group should be selected before accessing any group-related filed",
             );
         let entity_name = entity_into_group_name_entry.get_text();
-        entity_into_group_name_entry.set_text("");
+        with_blocked_signals!(
+            self,
+            entity_into_group_name_entry.set_text(""),
+            entity_into_group_name_entry
+        );
 
         no_notify_assign_or_return!(entity_name, clean_string(entity_name));
+        if create_entity_before_adding_to_group_switch.get_active() {
+            if let Err(_) = self.data.entity(&entity_name) {
+                return_if_err!(self.data.add_entity(&entity_name));
+                self.update_entities_treeview(None);
+            }
+        }
+
         return_if_err!(self
             .data
             .add_entity_to_group(group_in_which_to_add, entity_name));

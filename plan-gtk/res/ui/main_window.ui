@@ -178,7 +178,7 @@
                               <object class="GtkEntry" id="ActivityNameEntry">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
-                                <property name="placeholder-text" translatable="yes">Select an activity</property>
+                                <property name="placeholder-text" translatable="yes">Activity Name</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>

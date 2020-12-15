@@ -4,23 +4,23 @@ use plan_backend::data::Entity;
 use gtk::prelude::*;
 
 impl AppData {
+    pub(super) fn update_current_entity_without_ui(&mut self, entity: Option<String>) {
+        self.state.current_entity = entity;
+    }
+
     /// Updates the state of AppData and Entity-specific UI.
     pub(super) fn update_current_entity(&mut self, entity: &Option<Entity>) {
-        match entity {
-            Some(entity) => {
-                self.update_current_entity_view(entity);
-                self.state.current_entity = Some(entity.name());
-            }
-            None => {
-                self.hide_current_entity_view();
-                self.state.current_entity = None;
-            }
+        self.update_current_entity_without_ui(entity.as_ref().map(|entity| entity.name()));
+        if entity.is_some() {
+            self.update_current_entity_view();
+        } else {
+            self.hide_current_entity_view();
         };
     }
 
     /// Updates the treeview of entities and selects the given row if not None.
     /// If the given row is None, keeps the original row.
-    pub(super) fn update_entities_treeview(&self, selection_row: Option<i32>) {
+    pub(in super::super) fn update_entities_treeview(&self, selection_row: Option<i32>) {
         self.update_entities_list_store();
         self.update_entities_treeview_selection(selection_row);
     }
@@ -62,7 +62,7 @@ impl AppData {
         );
     }
 
-    fn update_current_entity_view(&self, entity: &Entity) {
+    fn update_current_entity_view(&self) {
         fetch_from!(
             self,
             entity_specific_box,
@@ -72,16 +72,23 @@ impl AppData {
             entity_custom_work_hours_switch
         );
 
+        let current_entity = self
+            .state
+            .current_entity
+            .as_ref()
+            .expect("Current group should be set before updating the fields");
+        assign_or_return!(current_entity, self.data.entity(current_entity));
+
         entity_specific_box.show();
 
         with_blocked_signals!(
             self,
             {
-                entity_name_entry.set_text(&entity.name());
-                entity_mail_entry.set_text(&entity.mail());
+                entity_name_entry.set_text(&current_entity.name());
+                entity_mail_entry.set_text(&current_entity.mail());
                 entity_custom_work_hours_switch
-                    .set_active(entity.custom_work_hours().is_empty() == false);
-                entity_send_mail_switch.set_active(entity.send_me_a_mail());
+                    .set_active(current_entity.custom_work_hours().is_empty() == false);
+                entity_send_mail_switch.set_active(current_entity.send_me_a_mail());
             },
             entity_name_entry,
             entity_mail_entry,

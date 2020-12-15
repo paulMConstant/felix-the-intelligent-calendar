@@ -11,6 +11,8 @@ impl App {
         self.connect_rename_entity();
         self.connect_set_entity_mail();
         self.connect_set_send_mail_to();
+        self.connect_clean_add_entity_entry();
+        self.connect_clean_entity_name_entry();
     }
 
     fn connect_add_entity(&self) {
@@ -100,6 +102,36 @@ impl App {
             entity_send_mail_switch.connect_property_active_notify(
                 clone!(@weak app_data => move |_| {
                     app_data.lock().unwrap().event_set_send_mail();
+                })
+            )
+        );
+    }
+
+    fn connect_clean_add_entity_entry(&self) {
+        fetch_from!(self.app_data.lock().unwrap(), entity_add_entry);
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            entity_add_entry,
+            entity_add_entry.connect_changed(
+                clone!(@strong app_data, @weak entity_add_entry => move |_| {
+                    app_data.lock().unwrap().event_clean_entry_content(entity_add_entry);
+                })
+            )
+        );
+    }
+
+    fn connect_clean_entity_name_entry(&self) {
+        fetch_from!(self.app_data.lock().unwrap(), entity_name_entry);
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            entity_name_entry,
+            entity_name_entry.connect_changed(
+                clone!(@strong app_data, @weak entity_name_entry => move |_| {
+                    app_data.lock().unwrap().event_clean_entry_content(entity_name_entry);
                 })
             )
         );

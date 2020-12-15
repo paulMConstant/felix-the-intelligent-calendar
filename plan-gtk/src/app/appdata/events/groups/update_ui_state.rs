@@ -7,39 +7,36 @@ impl AppData {
     pub(in super::super) fn update_current_group_members(&mut self) {
         fetch_from!(self, group_members_tree_view, group_members_list_store);
 
-        let current_group = self
-            .state
-            .current_group
-            .as_ref()
-            .expect("Current group should be set before updating the fields");
-        assign_or_return!(current_group, self.data.group(current_group));
+        if let Some(current_group) = self.state.current_group.as_ref() {
+            assign_or_return!(current_group, self.data.group(current_group));
 
-        with_blocked_signals!(
-            self,
-            {
-                group_members_list_store.clear();
-                for entity_name in current_group.entities_sorted() {
-                    group_members_list_store.insert_with_values(
-                        None,
-                        &[0, 1],
-                        &[&entity_name, &"user-trash-symbolic"],
-                    );
-                }
-            },
-            group_members_tree_view
-        );
+            with_blocked_signals!(
+                self,
+                {
+                    group_members_list_store.clear();
+                    for entity_name in current_group.entities_sorted() {
+                        group_members_list_store.insert_with_values(
+                            None,
+                            &[0, 1],
+                            &[&entity_name, &"user-trash-symbolic"],
+                        );
+                    }
+                },
+                group_members_tree_view
+            );
+        }
+    }
+
+    pub(super) fn update_current_group_without_ui(&mut self, group: Option<String>) {
+        self.state.current_group = group;
     }
 
     pub(super) fn update_current_group(&mut self, group: &Option<Group>) {
-        match group {
-            Some(group) => {
-                self.state.current_group = Some(group.name());
-                self.update_current_group_view();
-            }
-            None => {
-                self.state.current_group = None;
-                self.hide_current_group_view();
-            }
+        self.update_current_group_without_ui(group.as_ref().map(|group| group.name()));
+        if group.is_some() {
+            self.update_current_group_view();
+        } else {
+            self.hide_current_group_view();
         };
     }
 

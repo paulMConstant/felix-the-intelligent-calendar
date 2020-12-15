@@ -15,7 +15,7 @@ impl AppData {
     pub fn event_add_entity(&mut self) {
         fetch_from!(self, entity_add_entry);
         let entity_name = entity_add_entry.get_text();
-        entity_add_entry.set_text("");
+        with_blocked_signals!(self, entity_add_entry.set_text(""), entity_add_entry);
 
         no_notify_assign_or_return!(entity_name, clean_string(entity_name));
         assign_or_return!(entity_name, self.data.add_entity(&entity_name));
@@ -99,10 +99,7 @@ impl AppData {
             new_name,
             self.data.set_entity_name(entity_to_rename, new_name)
         );
-        assign_or_return!(new_entity, self.data.entity(new_name));
-
-        let new_entity = new_entity.clone();
-        self.update_current_entity(&Some(new_entity));
+        self.update_current_entity_without_ui(Some(new_name));
         self.update_entities_treeview(None);
         self.update_current_group_members();
         // self.update_current_activity_members();

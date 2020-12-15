@@ -1,8 +1,9 @@
 use crate::app::appdata::AppData;
 
-pub mod entities;
-pub mod groups;
-pub mod helpers;
+mod entities;
+mod general;
+mod groups;
+mod helpers;
 
 impl AppData {
     pub(super) fn event_init(&mut self) {

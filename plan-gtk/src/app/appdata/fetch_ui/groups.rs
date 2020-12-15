@@ -57,4 +57,14 @@ impl AppData {
     pub fn group_members_tree_view(&self) -> gtk::TreeView {
         fetch_ui_from_builder!(self, "GroupMembersTreeView")
     }
+
+    #[must_use]
+    pub fn entity_into_group_completion(&self) -> gtk::EntryCompletion {
+        fetch_ui_from_builder!(self, "EntityIntoGroupCompletion")
+    }
+
+    #[must_use]
+    pub fn create_entity_before_adding_to_group_switch(&self) -> gtk::Switch {
+        fetch_ui_from_builder!(self, "CreateEntityBeforeAddingToGroupSwitch")
+    }
 }
