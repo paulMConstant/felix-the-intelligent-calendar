@@ -44,6 +44,7 @@ impl AppData {
         let group = group.clone();
         self.update_current_group(&Some(group));
         self.update_groups_treeview(Some(position_of_new_group));
+        self.update_activities_completion_list_store();
     }
 
     pub fn event_group_selected(&mut self) {
@@ -75,6 +76,8 @@ impl AppData {
             get_next_element(position_of_removed_group, self.data.groups_sorted());
         self.update_current_group(&new_current_group);
         self.update_groups_treeview(position_of_new_current_group);
+        self.update_current_activity_groups();
+        self.update_activities_completion_list_store();
     }
 
     pub fn event_rename_group(&mut self) {
@@ -90,6 +93,8 @@ impl AppData {
         );
         self.update_current_group_without_ui(Some(new_name));
         self.update_groups_treeview(None);
+        self.update_current_activity_groups();
+        self.update_activities_completion_list_store();
     }
 
     pub fn event_add_entity_to_group(&mut self) {
@@ -122,6 +127,7 @@ impl AppData {
             .add_entity_to_group(group_in_which_to_add, entity_name));
 
         self.update_current_group_members();
+        self.update_current_activity_entities();
     }
 
     pub fn event_remove_entity_from_group(
@@ -153,6 +159,7 @@ impl AppData {
                 .remove_entity_from_group(current_group_name, entity_to_remove));
 
             self.update_current_group_members();
+            self.update_current_activity_entities();
         }
     }
 }

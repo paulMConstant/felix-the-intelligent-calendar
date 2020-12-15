@@ -87,4 +87,9 @@ impl AppData {
     pub fn activity_insertion_time_box(&self) -> gtk::Box {
         fetch_ui_from_builder!(self, "ActivityInsertionTimeBox")
     }
+
+    #[must_use]
+    pub fn activity_participants_completion_list_store(&self) -> gtk::ListStore {
+        fetch_ui_from_builder!(self, "ActivityParticipantsCompletionListStore")
+    }
 }

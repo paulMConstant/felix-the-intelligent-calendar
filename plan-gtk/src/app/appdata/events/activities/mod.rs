@@ -2,7 +2,7 @@ mod update_ui_state;
 
 use super::helpers::{get_next_element, get_selection_from_treeview};
 use crate::app::appdata::AppData;
-use plan_backend::data::{clean_string, ActivityID};
+use plan_backend::data::{clean_string, ActivityID, Time};
 
 use gtk::prelude::*;
 use std::convert::TryFrom;
@@ -82,5 +82,25 @@ impl AppData {
         no_notify_return_if_err!(self.data.set_activity_name(activity_to_rename_id, new_name));
         self.update_current_activity_without_ui(Some(activity_to_rename_id));
         self.update_activities_treeview(None);
+    }
+
+    pub fn event_set_activity_duration(&mut self) {
+        fetch_from!(
+            self,
+            activity_duration_minute_spin,
+            activity_duration_hour_spin
+        );
+        let minutes = i8::try_from(activity_duration_minute_spin.get_value().trunc() as i64)
+            .expect("Spin value should be between 0 and 55");
+        let hours = i8::try_from(activity_duration_hour_spin.get_value().trunc() as i64)
+            .expect("Spin value should be between 0 and 23");
+
+        let id = self
+            .state
+            .current_activity_id
+            .expect("Current activity should be set before setting duration");
+        return_if_err!(self
+            .data
+            .set_activity_duration(id, Time::new(hours, minutes)));
     }
 }

@@ -9,6 +9,7 @@ impl App {
         self.connect_activity_selected();
         self.connect_remove_activity();
         self.connect_rename_activity();
+        self.connect_set_activity_duration();
 
         self.connect_clean_add_activity_entry();
         self.connect_clean_activity_name_entry();
@@ -126,6 +127,31 @@ impl App {
                     app_data.lock().unwrap().event_clean_entry_content(activity_add_to_entry);
                 })
             )
+        );
+    }
+
+    fn connect_set_activity_duration(&self) {
+        fetch_from!(
+            self.app_data.lock().unwrap(),
+            activity_duration_minute_spin,
+            activity_duration_hour_spin
+        );
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            activity_duration_minute_spin,
+            activity_duration_minute_spin.connect_changed(clone!(@strong app_data => move |_| {
+                app_data.lock().unwrap().event_set_activity_duration();
+            }))
+        );
+
+        app_register_signal!(
+            self,
+            activity_duration_hour_spin,
+            activity_duration_hour_spin.connect_changed(clone!(@strong app_data => move |_| {
+                app_data.lock().unwrap().event_set_activity_duration();
+            }))
         );
     }
 }

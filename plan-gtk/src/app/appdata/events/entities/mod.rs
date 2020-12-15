@@ -35,6 +35,7 @@ impl AppData {
         let entity = entity.clone();
         self.update_current_entity(&Some(entity));
         self.update_entities_treeview(Some(position_of_new_entity));
+        self.update_activities_completion_list_store();
     }
 
     pub fn event_entity_selected(&mut self) {
@@ -67,6 +68,9 @@ impl AppData {
             get_next_element(position_of_removed_entity, self.data.entities_sorted());
         self.update_current_entity(&new_current_entity);
         self.update_entities_treeview(position_of_new_current_entity);
+        self.update_current_group_members();
+        self.update_current_activity_entities();
+        self.update_activities_completion_list_store();
     }
 
     pub fn event_rename_entity(&mut self) {
@@ -84,6 +88,7 @@ impl AppData {
         self.update_entities_treeview(None);
         self.update_current_group_members();
         self.update_current_activity_entities();
+        self.update_activities_completion_list_store();
     }
 
     pub fn event_set_entity_mail(&mut self) {

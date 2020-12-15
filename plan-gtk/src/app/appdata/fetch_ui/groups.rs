@@ -67,4 +67,9 @@ impl AppData {
     pub fn create_entity_before_adding_to_group_switch(&self) -> gtk::Switch {
         fetch_ui_from_builder!(self, "CreateEntityBeforeAddingToGroupSwitch")
     }
+
+    #[must_use]
+    pub fn add_entity_to_group_box(&self) -> gtk::Box {
+        fetch_ui_from_builder!(self, "AddEntityToGroupBox")
+    }
 }

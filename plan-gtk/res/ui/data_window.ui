@@ -32,12 +32,16 @@
   </object>
   <object class="GtkEntryCompletion" id="EntityIntoGroupCompletion">
     <property name="model">EntitiesListStore</property>
+    <property name="minimum-key-length">0</property>
     <property name="text-column">0</property>
     <property name="inline-completion">True</property>
-    <property name="popup-completion">False</property>
-    <property name="popup-set-width">False</property>
-    <property name="popup-single-match">False</property>
     <property name="inline-selection">True</property>
+    <child>
+      <object class="GtkCellRendererText" id="Name"/>
+      <attributes>
+        <attribute name="text">0</attribute>
+      </attributes>
+    </child>
   </object>
   <object class="GtkListStore" id="GroupMembersListStore">
     <columns>
@@ -507,13 +511,48 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkBox" id="AddEntityToGroupBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkEntry" id="EntityIntoGroupNameEntry">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="placeholder-text" translatable="yes">Entity Name</property>
+                            <property name="completion">EntityIntoGroupCompletion</property>
+                            <property name="input-purpose">name</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="AddToGroupButton">
+                            <property name="label" translatable="yes">Add To Group</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkTreeView" id="GroupsTreeView">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="model">GroupsListStore</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
-                        </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="GroupName">
                             <property name="title" translatable="yes">Groups</property>
@@ -529,7 +568,7 @@
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -618,44 +657,6 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkEntry" id="EntityIntoGroupNameEntry">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="placeholder-text" translatable="yes">Entity Name</property>
-                            <property name="completion">EntityIntoGroupCompletion</property>
-                            <property name="input-purpose">name</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="AddToGroupButton">
-                            <property name="label" translatable="yes">Add To Group</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>

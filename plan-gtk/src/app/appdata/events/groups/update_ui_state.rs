@@ -1,6 +1,7 @@
 use crate::app::appdata::{events::helpers::tree_path_from_selection_index, AppData};
 use plan_backend::data::Group;
 
+use gettextrs::gettext as tr;
 use gtk::prelude::*;
 
 impl AppData {
@@ -82,14 +83,15 @@ impl AppData {
     }
 
     fn update_current_group_view(&mut self) {
-        fetch_from!(self, group_specific_box, group_name_entry);
+        fetch_from!(self, group_name_entry, add_to_group_button);
         let current_group = self
             .state
             .current_group
             .as_ref()
             .expect("Current group should be set before updating the fields");
 
-        group_specific_box.show();
+        self.show_current_group_view();
+        add_to_group_button.set_label(&format!("{} '{}'", tr("Add to"), current_group));
 
         with_blocked_signals!(
             self,
@@ -100,7 +102,14 @@ impl AppData {
     }
 
     fn hide_current_group_view(&self) {
-        fetch_from!(self, group_specific_box);
+        fetch_from!(self, group_specific_box, add_entity_to_group_box);
         group_specific_box.hide();
+        add_entity_to_group_box.hide();
+    }
+
+    fn show_current_group_view(&self) {
+        fetch_from!(self, group_specific_box, add_entity_to_group_box);
+        group_specific_box.show();
+        add_entity_to_group_box.show();
     }
 }
