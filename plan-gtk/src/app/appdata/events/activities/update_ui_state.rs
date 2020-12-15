@@ -64,7 +64,72 @@ impl AppData {
         );
     }
 
-    fn update_current_activity_view(&self) {}
+    fn update_current_activity_view(&self) {
+        fetch_from!(
+            self,
+            activity_specific_pane,
+            activity_name_entry,
+            activity_duration_hour_spin,
+            activity_duration_minute_spin,
+            activity_beginning_hour_spin,
+            activity_beginning_minute_spin,
+            activity_end_hour_spin,
+            activity_end_minute_spin,
+            activity_inserted_switch,
+            activity_insertion_time_box
+        );
+
+        activity_specific_pane.show();
+
+        let activity_id = self
+            .state
+            .current_activity_id
+            .expect("Current activity ID should be set before updating activity view");
+        assign_or_return!(activity, self.data.activity(activity_id));
+
+        with_blocked_signals!(
+            self,
+            {
+                activity_name_entry.set_text(&activity.name());
+
+                let activity_duration = activity.duration();
+                activity_duration_hour_spin.set_value(activity_duration.hours() as f64);
+                activity_duration_minute_spin.set_value(activity_duration.minutes() as f64);
+
+                if let Some(interval) = activity.insertion_interval() {
+                    activity_inserted_switch.set_active(true);
+                    activity_insertion_time_box.show();
+
+                    let beginning = interval.beginning();
+                    activity_beginning_hour_spin.set_value(beginning.hours() as f64);
+                    activity_beginning_minute_spin.set_value(beginning.minutes() as f64);
+
+                    let end = interval.end();
+                    activity_end_hour_spin.set_value(end.hours() as f64);
+                    activity_end_minute_spin.set_value(end.minutes() as f64);
+                } else {
+                    activity_inserted_switch.set_active(false);
+                    activity_insertion_time_box.hide();
+                }
+            },
+            activity_name_entry,
+            activity_duration_hour_spin,
+            activity_duration_minute_spin,
+            activity_beginning_hour_spin,
+            activity_beginning_minute_spin,
+            activity_end_hour_spin,
+            activity_end_minute_spin,
+            activity_inserted_switch,
+            activity_insertion_time_box
+        );
+
+        self.update_current_activity_entities();
+        self.update_current_activity_groups();
+    }
+
+    pub(in super::super) fn update_current_activity_entities(&self) {}
+
+    pub(in super::super) fn update_current_activity_groups(&self) {}
 
     fn hide_current_activity_view(&self) {
         fetch_from!(self, activity_specific_pane);

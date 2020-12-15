@@ -6,6 +6,9 @@ use crate::app::App;
 impl App {
     pub fn connect_activities_tab(&self) {
         self.connect_add_activity();
+        self.connect_activity_selected();
+        self.connect_remove_activity();
+        self.connect_rename_activity();
 
         self.connect_clean_add_activity_entry();
         self.connect_clean_activity_name_entry();
@@ -37,6 +40,45 @@ impl App {
 
             app_data.lock().unwrap().event_add_activity()
                              }))
+        );
+    }
+
+    fn connect_activity_selected(&self) {
+        fetch_from!(self.app_data.lock().unwrap(), activities_tree_view);
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            activities_tree_view,
+            activities_tree_view.connect_cursor_changed(clone!(@strong app_data => move |_| {
+               app_data.lock().unwrap().event_activity_selected();
+            }),)
+        );
+    }
+
+    fn connect_remove_activity(&self) {
+        fetch_from!(self.app_data.lock().unwrap(), activity_remove_button);
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            activity_remove_button,
+            activity_remove_button.connect_clicked(clone!(@strong app_data => move |_| {
+                app_data.lock().unwrap().event_remove_activity();
+            }))
+        );
+    }
+
+    fn connect_rename_activity(&self) {
+        fetch_from!(self.app_data.lock().unwrap(), activity_name_entry);
+
+        let app_data = self.app_data.clone();
+        app_register_signal!(
+            self,
+            activity_name_entry,
+            activity_name_entry.connect_changed(clone!(@strong app_data => move |_| {
+                app_data.lock().unwrap().event_rename_activity();
+            }))
         );
     }
 

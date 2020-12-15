@@ -42,4 +42,49 @@ impl AppData {
     pub fn activities_list_store(&self) -> gtk::ListStore {
         fetch_ui_from_builder!(self, "ActivitiesListStore")
     }
+
+    #[must_use]
+    pub fn activity_duration_hour_spin(&self) -> gtk::SpinButton {
+        fetch_ui_from_builder!(self, "ActivityDurationHourSpin")
+    }
+
+    #[must_use]
+    pub fn activity_duration_minute_spin(&self) -> gtk::SpinButton {
+        fetch_ui_from_builder!(self, "ActivityDurationMinuteSpin")
+    }
+
+    #[must_use]
+    pub fn activity_inserted_switch(&self) -> gtk::Switch {
+        fetch_ui_from_builder!(self, "ActivityInsertedSwitch")
+    }
+
+    #[must_use]
+    pub fn activity_beginning_hour_spin(&self) -> gtk::SpinButton {
+        fetch_ui_from_builder!(self, "ActivityBeginningHourSpin")
+    }
+
+    #[must_use]
+    pub fn activity_beginning_minute_spin(&self) -> gtk::SpinButton {
+        fetch_ui_from_builder!(self, "ActivityBeginningMinuteSpin")
+    }
+
+    #[must_use]
+    pub fn activity_end_hour_spin(&self) -> gtk::SpinButton {
+        fetch_ui_from_builder!(self, "ActivityEndHourSpin")
+    }
+
+    #[must_use]
+    pub fn activity_end_minute_spin(&self) -> gtk::SpinButton {
+        fetch_ui_from_builder!(self, "ActivityEndMinuteSpin")
+    }
+
+    #[must_use]
+    pub fn activity_color_button(&self) -> gtk::ColorButton {
+        fetch_ui_from_builder!(self, "ActivityColorButton")
+    }
+
+    #[must_use]
+    pub fn activity_insertion_time_box(&self) -> gtk::Box {
+        fetch_ui_from_builder!(self, "ActivityInsertionTimeBox")
+    }
 }

@@ -61,7 +61,7 @@ impl AppData {
         return_if_err!(self.data.remove_entity(entity_to_remove));
 
         let position_of_removed_entity = position_of_removed_entity
-            .expect("Entity existed because it was removed, therefore this is valid");
+            .expect("Entity existed because it was removed, therefore it had a position");
 
         let (new_current_entity, position_of_new_current_entity) =
             get_next_element(position_of_removed_entity, self.data.entities_sorted());
@@ -83,7 +83,7 @@ impl AppData {
         self.update_current_entity_without_ui(Some(new_name));
         self.update_entities_treeview(None);
         self.update_current_group_members();
-        // self.update_current_activity_members();
+        self.update_current_activity_entities();
     }
 
     pub fn event_set_entity_mail(&mut self) {

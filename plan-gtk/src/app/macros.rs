@@ -113,16 +113,25 @@ macro_rules! no_notify_assign_or_return {
     };
 }
 
-/// If the given expression fails, notifies the user.
+/// If the given expression fails, notifies the user and returns.
 macro_rules! return_if_err {
     ($expr: expr) => {
         use crate::app::notify::notify_err;
         if let Err(e) = $expr {
-            notify_err(e)
+            notify_err(e);
+            return;
         }
     };
 }
 
+/// If the given expression fails, silently returns.
+macro_rules! no_notify_return_if_err {
+    ($expr: expr) => {
+        if let Err(_) = $expr {
+            return;
+        }
+    };
+}
 // Fetch ui macros
 
 /// Fetches the gtk component with given name from the builder.
