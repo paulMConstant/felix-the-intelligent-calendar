@@ -1,8 +1,9 @@
 mod update_ui_state;
 
 use super::helpers::{get_next_element, get_selection_from_treeview};
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 use plan_backend::data::clean_string;
+use plan_backend::errors::Result;
 
 use gtk::prelude::*;
 use std::convert::TryFrom;
@@ -16,10 +17,13 @@ impl AppData {
         fetch_from!(self, entity_add_entry);
         let entity_name = entity_add_entry.get_text();
         with_blocked_signals!(self, entity_add_entry.set_text(""), entity_add_entry);
-
         no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-        assign_or_return!(entity_name, self.data.add_entity(&entity_name));
-        assign_or_return!(entity, self.data.entity(&entity_name));
+        return_if_err!(self.add_entity(&entity_name));
+    }
+
+    pub(in super::super) fn add_entity(&mut self, entity_name: &String) -> Result<()> {
+        let entity_name = self.data.add_entity(entity_name)?;
+        let entity = self.data.entity(&entity_name)?;
 
         // Fetch where the entity was added.
         let position_of_new_entity = self
@@ -36,6 +40,7 @@ impl AppData {
         self.update_current_entity(&Some(entity));
         self.update_entities_treeview(Some(position_of_new_entity));
         self.update_activities_completion_list_store();
+        Ok(())
     }
 
     pub fn event_entity_selected(&mut self) {
@@ -81,7 +86,7 @@ impl AppData {
             );
         let new_name = entity_name_entry.get_text();
         no_notify_assign_or_return!(
-            new_name,
+            new_name, // TODO 
             self.data.set_entity_name(entity_to_rename, new_name)
         );
         self.update_current_entity_without_ui(Some(new_name));
@@ -89,6 +94,16 @@ impl AppData {
         self.update_current_group_members();
         self.update_current_activity_entities();
         self.update_activities_completion_list_store();
+    }
+
+    pub fn on_entity_renamed(&mut self) {
+        // TODO CQRS to avoid deadlock
+        //self.update_current_entity_without_ui(&Some(new_name);
+        //self.update_entities_treeview(None);
+        //self.update_current_group_members();
+        //self.update_current_activity_entities();
+        //self.update_activities_completion_list_store();
+
     }
 
     pub fn event_set_entity_mail(&mut self) {

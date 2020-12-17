@@ -32,7 +32,6 @@
   </object>
   <object class="GtkEntryCompletion" id="EntityIntoGroupCompletion">
     <property name="model">EntitiesListStore</property>
-    <property name="minimum-key-length">0</property>
     <property name="text-column">0</property>
     <property name="inline-completion">True</property>
     <property name="inline-selection">True</property>
@@ -553,6 +552,9 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="model">GroupsListStore</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="GroupName">
                             <property name="title" translatable="yes">Groups</property>

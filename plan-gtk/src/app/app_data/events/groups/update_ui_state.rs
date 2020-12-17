@@ -1,4 +1,4 @@
-use crate::app::appdata::{events::helpers::tree_path_from_selection_index, AppData};
+use crate::app::app_data::{events::helpers::tree_path_from_selection_index, AppData};
 use plan_backend::data::Group;
 
 use gettextrs::gettext as tr;
@@ -28,12 +28,17 @@ impl AppData {
         }
     }
 
-    pub(super) fn update_current_group_without_ui(&mut self, group: Option<String>) {
+    pub(super) fn update_current_group_name_only(&mut self, group: Option<String>) {
         self.state.current_group = group;
+
+        if let Some(current_group) = &self.state.current_group {
+            fetch_from!(self, add_to_group_button);
+            add_to_group_button.set_label(&format!("{} '{}'", tr("Add to"), current_group));
+        }
     }
 
     pub(super) fn update_current_group(&mut self, group: &Option<Group>) {
-        self.update_current_group_without_ui(group.as_ref().map(|group| group.name()));
+        self.update_current_group_name_only(group.as_ref().map(|group| group.name()));
         if group.is_some() {
             self.update_current_group_view();
         } else {
@@ -83,7 +88,7 @@ impl AppData {
     }
 
     fn update_current_group_view(&mut self) {
-        fetch_from!(self, group_name_entry, add_to_group_button);
+        fetch_from!(self, group_name_entry);
         let current_group = self
             .state
             .current_group
@@ -91,7 +96,6 @@ impl AppData {
             .expect("Current group should be set before updating the fields");
 
         self.show_current_group_view();
-        add_to_group_button.set_label(&format!("{} '{}'", tr("Add to"), current_group));
 
         with_blocked_signals!(
             self,

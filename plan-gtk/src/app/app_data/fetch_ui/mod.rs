@@ -2,7 +2,7 @@ mod activities;
 mod entities;
 mod groups;
 
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 use gtk::prelude::*;
 
 impl AppData {

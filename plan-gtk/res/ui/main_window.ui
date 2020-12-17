@@ -18,6 +18,12 @@
       <column type="gboolean"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="ActivityGroupsListStore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="ActivityParticipantsCompletionListStore">
     <columns>
       <!-- column-name Name -->
@@ -28,7 +34,6 @@
   </object>
   <object class="GtkEntryCompletion" id="ActivityParticipantsEntryCompletion">
     <property name="model">ActivityParticipantsCompletionListStore</property>
-    <property name="minimum-key-length">0</property>
     <property name="text-column">0</property>
     <property name="inline-completion">True</property>
     <property name="inline-selection">True</property>
@@ -59,12 +64,6 @@
     <property name="upper">55</property>
     <property name="step-increment">5</property>
     <property name="page-increment">5</property>
-  </object>
-  <object class="GtkListStore" id="GroupsListStore">
-    <columns>
-      <!-- column-name gchararray1 -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkImage" id="SettingsIcon">
     <property name="visible">True</property>
@@ -663,7 +662,10 @@
                           <object class="GtkTreeView" id="ActivityGroupsTreeView">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="model">GroupsListStore</property>
+                            <property name="model">ActivityGroupsListStore</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
                             <child>
                               <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
                                 <property name="title" translatable="yes">Groups</property>
@@ -686,6 +688,9 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="model">ActivityEntitiesListStore</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
                             <child>
                               <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
                                 <property name="title" translatable="yes">Entities</property>
@@ -746,7 +751,7 @@
                       <object class="GtkToolButton">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_Show Entity</property>
+                        <property name="label" translatable="yes">_Show Entity...</property>
                         <property name="use-underline">True</property>
                       </object>
                       <packing>
@@ -758,7 +763,7 @@
                       <object class="GtkToolButton" id="ExportButton">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_Export</property>
+                        <property name="label" translatable="yes">_Export Schedule</property>
                         <property name="use-underline">True</property>
                       </object>
                       <packing>

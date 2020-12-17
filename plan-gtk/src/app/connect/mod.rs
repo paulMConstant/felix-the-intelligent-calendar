@@ -1,11 +1,7 @@
 use crate::app::App;
 
-mod activities;
-mod entities;
-//mod work_hours;
-mod groups;
-//mod activity_insertion;
-mod header;
+mod gtk;
+mod data;
 
 impl App {
     pub fn connect_gtk(&self) {
@@ -13,5 +9,9 @@ impl App {
         self.connect_entities_tab();
         self.connect_header_buttons();
         self.connect_groups_tab();
+    }
+
+    pub fn connect_data(&mut self) {
+        self.connect_entity_data_events();
     }
 }

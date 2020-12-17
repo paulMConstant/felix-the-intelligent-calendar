@@ -2,7 +2,8 @@
 pub mod macros;
 
 pub mod app_builder;
-pub mod appdata;
+pub mod app_data;
+pub mod app_ui;
 pub mod connect;
 pub mod notify;
 
@@ -10,7 +11,7 @@ use super::config::APP_NAME;
 use gtk::prelude::*;
 use std::sync::{Arc, Mutex};
 
-use appdata::AppData;
+use app_data::AppData;
 
 pub struct App {
     app_data: Arc<Mutex<AppData>>,

@@ -1,4 +1,4 @@
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 
 mod activities;
 mod entities;

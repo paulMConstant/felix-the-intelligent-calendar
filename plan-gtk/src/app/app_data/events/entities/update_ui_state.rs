@@ -1,4 +1,4 @@
-use crate::app::appdata::{events::helpers::tree_path_from_selection_index, AppData};
+use crate::app::app_data::{events::helpers::tree_path_from_selection_index, AppData};
 use plan_backend::data::Entity;
 
 use gtk::prelude::*;
@@ -9,7 +9,7 @@ impl AppData {
     }
 
     /// Updates the state of AppData and Entity-specific UI.
-    pub(super) fn update_current_entity(&mut self, entity: &Option<Entity>) {
+    pub fn update_current_entity(&mut self, entity: &Option<Entity>) {
         self.update_current_entity_without_ui(entity.as_ref().map(|entity| entity.name()));
         if entity.is_some() {
             self.update_current_entity_view();

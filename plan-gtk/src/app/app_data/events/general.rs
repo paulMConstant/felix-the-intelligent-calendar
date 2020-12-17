@@ -1,5 +1,5 @@
 use super::helpers::cleaned_input;
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 
 use gtk::prelude::*;
 

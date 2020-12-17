@@ -1,4 +1,4 @@
-use crate::app::appdata::{events::helpers::tree_path_from_selection_index, AppData};
+use crate::app::app_data::{events::helpers::tree_path_from_selection_index, AppData};
 use plan_backend::data::{Activity, ActivityID};
 
 use gtk::prelude::*;
@@ -33,7 +33,7 @@ impl AppData {
             self,
             {
                 activities_list_store.clear();
-                for activity in self.data.activities_sorted().into_iter() {
+                for activity in self.data.activities_sorted() {
                     activities_list_store.insert_with_values(
                         None,
                         &[0, 1],
@@ -127,9 +127,29 @@ impl AppData {
         self.update_current_activity_groups();
     }
 
-    pub(in super::super) fn update_current_activity_entities(&self) {}
+    pub(in super::super) fn update_current_activity_entities(&self) {
+        // TODO if the entity is in a group and not in the activity, grey it out and change its
+        // button
+    }
 
-    pub(in super::super) fn update_current_activity_groups(&self) {}
+    pub(in super::super) fn update_current_activity_groups(&self) {
+        fetch_from!(self, activity_groups_list_store, activity_groups_tree_view);
+        if let Some(id) = self.state.current_activity_id {
+            assign_or_return!(activity, self.data.activity(id));
+            let groups = activity.groups_sorted();
+
+            with_blocked_signals!(
+                self,
+                {
+                    activity_groups_list_store.clear();
+                    for group in groups {
+                        activity_groups_list_store.insert_with_values(None, &[0], &[&group]);
+                    }
+                },
+                activity_groups_tree_view
+            );
+        }
+    }
 
     fn hide_current_activity_view(&self) {
         fetch_from!(self, activity_specific_pane);

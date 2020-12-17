@@ -1,7 +1,7 @@
 pub mod update_ui_state;
 
 use super::helpers::{get_next_element, get_selection_from_treeview};
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 use plan_backend::data::clean_string;
 
 use gtk::prelude::*;
@@ -91,7 +91,7 @@ impl AppData {
             new_name,
             self.data.set_group_name(group_to_rename, new_name)
         );
-        self.update_current_group_without_ui(Some(new_name));
+        self.update_current_group_name_only(Some(new_name));
         self.update_groups_treeview(None);
         self.update_current_activity_groups();
         self.update_activities_completion_list_store();
@@ -103,10 +103,12 @@ impl AppData {
             entity_into_group_name_entry,
             create_entity_before_adding_to_group_switch
         );
-        let group_in_which_to_add =
-            self.state.current_group.as_ref().expect(
-                "Current group should be selected before accessing any group-related filed",
-            );
+        let group_in_which_to_add = self
+            .state
+            .current_group
+            .as_ref()
+            .expect("Current group should be selected before accessing any group-related filed")
+            .clone();
         let entity_name = entity_into_group_name_entry.get_text();
         with_blocked_signals!(
             self,
@@ -116,10 +118,7 @@ impl AppData {
 
         no_notify_assign_or_return!(entity_name, clean_string(entity_name));
         if create_entity_before_adding_to_group_switch.get_active() {
-            if let Err(_) = self.data.entity(&entity_name) {
-                return_if_err!(self.data.add_entity(&entity_name));
-                self.update_entities_treeview(None);
-            }
+            return_if_err!(self.add_entity(&entity_name));
         }
 
         return_if_err!(self

@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 
 impl AppData {
     #[must_use]

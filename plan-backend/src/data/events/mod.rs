@@ -5,7 +5,7 @@ use crate::data::Data;
 use paste::paste;
 use std::fmt;
 
-type Callbacks = Vec<Box<dyn FnMut()>>;
+type Callbacks = Vec<Box<dyn FnMut(&Data,)>>;
 
 // Build the event struct with fields and accessers.
 // See macros for more info.
@@ -54,7 +54,7 @@ impl fmt::Debug for Events {
 
 /// Data implementation for events.
 impl Data {
-    pub fn events(&mut self) -> &mut Events {
-        &mut self.events
+    pub fn events(&self) -> std::cell::RefMut<Events> {
+        self.events.borrow_mut()
     }
 }

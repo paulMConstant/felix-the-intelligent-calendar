@@ -28,9 +28,9 @@ macro_rules! create_emit_events {
     ($($element: ident),*) => {
         paste! {
             $(
-        pub(in super::super) fn [<emit_ $element>](&mut self) {
+        pub(in super::super) fn [<emit_ $element>](&mut self, data: &Data) {
             for callback in &mut self.$element {
-                callback();
+                callback(data);
             }
         })*
         }

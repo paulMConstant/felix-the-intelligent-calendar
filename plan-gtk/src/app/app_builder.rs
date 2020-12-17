@@ -5,9 +5,10 @@ use crate::app::App;
 pub fn build_app(app: &gtk::Application) {
     build_resources(app);
 
-    let app = App::new(app);
+    let mut app = App::new(app);
 
     app.connect_gtk();
+    app.connect_data();
     app.show_mainwindow();
 }
 

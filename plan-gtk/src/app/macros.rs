@@ -79,8 +79,7 @@ macro_rules! app_register_signal {
         let signal = $connection;
         $self
             .app_data
-            .lock()
-            .unwrap()
+            .lock().unwrap()
             .register_signal($widget, signal);
     };
 }

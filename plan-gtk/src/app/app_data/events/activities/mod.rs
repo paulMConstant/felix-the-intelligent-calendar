@@ -1,8 +1,10 @@
 mod update_ui_state;
 
 use super::helpers::{get_next_element, get_selection_from_treeview};
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
+use crate::app::notify::notify_err;
 use plan_backend::data::{clean_string, ActivityID, Time};
+use plan_backend::errors::does_not_exist::DoesNotExist;
 
 use gtk::prelude::*;
 use std::convert::TryFrom;
@@ -103,4 +105,54 @@ impl AppData {
             .data
             .set_activity_duration(id, Time::new(hours, minutes)));
     }
+
+    pub fn event_add_to_activity(&mut self) {
+        fetch_from!(self, activity_add_to_entry);
+
+        let entity_or_group_to_add = activity_add_to_entry.get_text();
+        with_blocked_signals!(
+            self,
+            activity_add_to_entry.set_text(""),
+            activity_add_to_entry
+        );
+
+        no_notify_assign_or_return!(entity_or_group_to_add, clean_string(entity_or_group_to_add));
+
+        if let Ok(entity) = self.data.entity(&entity_or_group_to_add) {
+            let entity_name = entity.name();
+            self.add_entity_to_activity(entity_name);
+        } else if let Ok(group) = self.data.group(&entity_or_group_to_add) {
+            let group_name = group.name();
+            self.add_group_to_activity(group_name);
+        } else {
+            let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
+            notify_err(err);
+        }
+    }
+
+    fn add_entity_to_activity(&mut self, entity_name: String) {
+        let current_activity = self
+            .state
+            .current_activity_id
+            .expect("Current activity should be set before adding entities to it");
+        return_if_err!(self
+            .data
+            .add_entity_to_activity(current_activity, entity_name));
+        self.update_current_activity_entities();
+    }
+
+    fn add_group_to_activity(&mut self, group_name: String) {
+        let current_activity = self
+            .state
+            .current_activity_id
+            .expect("Current activity should be set before adding groups to it");
+        return_if_err!(self
+            .data
+            .add_group_to_activity(current_activity, group_name));
+        self.update_current_activity_groups();
+        // Entities in the group are added to the activity, so need to refresh the view as well
+        self.update_current_activity_entities();
+    }
 }
+
+// TODO bouton activité qui change de nom + màj durée non valide

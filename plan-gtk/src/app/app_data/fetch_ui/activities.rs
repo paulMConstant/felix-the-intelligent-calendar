@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 
-use crate::app::appdata::AppData;
+use crate::app::app_data::AppData;
 
 impl AppData {
     #[must_use]
@@ -91,5 +91,30 @@ impl AppData {
     #[must_use]
     pub fn activity_participants_completion_list_store(&self) -> gtk::ListStore {
         fetch_ui_from_builder!(self, "ActivityParticipantsCompletionListStore")
+    }
+
+    #[must_use]
+    pub fn activity_add_to_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "ActivityAddToButton")
+    }
+
+    #[must_use]
+    pub fn activity_groups_list_store(&self) -> gtk::ListStore {
+        fetch_ui_from_builder!(self, "ActivityGroupsListStore")
+    }
+
+    #[must_use]
+    pub fn activity_entities_list_store(&self) -> gtk::ListStore {
+        fetch_ui_from_builder!(self, "ActivityEntitiesListStore")
+    }
+
+    #[must_use]
+    pub fn activity_groups_tree_view(&self) -> gtk::TreeView {
+        fetch_ui_from_builder!(self, "ActivityGroupsTreeView")
+    }
+
+    #[must_use]
+    pub fn activity_entities_tree_view(&self) -> gtk::TreeView {
+        fetch_ui_from_builder!(self, "ActivityEntitiesTreeView")
     }
 }
