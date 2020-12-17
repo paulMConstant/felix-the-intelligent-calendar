@@ -1,10 +1,14 @@
 mod components;
 mod data_impl;
+mod events;
+
+use events::Events;
 
 use components::{
     activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
     time::work_hours::WorkHours,
 };
+
 pub use components::{
     activity::Activity,
     activity::ActivityID,
@@ -97,6 +101,7 @@ pub struct Data {
     entities: Entities,
     groups: Groups,
     activities: Activities,
+    events: Events,
 }
 
 impl Data {
@@ -107,6 +112,7 @@ impl Data {
             entities: Entities::new(),
             groups: Groups::new(),
             activities: Activities::new(),
+            events: Events::new(),
         }
     }
 }

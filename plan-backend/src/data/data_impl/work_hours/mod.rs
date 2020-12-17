@@ -33,7 +33,9 @@ impl Data {
     /// ```
     #[must_use]
     pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
-        self.work_hours.add_work_interval(interval)
+        self.work_hours.add_work_interval(interval)?;
+        self.events().emit_work_hours_changed();
+        Ok(())
         // TODO update possible insertion times
     }
 
@@ -62,7 +64,9 @@ impl Data {
     #[must_use]
     pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.check_entity_without_enough_time_to_remove_interval(interval.duration())?;
-        self.work_hours.remove_work_interval(interval)
+        self.work_hours.remove_work_interval(interval)?;
+        self.events().emit_work_hours_changed();
+        Ok(())
         // TODO update possible insertion times
     }
 
@@ -98,7 +102,9 @@ impl Data {
             new_interval.duration(),
         )?;
         self.work_hours
-            .update_work_interval(old_interval, new_interval)
+            .update_work_interval(old_interval, new_interval)?;
+        self.events().emit_work_hours_changed();
+        Ok(())
         // TODO update possible insertion times
     }
 }
