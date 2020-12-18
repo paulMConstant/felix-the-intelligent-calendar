@@ -1,8 +1,8 @@
 use gtk::prelude::*;
 
-use crate::app::app_data::AppData;
+use crate::app::ui::Ui;
 
-impl AppData {
+impl Ui {
     #[must_use]
     pub fn entities_tree_view(&self) -> gtk::TreeView {
         fetch_ui_from_builder!(self, "EntitiesTreeView")

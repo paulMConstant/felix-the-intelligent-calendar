@@ -13,20 +13,20 @@ impl Data {
         self.activities.sorted_by_name()
     }
 
-    /// Returns an immutable reference to the activity with given id.
+    /// Returns an copy of the activity with given id.
     ///
     /// # Errors
     ///
     /// Returns Err if the activity is not found.
     #[must_use]
-    pub fn activity(&self, id: ActivityID) -> Result<&Activity> {
+    pub fn activity(&self, id: ActivityID) -> Result<Activity> {
         self.activities.get_by_id(id)
     }
 
     /// Adds an activity with the formatted given name.
     ///
     /// Automatically assigns a unique id.
-    /// Returns an immutable reference to the activity.
+    /// Returns a copy of the created activity.
     ///
     /// # Errors
     ///
@@ -46,12 +46,12 @@ impl Data {
     /// assert_eq!(activities[0].id(), activity_id);
     /// ```
     #[must_use]
-    pub fn add_activity<S>(&mut self, name: S) -> Result<&Activity>
+    pub fn add_activity<S>(&mut self, name: S) -> Result<Activity>
     where
         S: Into<String>,
     {
         let activity_id = self.activities.add(clean_string(name)?).id();
-        self.events().emit_activity_added(self);
+        self.events().emit_activity_added();
         self.activity(activity_id)
     }
 
@@ -78,7 +78,7 @@ impl Data {
     #[must_use]
     pub fn remove_activity(&mut self, id: ActivityID) -> Result<()> {
         self.activities.remove(id)?;
-        self.events().emit_activity_removed(self);
+        self.events().emit_activity_removed();
         Ok(())
     }
 
@@ -117,7 +117,7 @@ impl Data {
         let entity_name = clean_string(entity_name)?;
         self.check_has_enough_time_for_activity(id, &entity_name)?;
         self.activities.add_entity(id, entity_name)?;
-        self.events().emit_entity_added_to_activity(self);
+        self.events().emit_entity_added_to_activity();
         Ok(())
     }
 
@@ -154,7 +154,7 @@ impl Data {
         let entity_name = self.entity(entity_name)?.name();
         // Remove the entity from the activity
         self.activities.remove_entity(id, &entity_name)?;
-        self.events().emit_entity_removed_from_activity(self);
+        self.events().emit_entity_removed_from_activity();
         Ok(())
     }
 
@@ -202,7 +202,7 @@ impl Data {
         // Add the group to the activity
         self.activities.add_group(id, clean_string(group_name)?)?;
 
-        self.events().emit_group_added_to_activity(self);
+        self.events().emit_group_added_to_activity();
         Ok(())
         // TODO update possible insertion times
     }
@@ -250,7 +250,7 @@ impl Data {
 
         self.activities.remove_group(id, &group_name)?;
 
-        self.events().emit_group_removed_from_activity(self);
+        self.events().emit_group_removed_from_activity();
         Ok(())
     }
 
@@ -281,7 +281,7 @@ impl Data {
     {
         let name = clean_string(name)?;
         self.activities.set_name(id, name.clone())?;
-        self.events().emit_activity_renamed(self);
+        self.events().emit_activity_renamed();
         Ok(name)
     }
 
@@ -309,7 +309,7 @@ impl Data {
         // If the duration is longer than the previous one, check for conflicts
         self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
         self.activities.set_duration(id, new_duration)?;
-        self.events().emit_activity_duration_changed(self);
+        self.events().emit_activity_duration_changed();
         Ok(())
     }
 }

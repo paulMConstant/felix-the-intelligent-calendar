@@ -1,1 +1,2 @@
+mod activities;
 mod entities;

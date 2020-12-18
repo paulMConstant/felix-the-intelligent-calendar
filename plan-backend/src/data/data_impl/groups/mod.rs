@@ -13,7 +13,7 @@ impl Data {
         self.groups.sorted_by_name()
     }
 
-    /// Returns an immutable reference to the group with the formatted given name.
+    /// Returns a copy of the group with the formatted given name.
     ///
     /// # Errors
     ///
@@ -33,7 +33,7 @@ impl Data {
     /// assert!(data.entity(invalid_name).is_err());
     /// ```
     #[must_use]
-    pub fn group<S>(&self, name: S) -> Result<&Group>
+    pub fn group<S>(&self, name: S) -> Result<Group>
     where
         S: Into<String>,
     {
@@ -65,7 +65,7 @@ impl Data {
         self.check_name_taken_by_entity(&name)?;
 
         self.groups.add(name.clone())?;
-        self.events().emit_group_added(self);
+        self.events().emit_group_added();
         Ok(name)
     }
 
@@ -96,7 +96,7 @@ impl Data {
         let name = clean_string(name)?;
         self.groups.remove(&name)?;
         self.activities.remove_group_from_all(&name);
-        self.events().emit_group_removed(self);
+        self.events().emit_group_removed();
         Ok(())
     }
 
@@ -140,7 +140,7 @@ impl Data {
         // Add the entity to every activity of the group
         self.activities
             .add_entity_to_activities_with_group(&group_name, entity_name);
-        self.events().emit_entity_added_to_group(self);
+        self.events().emit_entity_added_to_group();
         Ok(())
     }
 
@@ -196,7 +196,7 @@ impl Data {
         for id in activity_ids_in_which_to_remove_entity {
             self.remove_entity_from_activity(id, &entity_name)?;
         }
-        self.events().emit_entity_removed_from_group(self);
+        self.events().emit_entity_removed_from_group();
         Ok(())
     }
 
@@ -225,7 +225,7 @@ impl Data {
         // Then, rename in activities
         self.activities
             .rename_group_in_all(&old_name, new_name.clone());
-        self.events().emit_group_renamed(self);
+        self.events().emit_group_renamed();
         Ok(new_name)
     }
 }

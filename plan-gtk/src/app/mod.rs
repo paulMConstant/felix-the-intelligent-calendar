@@ -2,19 +2,21 @@
 pub mod macros;
 
 pub mod app_builder;
-pub mod app_data;
-pub mod app_ui;
+//pub mod app_data;
 pub mod connect;
 pub mod notify;
+pub mod ui;
 
 use super::config::APP_NAME;
 use gtk::prelude::*;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
-use app_data::AppData;
+use plan_backend::data::Data;
+use ui::Ui;
 
 pub struct App {
-    app_data: Arc<Mutex<AppData>>,
+    data: Arc<Mutex<Data>>,
+    ui: Arc<Mutex<Ui>>,
 }
 
 impl App {
@@ -33,19 +35,23 @@ impl App {
             .add_from_resource("/com/github/paulmconstant/plan/ui/time_interval.ui")
             .expect("Could not load ui file: time_interval.ui");
 
-        let app_data = AppData::new(builder);
-
-        fetch_from!(app_data, main_window);
+        let ui = Ui::new(builder);
+        fetch_from!(ui, main_window);
         main_window.set_application(Some(application));
         main_window.set_title(APP_NAME);
 
+        let data = Data::new();
         App {
-            app_data: Arc::new(Mutex::new(app_data)),
+            data: Arc::new(Mutex::new(data)),
+            ui: Arc::new(Mutex::new(ui)),
         }
     }
 
-    pub fn show_mainwindow(&self) {
-        self.app_data.lock().unwrap().show_mainwindow();
-        self.app_data.lock().unwrap().event_init();
+    pub fn ui(&self) -> MutexGuard<Ui> {
+        self.ui.lock().unwrap()
+    }
+
+    pub fn data(&self) -> MutexGuard<Data> {
+        self.data.lock().unwrap()
     }
 }

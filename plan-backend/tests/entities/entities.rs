@@ -136,7 +136,7 @@ fn simple_get_entity() {
             .expect("Could not get entity by name");
         assert_eq!(
             data.entities_sorted()[0],
-            entity,
+            &entity,
             "Did not get the right entity"
         );
     });

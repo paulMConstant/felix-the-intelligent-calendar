@@ -25,15 +25,15 @@ impl Entities {
         entity_vec
     }
 
-    /// Returns immutable reference to the entity with the given name.
+    /// Returns a copy of the entity with the given name.
     ///
     /// # Errors
     ///
     /// Returns Err if the entity does not exist.
     #[must_use]
-    pub fn get_by_name(&self, name: &String) -> Result<&Entity> {
+    pub fn get_by_name(&self, name: &String) -> Result<Entity> {
         match self.entities.get(name) {
-            Some(entity) => Ok(entity),
+            Some(entity) => Ok(entity.clone()),
             None => Err(DoesNotExist::entity_does_not_exist(name)),
         }
     }

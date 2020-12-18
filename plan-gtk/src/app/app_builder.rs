@@ -7,13 +7,13 @@ pub fn build_app(app: &gtk::Application) {
 
     let mut app = App::new(app);
 
-    app.connect_gtk();
+    app.connect_ui();
     app.connect_data();
-    app.show_mainwindow();
+    app.ui().show_mainwindow();
 }
 
 fn build_resources(app: &gtk::Application) {
-    app.set_resource_base_path(Some("/com/github/paulmconstant/plan"));
+    app.set_resource_base_path(Some("/res"));
 
     let resources_bytes = include_bytes!("../../res/resources.gresource");
     let resources_data = glib::Bytes::from(&resources_bytes[..]);

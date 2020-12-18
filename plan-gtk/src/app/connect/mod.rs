@@ -1,10 +1,10 @@
 use crate::app::App;
 
-mod gtk;
 mod data;
+mod ui;
 
 impl App {
-    pub fn connect_gtk(&self) {
+    pub fn connect_ui(&self) {
         self.connect_activities_tab();
         self.connect_entities_tab();
         self.connect_header_buttons();

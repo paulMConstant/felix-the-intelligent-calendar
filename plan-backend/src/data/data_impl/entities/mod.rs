@@ -13,7 +13,7 @@ impl Data {
         self.entities.sorted_by_name()
     }
 
-    /// Gets an immutable reference to the entity with the formatted given name.
+    /// Gets a copy of the entity with the formatted given name.
     ///
     /// # Errors
     ///
@@ -33,7 +33,7 @@ impl Data {
     /// assert!(data.entity(invalid_name).is_err());
     /// ```
     #[must_use]
-    pub fn entity<S>(&self, name: S) -> Result<&Entity>
+    pub fn entity<S>(&self, name: S) -> Result<Entity>
     where
         S: Into<String>,
     {
@@ -67,7 +67,7 @@ impl Data {
         // Check if a group has the same name
         self.check_name_taken_by_group(&name)?;
         self.entities.add(name.clone())?;
-        self.events().emit_entity_added(self);
+        self.events().emit_entity_added();
         Ok(name)
     }
 
@@ -101,7 +101,7 @@ impl Data {
         // If the entity was successfuly removed in entities, remove it
         // in all activities
         self.activities.remove_entity_from_all(&name);
-        self.events().emit_entity_removed(self);
+        self.events().emit_entity_removed();
         Ok(())
     }
 
@@ -148,7 +148,7 @@ impl Data {
         // Then, rename in activities
         self.activities
             .rename_entity_in_all(&old_name, new_name.clone());
-        self.events().emit_entity_renamed(self);
+        self.events().emit_entity_renamed(&old_name, &new_name);
         Ok(new_name)
     }
 
@@ -178,7 +178,7 @@ impl Data {
     {
         self.entities
             .set_mail_of(&clean_string(entity_name)?, mail.into())?;
-        self.events().emit_entity_mail_changed(self);
+        self.events().emit_entity_mail_changed();
         Ok(())
     }
 
@@ -208,7 +208,7 @@ impl Data {
     {
         self.entities
             .set_send_mail_to(&clean_string(entity_name)?, send)?;
-        self.events().emit_entity_send_me_a_mail_changed(self);
+        self.events().emit_entity_send_me_a_mail_changed();
         Ok(())
     }
 
@@ -334,7 +334,7 @@ impl Data {
         )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)?;
-        self.events().emit_entity_custom_work_hours_changed(self);
+        self.events().emit_entity_custom_work_hours_changed();
         Ok(())
         // TODO update possible insertion times
     }
@@ -382,7 +382,7 @@ impl Data {
         )?;
         self.entities
             .remove_custom_work_interval_for(&entity_name, interval)?;
-        self.events().emit_entity_custom_work_hours_changed(self);
+        self.events().emit_entity_custom_work_hours_changed();
         Ok(())
         // TODO update possible insertion times
     }
@@ -430,7 +430,7 @@ impl Data {
 
         self.entities
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
-        self.events().emit_entity_custom_work_hours_changed(self);
+        self.events().emit_entity_custom_work_hours_changed();
         Ok(())
         // TODO update possible insertion times
     }

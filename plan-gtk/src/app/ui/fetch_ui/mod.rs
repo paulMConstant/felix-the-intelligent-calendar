@@ -2,10 +2,10 @@ mod activities;
 mod entities;
 mod groups;
 
-use crate::app::app_data::AppData;
+use crate::app::ui::Ui;
 use gtk::prelude::*;
 
-impl AppData {
+impl Ui {
     #[must_use]
     pub fn main_window(&self) -> gtk::ApplicationWindow {
         fetch_ui_from_builder!(self, "MainWindow")

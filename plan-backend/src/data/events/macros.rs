@@ -1,6 +1,12 @@
+macro_rules! create_callback {
+    ($($param_type: ty),*) => {
+        Vec<Box<dyn FnMut($($param_type),*)>>
+    };
+}
+
 macro_rules! create_events_struct {
-    ($($element: ident),*) => {
-        pub struct Events { $($element: Callbacks),* }
+    ($($element: ident { $($param_type: ty),* }),*) => {
+        pub struct Events { $($element: create_callback!($($param_type),*)),* }
     }
 }
 
@@ -13,10 +19,10 @@ macro_rules! create_events_new {
 }
 
 macro_rules! create_do_when_events {
-    ($($element: ident),*) => {
+    ($($element: ident { $($param_type: ty),*}),*) => {
         paste! {
             $(
-        pub fn [<do_when_ $element>](&mut self, callbacks: Callbacks) {
+        pub fn [<do_when_ $element>](&mut self, callbacks: create_callback!($($param_type),*)) {
             self.$element.extend(callbacks);
         }
         )*
@@ -25,12 +31,12 @@ macro_rules! create_do_when_events {
 }
 
 macro_rules! create_emit_events {
-    ($($element: ident),*) => {
+    ($($element: ident { $($param_name: ident : $param_type: ty),* }),*) => {
         paste! {
             $(
-        pub(in super::super) fn [<emit_ $element>](&mut self, data: &Data) {
+        pub(in super::super) fn [<emit_ $element>](&mut self, $($param_name: $param_type),*) {
             for callback in &mut self.$element {
-                callback(data);
+                callback($($param_name),*);
             }
         })*
         }
@@ -38,11 +44,11 @@ macro_rules! create_emit_events {
 }
 
 macro_rules! create_events_impl {
-    ($($element: ident),*) => {
+    ($($element: ident { $($param_name: ident : $param_type: ty),* }),*) => {
         impl Events {
             create_events_new!($($element),*);
-            create_do_when_events!($($element),*);
-            create_emit_events!($($element),*);
+            create_do_when_events!($($element { $($param_type),* }),*);
+            create_emit_events!($($element { $($param_name: $param_type),* }),*);
         }
     };
 }
@@ -51,44 +57,56 @@ macro_rules! create_events_impl {
 ///
 /// # Example
 ///
-/// create\_events!(event1, event2) expands to :
+///```
+/// create_events!(
+///     renamed {old_name: &String, new_name: &String},
+///     something_changed {}
+/// )
+///```
+/// expands to :
 ///
 ///```
 /// pub struct Events {
-///     event1: Callbacks,
-///     event2: Callbacks,
+///     renamed: Vec<Box<dyn FnMut(&String, &String)>>,
+///     something_changed: Vec<Box<dyn FnMut()>>,
 /// }
 ///
 /// impl Events {
 ///     pub(in super::super) fn new() -> Events {
 ///         Events {
-///             event1: Vec::new(),
-///             event2: Vec::new(),
+///             renamed: Vec::new(),
+///             something_changed: Vec::new(),
 ///         }
 ///     }
-///     pub fn do_when_event1(&mut self, callbacks: Callbacks) {
-///         self.event1.extend(callbacks);
+///
+///     pub fn do_when_renamed(&mut self,
+///         callbacks: Vec<Box<dyn FnMut(&String, &String)>>) {
+///         self.renamed.extend(callbacks);
 ///     }
-///     pub fn do_when_event2(&mut self, callbacks: Callbacks) {
-///         self.event2.extend(callbacks);
+///
+///     pub fn do_when_something_changed(&mut self,
+///         callbacks: Vec<Box<dyn FnMut()>>) {
+///         self.something_changed.extend(callbacks);
 ///     }
-///     pub(in super::super) fn emit_event1(&mut self) {
-///         for callback in &mut self.event1 {
-///             callback();
+///
+///     pub(in super::super) fn emit_renamed(&mut self,
+///                                          old_name: &String,
+///                                          new_name: &String) {
+///         for callback in &mut self.renamed {
+///             callback(old_name, new_name);
 ///         }
 ///     }
-///     pub(in super::super) fn emit_event2(&mut self) {
-///         for callback in &mut self.event2 {
+///
+///     pub(in super::super) fn emit_something_changed(&mut self) {
+///         for callback in &mut self.something_changed {
 ///             callback();
 ///         }
 ///     }
 /// }
-///
-/// assert!(true);
 /// ```
 macro_rules! create_events {
-    ($($element: ident),*) => {
-        create_events_struct!($($element),*);
-        create_events_impl!($($element),*);
+    ($($element: ident { $($param_name: ident : $param_type: ty),* } ),*) => {
+        create_events_struct!($($element { $($param_type),* }),*);
+        create_events_impl!($($element { $($param_name: $param_type),* }),*);
     };
 }

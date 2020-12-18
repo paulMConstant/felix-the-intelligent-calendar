@@ -1,9 +1,9 @@
 use super::helpers::cleaned_input;
-use crate::app::app_data::AppData;
+use crate::app::ui::Ui;
 
 use gtk::prelude::*;
 
-impl AppData {
+impl Ui {
     pub fn event_clean_entry_content<T>(&self, entry: T)
     where
         T: IsA<gtk::Buildable> + IsA<gtk::Entry>,

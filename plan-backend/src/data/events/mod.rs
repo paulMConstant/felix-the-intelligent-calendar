@@ -5,31 +5,32 @@ use crate::data::Data;
 use paste::paste;
 use std::fmt;
 
-type Callbacks = Vec<Box<dyn FnMut(&Data,)>>;
-
 // Build the event struct with fields and accessers.
 // See macros for more info.
 create_events!(
-    entity_added,
-    entity_removed,
-    entity_renamed,
-    entity_mail_changed,
-    entity_send_me_a_mail_changed,
-    entity_custom_work_hours_changed,
-    group_added,
-    group_removed,
-    group_renamed,
-    activity_added,
-    activity_removed,
-    activity_renamed,
-    activity_duration_changed,
-    entity_added_to_activity,
-    entity_removed_from_activity,
-    entity_added_to_group,
-    entity_removed_from_group,
-    group_added_to_activity,
-    group_removed_from_activity,
-    work_hours_changed
+    entity_added {},
+    entity_removed {},
+    entity_renamed {
+        old_name: &String,
+        new_name: &String
+    },
+    entity_mail_changed {},
+    entity_send_me_a_mail_changed {},
+    entity_custom_work_hours_changed {},
+    group_added {},
+    group_removed {},
+    group_renamed {},
+    activity_added {},
+    activity_removed {},
+    activity_renamed {},
+    activity_duration_changed {},
+    entity_added_to_activity {},
+    entity_removed_from_activity {},
+    entity_added_to_group {},
+    entity_removed_from_group {},
+    group_added_to_activity {},
+    group_removed_from_activity {},
+    work_hours_changed {}
 );
 
 impl Eq for Events {}

@@ -1,10 +1,10 @@
-use crate::app::app_data::AppData;
+use crate::app::ui::Ui;
 
-use gtk::prelude::*;
 use glib::signal::SignalHandlerId;
+use gtk::prelude::*;
 
-impl AppData {
-    pub fn register_signal<T>(&mut self, widget: T, signal: SignalHandlerId)
+impl Ui {
+    pub(in super::super) fn register_signal<T>(&mut self, widget: T, signal: SignalHandlerId)
     where
         T: IsA<gtk::Buildable>,
     {
@@ -12,7 +12,10 @@ impl AppData {
         self.signals.entry(widget_id).or_default().push(signal);
     }
 
-    pub(super) fn get_registered_signals<T>(&self, widget: &T) -> Option<&Vec<SignalHandlerId>>
+    pub(in super::super) fn get_registered_signals<T>(
+        &self,
+        widget: &T,
+    ) -> Option<&Vec<SignalHandlerId>>
     where
         T: IsA<gtk::Buildable>,
     {

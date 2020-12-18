@@ -1,8 +1,8 @@
-use crate::app::app_data::AppData;
+use crate::app::ui::Ui;
 
 use gtk::prelude::*;
 
-impl AppData {
+impl Ui {
     #[must_use]
     pub fn group_add_button(&self) -> gtk::Button {
         fetch_ui_from_builder!(self, "AddGroupButton")

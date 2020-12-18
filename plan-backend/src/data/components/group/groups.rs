@@ -28,15 +28,15 @@ impl Groups {
         group_vec
     }
 
-    /// Returns immutable reference to the group with the given name.
+    /// Returns a copy of the group with the given name.
     ///
     /// # Errors
     ///
     /// Returns Err if the group does not exist.
     #[must_use]
-    pub fn get_by_name(&self, name: &String) -> Result<&Group> {
+    pub fn get_by_name(&self, name: &String) -> Result<Group> {
         match self.groups.get(name) {
-            Some(group) => Ok(group),
+            Some(group) => Ok(group.clone()),
             None => Err(DoesNotExist::group_does_not_exist(name)),
         }
     }

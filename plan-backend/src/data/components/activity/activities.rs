@@ -28,11 +28,11 @@ impl Activities {
         activity_vec
     }
 
-    /// Simple getter for an activity.
+    /// Returns a copy of the activity with given id.
     #[must_use]
-    pub fn get_by_id(&self, id: ActivityID) -> Result<&Activity> {
+    pub fn get_by_id(&self, id: ActivityID) -> Result<Activity> {
         match self.activities.get(&id) {
-            Some(activity) => Ok(activity),
+            Some(activity) => Ok(activity.clone()),
             None => Err(DoesNotExist::activity_does_not_exist(id)),
         }
     }

@@ -47,8 +47,8 @@ impl ActivityComputationData {
     /// Getter for incompatible activities, used for testing. Should not go out of this module.
     #[cfg(test)]
     #[must_use]
-    pub fn incompatible_activity_ids(&self) -> &Vec<ActivityID> {
-        &self.incompatible_activity_ids
+    pub fn incompatible_activity_ids(&self) -> Vec<ActivityID> {
+        self.incompatible_activity_ids.clone()
     }
 
     // *** Setters ***

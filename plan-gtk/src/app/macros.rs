@@ -1,63 +1,59 @@
 // To be used by AppDataImpl
 
-/// Should only be called from AppData impl.
-/// Use with_blocked_signals instead.
+/// Use 'with_blocked_signals' instead.
 macro_rules! block_signals {
-    ($self:ident, $widget:ident) => {
-        if let Some(signals) = $self.get_registered_signals(&$widget) {
+    ($blocker:expr, $widget:ident) => {
+        if let Some(signals) = $blocker.get_registered_signals(&$widget) {
             for signal_id in signals {
                 $widget.block_signal(&signal_id);
             }
         }
     };
 
-    ($self:ident, $widget:ident, $($rest: ident),*) => {
-        block_signals!($self, $widget);
-        block_signals!($self, $($rest),*);
+    ($blocker:expr, $widget:ident, $($rest: ident),*) => {
+        block_signals!($blocker, $widget);
+        block_signals!($blocker, $($rest),*);
     };
 }
 
-/// Should only be called from AppData impl.
-/// Use with_blocked_signals instead.
+/// Use 'with_blocked_signals' instead.
 macro_rules! unblock_signals {
-    ($self:ident, $widget:ident) => {
-        if let Some(signals) = $self.get_registered_signals(&$widget) {
+    ($blocker:expr, $widget:ident) => {
+        if let Some(signals) = $blocker.get_registered_signals(&$widget) {
             for signal_id in signals {
                 $widget.unblock_signal(&signal_id);
             }
         }
     };
 
-    ($self:ident, $widget:ident, $($rest: ident),*) => {
-        unblock_signals!($self, $widget);
-        unblock_signals!($self, $($rest),*);
+    ($blocker:expr, $widget:ident, $($rest: ident),*) => {
+        unblock_signals!($blocker, $widget);
+        unblock_signals!($blocker, $($rest),*);
     };
 }
 
-/// Should only be called from AppData impl.
-///
 /// Blocks the signals of given widgets,
 /// executes the given block of code and unblock the signals.
 ///
 /// # Arguments
 ///
-/// $self: self, $do\_with\_blocked\_signals: block of code to do with blocked signals,
+/// $blocker: who registered the signals, $do\_with\_blocked\_signals: block of code to do with blocked signals,
 /// $widgets: widgets whose signals should be blocked
 ///
 /// # Example
 ///
 /// with\_blocked\_signals!(self, { do\_something(); }, blocked\_widget1, blocked\_widget2);
 macro_rules! with_blocked_signals {
-    ($self: ident, $do_whith_blocked_signals: expr, $widget:ident) => {
-        block_signals!($self, $widget);
+    ($blocker: expr, $do_whith_blocked_signals: expr, $widget:ident) => {
+        block_signals!($blocker, $widget);
         $do_whith_blocked_signals;
-        unblock_signals!($self, $widget);
+        unblock_signals!($blocker, $widget);
     };
 
-    ($self: ident, $do_whith_blocked_signals: expr, $widget:ident, $($rest: ident),*) => {
-        block_signals!($self, $widget, $($rest),*);
+    ($blocker: expr, $do_whith_blocked_signals: expr, $widget:ident, $($rest: ident),*) => {
+        block_signals!($blocker, $widget, $($rest),*);
         $do_whith_blocked_signals;
-        unblock_signals!($self, $widget, $($rest),*);
+        unblock_signals!($blocker, $widget, $($rest),*);
     };
 }
 
@@ -75,12 +71,9 @@ macro_rules! with_blocked_signals {
 ///     $self.app\_data.lock().unwrap().register\_signal($widget, signal);
 /// };
 macro_rules! app_register_signal {
-    ($self: ident, $widget: ident, $connection: expr) => {
+    ($self: expr, $widget: ident, $connection: expr) => {
         let signal = $connection;
-        $self
-            .app_data
-            .lock().unwrap()
-            .register_signal($widget, signal);
+        $self.ui().register_signal($widget, signal);
     };
 }
 
