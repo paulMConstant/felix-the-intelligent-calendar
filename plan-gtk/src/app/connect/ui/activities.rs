@@ -1,8 +1,8 @@
 use glib::clone;
 use gtk::prelude::*;
 
-use super::helpers::get_selection_from_treeview;
 use crate::app::notify::notify_err;
+use crate::app::ui::helpers::get_selection_from_treeview;
 use crate::app::App;
 use plan_backend::data::{clean_string, ActivityID, Time};
 use plan_backend::errors::does_not_exist::DoesNotExist;
@@ -228,10 +228,10 @@ impl App {
 
         if let Ok(entity) = data.lock().unwrap().entity(&entity_or_group_to_add) {
             let entity_name = entity.name();
-            data.lock().unwrap().add_entity_to_activity(activity_id, entity_name);
+            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, entity_name));
         } else if let Ok(group) = data.lock().unwrap().group(&entity_or_group_to_add) {
             let group_name = group.name();
-            data.lock().unwrap().add_entity_to_activity(activity_id, group_name);
+            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, group_name));
         } else {
             let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
             notify_err(err);
@@ -256,10 +256,10 @@ impl App {
 
         if let Ok(entity) = data.lock().unwrap().entity(&entity_or_group_to_add) {
             let entity_name = entity.name();
-            data.lock().unwrap().add_entity_to_activity(activity_id, entity_name);
+            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, entity_name));
         } else if let Ok(group) = data.lock().unwrap().group(&entity_or_group_to_add) {
             let group_name = group.name();
-            data.lock().unwrap().add_entity_to_activity(activity_id, group_name);
+            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, group_name));
         } else {
             let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
             notify_err(err);

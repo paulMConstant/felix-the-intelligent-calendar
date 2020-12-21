@@ -1,7 +1,7 @@
 use glib::clone;
 use gtk::prelude::*;
 
-use super::helpers::{get_next_element, get_selection_from_treeview};
+use crate::app::ui::helpers::{cleaned_input, get_selection_from_treeview};
 use crate::app::App;
 
 use plan_backend::data::clean_string;
@@ -82,7 +82,7 @@ impl App {
                 let entity_to_remove = ui.lock().unwrap().current_entity().expect(
                     "Current entity should be selected before accessing any entity-related filed",
                 );
-                data.lock().unwrap().remove_entity(entity_to_remove.name());
+                return_if_err!(data.lock().unwrap().remove_entity(entity_to_remove.name()));
             }
         )));
     }
@@ -101,7 +101,10 @@ impl App {
                         ).name();
                 let new_name = entity_name_entry.get_text();
                 no_notify_assign_or_return!(new_name, clean_string(new_name));
-                return_if_err!(
+                if cleaned_input(&new_name) == entity_to_rename {
+                    return;
+                }
+                no_notify_return_if_err!(
                     data.lock().unwrap().set_entity_name(entity_to_rename, new_name)
                     );
             }))

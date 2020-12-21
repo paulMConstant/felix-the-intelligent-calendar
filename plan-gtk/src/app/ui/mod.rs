@@ -1,5 +1,6 @@
 pub mod events;
 pub mod fetch_ui;
+pub mod helpers;
 pub mod signals;
 
 use glib::signal::SignalHandlerId;

@@ -1,6 +1,6 @@
 use crate::app::App;
 
-use super::helpers::get_selection_from_treeview;
+use crate::app::ui::helpers::get_selection_from_treeview;
 
 use plan_backend::data::clean_string;
 
@@ -83,7 +83,7 @@ impl App {
                 ui.lock().unwrap().current_group().as_ref().expect(
                     "Current group should be selected before accessing any group-related filed",
                 ).name();
-               data.lock().unwrap().remove_group(group_to_remove);
+               return_if_err!(data.lock().unwrap().remove_group(group_to_remove));
             }))
         );
     }

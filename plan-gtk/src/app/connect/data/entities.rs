@@ -1,19 +1,11 @@
 use crate::app::App;
 
-//use glib::clone;
+use glib::clone;
 
 impl App {
-    pub fn connect_entity_data_events(&mut self) {
-        self.connect_entity_renamed();
-    }
-
-    fn connect_entity_renamed(&mut self) {
-        //let app_data = self.app_data.clone();
-        //app_data.lock().unwrap().events().do_when_entity_renamed(
-        //vec![
-        //Box::new(clone!(@strong app_data => move || {
-        //app_data.lock().unwrap().on_entity_renamed();
-        //}))]
-        //);
-    }
+    generate_connect_functions!(connect_entity_data_events:
+        connect_entity_added => |entity, entities| on_entity_added,
+        connect_entity_renamed => |entity, entities| on_entity_renamed,
+        connect_entity_removed => |position, entities| on_entity_removed
+    );
 }

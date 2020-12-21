@@ -67,7 +67,11 @@ impl Data {
         // Check if a group has the same name
         self.check_name_taken_by_group(&name)?;
         self.entities.add(name.clone())?;
-        self.events().emit_entity_added();
+        let entity = self
+            .entity(&name)
+            .expect("Entity was just added so it exists");
+        self.events().borrow_mut()
+            .emit_entity_added(&entity, &self.entities_sorted());
         Ok(name)
     }
 
@@ -96,12 +100,14 @@ impl Data {
         S: Into<String>,
     {
         let name = clean_string(name)?;
+        let position_of_removed_entity = self.entities_sorted().into_iter().position(|entity| entity.name() == name);
         // First, remove in entities to check for any error
         self.entities.remove(&name)?;
         // If the entity was successfuly removed in entities, remove it
         // in all activities
         self.activities.remove_entity_from_all(&name);
-        self.events().emit_entity_removed();
+        let position_of_removed_entity = position_of_removed_entity.expect("If the entity was removed then it existed, therefore position should be valid");
+        self.events().borrow_mut().emit_entity_removed(position_of_removed_entity, &self.entities_sorted());
         Ok(())
     }
 
@@ -148,7 +154,11 @@ impl Data {
         // Then, rename in activities
         self.activities
             .rename_entity_in_all(&old_name, new_name.clone());
-        self.events().emit_entity_renamed(&old_name, &new_name);
+
+        let entity = self.entity(&new_name).expect("Entity was renamed succesfuly so this is valid");
+        
+        self.events().borrow_mut()
+            .emit_entity_renamed(&entity, &self.entities_sorted());
         Ok(new_name)
     }
 
@@ -177,9 +187,7 @@ impl Data {
         S2: Into<String>,
     {
         self.entities
-            .set_mail_of(&clean_string(entity_name)?, mail.into())?;
-        self.events().emit_entity_mail_changed();
-        Ok(())
+            .set_mail_of(&clean_string(entity_name)?, mail.into())
     }
 
     /// Set to true to send mails to the entity with formatted given name.
@@ -207,9 +215,7 @@ impl Data {
         S: Into<String>,
     {
         self.entities
-            .set_send_mail_to(&clean_string(entity_name)?, send)?;
-        self.events().emit_entity_send_me_a_mail_changed();
-        Ok(())
+            .set_send_mail_to(&clean_string(entity_name)?, send)
     }
 
     /// Returns the free time of an entity (total time in work hours - time taken by activities).
@@ -334,7 +340,8 @@ impl Data {
         )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)?;
-        self.events().emit_entity_custom_work_hours_changed();
+        self.events().borrow_mut()
+            .emit_entity_custom_work_hours_changed();
         Ok(())
         // TODO update possible insertion times
     }
@@ -382,7 +389,8 @@ impl Data {
         )?;
         self.entities
             .remove_custom_work_interval_for(&entity_name, interval)?;
-        self.events().emit_entity_custom_work_hours_changed();
+        self.events().borrow_mut()
+            .emit_entity_custom_work_hours_changed();
         Ok(())
         // TODO update possible insertion times
     }
@@ -430,7 +438,8 @@ impl Data {
 
         self.entities
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
-        self.events().emit_entity_custom_work_hours_changed();
+        self.events().borrow_mut()
+            .emit_entity_custom_work_hours_changed();
         Ok(())
         // TODO update possible insertion times
     }

@@ -1,12 +1,18 @@
+macro_rules! create_callback_vec {
+    ($($param_type: ty),*) => {
+        Vec<create_callback!($($param_type),*)>
+    };
+}
+
 macro_rules! create_callback {
     ($($param_type: ty),*) => {
-        Vec<Box<dyn FnMut($($param_type),*)>>
+        Box<dyn FnMut($($param_type),*)>
     };
 }
 
 macro_rules! create_events_struct {
     ($($element: ident { $($param_type: ty),* }),*) => {
-        pub struct Events { $($element: create_callback!($($param_type),*)),* }
+        pub struct Events { $($element: create_callback_vec!($($param_type),*)),* }
     }
 }
 
@@ -18,12 +24,13 @@ macro_rules! create_events_new {
     };
 }
 
-macro_rules! create_do_when_events {
+macro_rules! create_connect_events {
     ($($element: ident { $($param_type: ty),*}),*) => {
         paste! {
             $(
-        pub fn [<do_when_ $element>](&mut self, callbacks: create_callback!($($param_type),*)) {
-            self.$element.extend(callbacks);
+        pub fn [<connect_ $element>](&mut self, callback: create_callback!($($param_type),*)) {
+            self.$element.push(callback);
+            println!("Connect {} : {} callback", stringify!($element), self.$element.len());
         }
         )*
         }
@@ -35,7 +42,9 @@ macro_rules! create_emit_events {
         paste! {
             $(
         pub(in super::super) fn [<emit_ $element>](&mut self, $($param_name: $param_type),*) {
+            println!("Emit {}: {} callback", stringify!($element), self.$element.len());
             for callback in &mut self.$element {
+                println!("Callback");
                 callback($($param_name),*);
             }
         })*
@@ -47,7 +56,7 @@ macro_rules! create_events_impl {
     ($($element: ident { $($param_name: ident : $param_type: ty),* }),*) => {
         impl Events {
             create_events_new!($($element),*);
-            create_do_when_events!($($element { $($param_type),* }),*);
+            create_connect_events!($($element { $($param_type),* }),*);
             create_emit_events!($($element { $($param_name: $param_type),* }),*);
         }
     };

@@ -2,6 +2,7 @@ mod components;
 mod data_impl;
 mod events;
 
+use std::rc::Rc;
 use std::cell::RefCell;
 
 pub use events::Events;
@@ -103,7 +104,7 @@ pub struct Data {
     entities: Entities,
     groups: Groups,
     activities: Activities,
-    events: RefCell<Events>,
+    events: Rc<RefCell<Events>>,
 }
 
 impl Data {
@@ -114,7 +115,7 @@ impl Data {
             entities: Entities::new(),
             groups: Groups::new(),
             activities: Activities::new(),
-            events: RefCell::new(Events::new()),
+            events: Rc::new(RefCell::new(Events::new())),
         }
     }
 }

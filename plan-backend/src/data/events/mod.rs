@@ -1,25 +1,32 @@
 #[macro_use]
 mod macros;
 
-use crate::data::Data;
+use crate::data::{Data, Entity, Group};
+
 use paste::paste;
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::fmt;
 
 // Build the event struct with fields and accessers.
 // See macros for more info.
 create_events!(
-    entity_added {},
-    entity_removed {},
-    entity_renamed {
-        old_name: &String,
-        new_name: &String
+    entity_added {
+        new_entity: &Entity,
+        entities: &Vec<&Entity>
     },
-    entity_mail_changed {},
-    entity_send_me_a_mail_changed {},
+    entity_removed {
+        position_of_removed_entity: usize,
+        entities: &Vec<&Entity>
+    },
+    entity_renamed {
+        entity: &Entity,
+        entities: &Vec<&Entity>
+    },
     entity_custom_work_hours_changed {},
-    group_added {},
-    group_removed {},
-    group_renamed {},
+    group_added {new_group: &Group, groups: &Vec<&Group>},
+    group_removed {position_of_removed_group: usize, groups: &Vec<&Group>},
+    group_renamed {group: &Group, groups: &Vec<&Group>},
     activity_added {},
     activity_removed {},
     activity_renamed {},
@@ -55,7 +62,7 @@ impl fmt::Debug for Events {
 
 /// Data implementation for events.
 impl Data {
-    pub fn events(&self) -> std::cell::RefMut<Events> {
-        self.events.borrow_mut()
+    pub fn events(&self) -> Rc<RefCell<Events>> {
+        self.events.clone()
     }
 }

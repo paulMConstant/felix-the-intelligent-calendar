@@ -51,7 +51,7 @@ impl Data {
         S: Into<String>,
     {
         let activity_id = self.activities.add(clean_string(name)?).id();
-        self.events().emit_activity_added();
+        self.events().borrow_mut().emit_activity_added();
         self.activity(activity_id)
     }
 
@@ -78,7 +78,7 @@ impl Data {
     #[must_use]
     pub fn remove_activity(&mut self, id: ActivityID) -> Result<()> {
         self.activities.remove(id)?;
-        self.events().emit_activity_removed();
+        self.events().borrow_mut().emit_activity_removed();
         Ok(())
     }
 
@@ -117,7 +117,7 @@ impl Data {
         let entity_name = clean_string(entity_name)?;
         self.check_has_enough_time_for_activity(id, &entity_name)?;
         self.activities.add_entity(id, entity_name)?;
-        self.events().emit_entity_added_to_activity();
+        self.events().borrow_mut().emit_entity_added_to_activity();
         Ok(())
     }
 
@@ -154,7 +154,8 @@ impl Data {
         let entity_name = self.entity(entity_name)?.name();
         // Remove the entity from the activity
         self.activities.remove_entity(id, &entity_name)?;
-        self.events().emit_entity_removed_from_activity();
+        self.events().borrow_mut()
+            .emit_entity_removed_from_activity();
         Ok(())
     }
 
@@ -202,7 +203,7 @@ impl Data {
         // Add the group to the activity
         self.activities.add_group(id, clean_string(group_name)?)?;
 
-        self.events().emit_group_added_to_activity();
+        self.events().borrow_mut().emit_group_added_to_activity();
         Ok(())
         // TODO update possible insertion times
     }
@@ -250,7 +251,8 @@ impl Data {
 
         self.activities.remove_group(id, &group_name)?;
 
-        self.events().emit_group_removed_from_activity();
+        self.events().borrow_mut()
+            .emit_group_removed_from_activity();
         Ok(())
     }
 
@@ -281,7 +283,7 @@ impl Data {
     {
         let name = clean_string(name)?;
         self.activities.set_name(id, name.clone())?;
-        self.events().emit_activity_renamed();
+        self.events().borrow_mut().emit_activity_renamed();
         Ok(name)
     }
 
@@ -309,7 +311,7 @@ impl Data {
         // If the duration is longer than the previous one, check for conflicts
         self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
         self.activities.set_duration(id, new_duration)?;
-        self.events().emit_activity_duration_changed();
+        self.events().borrow_mut().emit_activity_duration_changed();
         Ok(())
     }
 }

@@ -27,12 +27,12 @@ pub fn get_selection_from_treeview(treeview: gtk::TreeView) -> Option<String> {
 pub fn tree_path_from_selection_index(
     selection_index: Option<i32>,
     model: gtk::ListStore,
-    look_for_value_in_model: Option<&String>,
+    look_for_value_in_model: Option<String>,
 ) -> gtk::TreePath {
     let selection_index = selection_index.or_else(|| {
         // No row was given. Find the row containing the current entity.
         if let Some(value) = look_for_value_in_model {
-            index_of_row_containing(model, value)
+            index_of_row_containing(model, &value)
         } else {
             None
         }
@@ -89,7 +89,7 @@ where
 /// If there is no next element, returns None.
 pub fn get_next_element<T>(
     position_of_removed_element: usize,
-    collection: Vec<&T>,
+    collection: &Vec<&T>,
 ) -> (Option<T>, Option<i32>)
 where
     T: Clone,
