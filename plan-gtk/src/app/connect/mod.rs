@@ -1,7 +1,7 @@
 use crate::app::App;
 
 mod data;
-pub mod ui;
+mod ui;
 
 impl App {
     pub fn connect_ui(&self) {
@@ -12,7 +12,6 @@ impl App {
     }
 
     pub fn connect_data(&mut self) {
-        self.connect_entity_data_events();
-        self.connect_group_data_events();
+        self.connect_data_events();
     }
 }

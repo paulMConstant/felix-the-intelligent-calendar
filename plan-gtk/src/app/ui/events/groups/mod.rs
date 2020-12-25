@@ -3,7 +3,7 @@ pub mod update;
 use crate::app::ui::helpers::get_next_element;
 use crate::app::ui::Ui;
 
-use plan_backend::data::Group;
+use plan_backend::data::{Data, Group};
 
 use gtk::prelude::*;
 
@@ -21,33 +21,33 @@ impl Ui {
             .set_expand(true);
     }
 
-    pub fn on_group_added(&mut self, group: &Group, groups: &Vec<&Group>) {
+    pub fn on_group_added(&mut self, data: &Data, group: &Group) {
         self.update_current_group(Some(group.clone()));
-        self.update_groups_treeview(groups);
-        self.update_activities_completion_list_store();
+        self.update_groups_treeview(&data.groups_sorted());
     }
 
     pub fn on_group_selected(&mut self, group: Group) {
         self.update_current_group(Some(group));
     }
 
-    pub fn on_group_removed(&mut self, position_of_removed_group: usize, groups: &Vec<&Group>) {
+    pub fn on_group_removed(&mut self, data: &Data, position_of_removed_group: usize) {
+        let groups = &data.groups_sorted();
         let (new_current_group, _) = get_next_element(position_of_removed_group, groups);
         self.update_current_group(new_current_group);
         self.update_groups_treeview(groups);
-        self.update_current_activity_groups();
-        self.update_activities_completion_list_store();
     }
 
-    pub fn on_group_renamed(&mut self, group: &Group, groups: &Vec<&Group>) {
+    pub fn on_group_renamed(&mut self, data: &Data, group: &Group) {
         self.update_current_group_name_only(Some(group.clone()));
-        self.update_groups_treeview(groups);
-        self.update_current_activity_groups();
-        self.update_activities_completion_list_store();
+        self.update_groups_treeview(&data.groups_sorted());
     }
 
-    pub fn on_group_members_changed(&mut self) {
-        self.update_current_group_members();
-        self.update_current_activity_entities();
+    pub fn on_group_members_changed<T>(&mut self, data: &Data, _anything: T) {
+        if let Some(group) = &self.current_group {
+            let updated_group = data.group(group.name()).expect(
+                "A group with the current group name should exist if only its members changed",
+            );
+            self.update_current_group(Some(updated_group));
+        }
     }
 }

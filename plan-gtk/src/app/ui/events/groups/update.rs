@@ -42,7 +42,7 @@ impl Ui {
         self.update_current_group_members();
     }
 
-    pub(in super::super) fn update_current_group_members(&self) {
+    pub(super) fn update_current_group_members(&self) {
         fetch_from!(self, group_members_tree_view, group_members_list_store);
 
         if let Some(current_group) = self.current_group.as_ref() {

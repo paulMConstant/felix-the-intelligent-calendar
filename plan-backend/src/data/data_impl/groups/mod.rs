@@ -65,8 +65,10 @@ impl Data {
         self.check_name_taken_by_entity(&name)?;
 
         self.groups.add(name.clone())?;
-        let group = self.group(&name).expect("Group was just added so it should exist");
-        self.events().borrow_mut().emit_group_added(&group, &self.groups_sorted());
+        let group = self
+            .group(&name)
+            .expect("Group was just added so it should exist");
+        self.events().borrow_mut().emit_group_added(self, &group);
         Ok(name)
     }
 
@@ -94,11 +96,17 @@ impl Data {
         S: Into<String>,
     {
         let name = clean_string(name)?;
-        let position_of_removed_group = self.groups_sorted().into_iter().position(|group| group.name() == name);
+        let position_of_removed_group = self
+            .groups_sorted()
+            .into_iter()
+            .position(|group| group.name() == name);
         self.groups.remove(&name)?;
         self.activities.remove_group_from_all(&name);
-        let position_of_removed_group = position_of_removed_group.expect("Group was removed so it should have existed");
-        self.events().borrow_mut().emit_group_removed(position_of_removed_group, &self.groups_sorted());
+        let position_of_removed_group =
+            position_of_removed_group.expect("Group was removed so it should have existed");
+        self.events()
+            .borrow_mut()
+            .emit_group_removed(self, position_of_removed_group);
         Ok(())
     }
 
@@ -142,7 +150,12 @@ impl Data {
         // Add the entity to every activity of the group
         self.activities
             .add_entity_to_activities_with_group(&group_name, entity_name);
-        self.events().borrow_mut().emit_entity_added_to_group();
+        let group = self
+            .group(&group_name)
+            .expect("We just added an entity, therefore the group exists");
+        self.events()
+            .borrow_mut()
+            .emit_entity_added_to_group(self, &group);
         Ok(())
     }
 
@@ -198,7 +211,12 @@ impl Data {
         for id in activity_ids_in_which_to_remove_entity {
             self.remove_entity_from_activity(id, &entity_name)?;
         }
-        self.events().borrow_mut().emit_entity_removed_from_group();
+        let group = self
+            .group(&group_name)
+            .expect("We just removed an entity, therefore the group exists");
+        self.events()
+            .borrow_mut()
+            .emit_entity_removed_from_group(self, &group);
         Ok(())
     }
 
@@ -227,8 +245,10 @@ impl Data {
         // Then, rename in activities
         self.activities
             .rename_group_in_all(&old_name, new_name.clone());
-        let group = self.group(&new_name).expect("Group was renamed so it should exist");
-        self.events().borrow_mut().emit_group_renamed(&group, &self.groups_sorted());
+        let group = self
+            .group(&new_name)
+            .expect("Group was renamed so it should exist");
+        self.events().borrow_mut().emit_group_renamed(self, &group);
         Ok(new_name)
     }
 }

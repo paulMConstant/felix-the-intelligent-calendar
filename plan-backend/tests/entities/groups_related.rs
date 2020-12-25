@@ -75,8 +75,8 @@ fn remove_entity_check_removed_in_group() {
                 entities: vec![entity1, entity2]
             }),
         {
-            data.remove_entity_from_group(group.clone(), entity1)
-                .expect("Could not remove entity from group");
+            data.remove_entity(entity1)
+                .expect("Could not remove entity");
 
             let entities = data
                 .group(group)

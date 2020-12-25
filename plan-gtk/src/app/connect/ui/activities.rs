@@ -168,19 +168,39 @@ impl App {
 
         let data = self.data.clone();
         let ui = self.ui.clone();
+
+        macro_rules! set_duration_closure {
+            ($data:ident, $ui:ident, $minutes_spin:ident, $hours_spin:ident) => {
+                let minutes = i8::try_from($minutes_spin.get_value().trunc() as i64)
+                    .expect("Spin value should be between 0 and 55");
+                let hours = i8::try_from($hours_spin.get_value().trunc() as i64)
+                    .expect("Spin value should be between 0 and 23");
+
+                let id = $ui
+                    .lock()
+                    .unwrap()
+                    .current_activity()
+                    .expect("Current activity should be set before setting duration")
+                    .id();
+                let mut data = $data.lock().unwrap();
+                if let Err(e) = data.set_activity_duration(id, Time::new(hours, minutes)) {
+                    let duration = data
+                        .activity(id)
+                        .expect("If current activity is set then id is valid")
+                        .duration();
+                    $minutes_spin.set_value(duration.minutes() as f64);
+                    $hours_spin.set_value(duration.hours() as f64);
+                    notify_err(e);
+                }
+            };
+        }
+
         app_register_signal!(
             self,
             activity_duration_minute_spin,
             activity_duration_minute_spin.connect_changed(clone!(@strong data, @strong ui,
                                                                  @weak activity_duration_minute_spin, @weak activity_duration_hour_spin=> move |_| {
-        let minutes = i8::try_from(activity_duration_minute_spin.get_value().trunc() as i64)
-            .expect("Spin value should be between 0 and 55");
-        let hours = i8::try_from(activity_duration_hour_spin.get_value().trunc() as i64)
-            .expect("Spin value should be between 0 and 23");
-
-        let id = ui.lock().unwrap().current_activity()
-            .expect("Current activity should be set before setting duration").id();
-        return_if_err!(data.lock().unwrap().set_activity_duration(id, Time::new(hours, minutes)));
+                set_duration_closure!(data, ui, activity_duration_minute_spin, activity_duration_hour_spin);
             }))
         );
 
@@ -195,14 +215,7 @@ impl App {
             activity_duration_hour_spin,
             activity_duration_hour_spin.connect_changed(clone!(@strong data, @strong ui,
                                                                  @weak activity_duration_minute_spin, @weak activity_duration_hour_spin=> move |_| {
-        let minutes = i8::try_from(activity_duration_minute_spin.get_value().trunc() as i64)
-            .expect("Spin value should be between 0 and 55");
-        let hours = i8::try_from(activity_duration_hour_spin.get_value().trunc() as i64)
-            .expect("Spin value should be between 0 and 23");
-
-        let id = ui.lock().unwrap().current_activity()
-            .expect("Current activity should be set before setting duration").id();
-        return_if_err!(data.lock().unwrap().set_activity_duration(id, Time::new(hours, minutes)));
+                set_duration_closure!(data, ui, activity_duration_minute_spin, activity_duration_hour_spin);
             }))
         );
     }
@@ -212,59 +225,57 @@ impl App {
 
         let data = self.data.clone();
         let ui = self.ui.clone();
+
+        macro_rules! add_to_activity_closure {
+            ($data: ident, $ui: ident, $entry: ident) => {
+                let activity_id = $ui
+                    .lock()
+                    .unwrap()
+                    .current_activity()
+                    .expect("Current activity should be set before adding into it")
+                    .id();
+                let entity_or_group_to_add = $entry.get_text();
+                with_blocked_signals!($ui.lock().unwrap(), $entry.set_text(""), $entry);
+
+                no_notify_assign_or_return!(
+                    entity_or_group_to_add,
+                    clean_string(entity_or_group_to_add)
+                );
+
+                let mut data = $data.lock().unwrap();
+                if let Ok(entity) = data.entity(&entity_or_group_to_add) {
+                    let entity_name = entity.name();
+                    return_if_err!(data.add_entity_to_activity(activity_id, entity_name));
+                } else if let Ok(group) = data.group(&entity_or_group_to_add) {
+                    let group_name = group.name();
+                    return_if_err!(data.add_group_to_activity(activity_id, group_name));
+                } else {
+                    let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
+                    notify_err(err);
+                }
+            };
+        }
+
         app_register_signal!(
             self,
             activity_add_to_entry,
-            activity_add_to_entry.connect_activate(clone!(@strong ui, @strong data, @weak activity_add_to_entry => move |_| {
-                let activity_id = ui.lock().unwrap().current_activity().expect("Current activity should be set before adding into it").id();
-        let entity_or_group_to_add = activity_add_to_entry.get_text();
-        with_blocked_signals!(
-            ui.lock().unwrap(),
-            activity_add_to_entry.set_text(""),
-            activity_add_to_entry
-        );
-
-        no_notify_assign_or_return!(entity_or_group_to_add, clean_string(entity_or_group_to_add));
-
-        if let Ok(entity) = data.lock().unwrap().entity(&entity_or_group_to_add) {
-            let entity_name = entity.name();
-            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, entity_name));
-        } else if let Ok(group) = data.lock().unwrap().group(&entity_or_group_to_add) {
-            let group_name = group.name();
-            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, group_name));
-        } else {
-            let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
-            notify_err(err);
-        }
-            }))
+            activity_add_to_entry.connect_activate(
+                clone!(@strong ui, @strong data, @weak activity_add_to_entry => move |_| {
+                    add_to_activity_closure!(data, ui, activity_add_to_entry);
+                })
+            )
         );
 
         fetch_from!(self.ui(), activity_add_to_entry, activity_add_to_button);
+
         app_register_signal!(
             self,
             activity_add_to_button,
-            activity_add_to_button.connect_clicked(clone!(@strong data, @strong ui, @weak activity_add_to_entry => move |_| {
-                let activity_id = ui.lock().unwrap().current_activity().expect("Current activity should be set before adding into it").id();
-        let entity_or_group_to_add = activity_add_to_entry.get_text();
-        with_blocked_signals!(
-            ui.lock().unwrap(),
-            activity_add_to_entry.set_text(""),
-            activity_add_to_entry
-        );
-
-        no_notify_assign_or_return!(entity_or_group_to_add, clean_string(entity_or_group_to_add));
-
-        if let Ok(entity) = data.lock().unwrap().entity(&entity_or_group_to_add) {
-            let entity_name = entity.name();
-            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, entity_name));
-        } else if let Ok(group) = data.lock().unwrap().group(&entity_or_group_to_add) {
-            let group_name = group.name();
-            return_if_err!(data.lock().unwrap().add_entity_to_activity(activity_id, group_name));
-        } else {
-            let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
-            notify_err(err);
-        }
-            }))
+            activity_add_to_button.connect_clicked(
+                clone!(@strong data, @strong ui, @weak activity_add_to_entry => move |_| {
+                    add_to_activity_closure!(data, ui, activity_add_to_entry);
+                })
+            )
         );
     }
 }

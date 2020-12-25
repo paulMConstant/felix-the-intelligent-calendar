@@ -105,6 +105,13 @@ impl Groups {
         }
     }
 
+    /// Removes the entity with given name from all groups.
+    pub fn remove_entity_from_all(&mut self, entity: &String) {
+        for group in self.groups.values_mut() {
+            let _ = group.inner.remove_entity(entity);
+        }
+    }
+
     /// Renames the group with the given name.
     ///
     /// # Errors

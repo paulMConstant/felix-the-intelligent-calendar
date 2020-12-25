@@ -1,6 +1,6 @@
 use crate::app::App;
 
-use crate::app::ui::helpers::get_selection_from_treeview;
+use crate::app::ui::helpers::{cleaned_input, get_selection_from_treeview};
 
 use plan_backend::data::clean_string;
 
@@ -103,6 +103,9 @@ impl App {
                     ).name();
                 let new_name = group_name_entry.get_text();
                 no_notify_assign_or_return!(new_name, clean_string(new_name));
+                if cleaned_input(&new_name) == group_to_rename {
+                    return;
+                }
                 return_if_err!(
                     data.lock().unwrap().set_group_name(group_to_rename, new_name)
                 );

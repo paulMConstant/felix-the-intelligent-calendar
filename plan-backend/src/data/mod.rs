@@ -2,8 +2,8 @@ mod components;
 mod data_impl;
 mod events;
 
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub use events::Events;
 
