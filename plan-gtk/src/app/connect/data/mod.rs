@@ -16,6 +16,10 @@ impl App {
         connect_entity_removed_from_group => |group| { on_group_members_changed },
         connect_activity_added => |activity| { on_activity_added },
         connect_activity_removed => |position| { on_activity_removed },
-        connect_activity_renamed => |activity| { on_activity_renamed }
+        connect_activity_renamed => |activity| { on_activity_renamed },
+        connect_entity_added_to_activity => |activity| { on_activity_entities_changed },
+        connect_entity_removed_from_activity => |activity| {on_activity_entities_changed},
+        connect_group_added_to_activity => |activity| { on_activity_groups_changed },
+        connect_group_removed_from_activity => |activity| { on_activity_groups_changed}
     );
 }

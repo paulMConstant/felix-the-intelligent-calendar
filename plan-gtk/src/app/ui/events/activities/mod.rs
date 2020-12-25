@@ -31,12 +31,13 @@ impl Ui {
         self.update_activities_treeview(&data.activities_sorted());
     }
 
-    // TODO from here
-    pub fn on_entity_added_to_activity(&mut self, _data: &Data) {
+    pub fn on_activity_entities_changed(&mut self, _data: &Data, activity: &Activity) {
+        self.update_current_activity(Some(activity.clone()));
         self.update_current_activity_entities();
     }
 
-    pub fn on_group_added_to_activity(&mut self, _data: &Data) {
+    pub fn on_activity_groups_changed(&mut self, _data: &Data, activity: &Activity) {
+        self.update_current_activity(Some(activity.clone()));
         self.update_current_activity_groups();
         // Entities in the group are added to the activity, so need to refresh the view as well
         self.update_current_activity_entities();
@@ -44,5 +45,15 @@ impl Ui {
 
     pub fn on_entities_or_groups_changed<T>(&mut self, data: &Data, _anything: T) {
         self.update_activities_completion_list_store(data);
+
+        if let Some(current_activity) = &self.current_activity {
+            let new_current_activity = data
+                .activities_sorted()
+                .into_iter()
+                .find(|activity| activity.id() == current_activity.id());
+            self.update_current_activity(new_current_activity.cloned());
+            self.update_current_activity_entities();
+            self.update_current_activity_groups();
+        }
     }
 }
