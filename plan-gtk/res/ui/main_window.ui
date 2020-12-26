@@ -14,13 +14,17 @@
     <columns>
       <!-- column-name Name -->
       <column type="gchararray"/>
+      <!-- column-name Icon -->
+      <column type="gchararray"/>
       <!-- column-name Participates_in_activity -->
       <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkListStore" id="ActivityGroupsListStore">
     <columns>
-      <!-- column-name gchararray1 -->
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name DeleteIcon -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -663,6 +667,8 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="model">ActivityGroupsListStore</property>
+                            <property name="headers-clickable">False</property>
+                            <property name="activate-on-single-click">True</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection"/>
                             </child>
@@ -673,6 +679,16 @@
                                   <object class="GtkCellRendererText" id="ActivityGroupsNameRenderer"/>
                                   <attributes>
                                     <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="DeleteIcons">
+                                <child>
+                                  <object class="GtkCellRendererPixbuf" id="DeleteIcon1"/>
+                                  <attributes>
+                                    <attribute name="icon-name">1</attribute>
                                   </attributes>
                                 </child>
                               </object>
@@ -688,6 +704,8 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="model">ActivityEntitiesListStore</property>
+                            <property name="headers-clickable">False</property>
+                            <property name="activate-on-single-click">True</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection"/>
                             </child>

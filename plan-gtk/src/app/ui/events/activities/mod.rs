@@ -5,9 +5,20 @@ use crate::app::ui::Ui;
 
 use plan_backend::data::{Activity, Data};
 
+use gtk::prelude::*;
+
 impl Ui {
     pub(super) fn on_init_activities(&mut self) {
         self.update_current_activity(None);
+        self.expand_activity_groups_tree_view_name_col();
+    }
+
+    fn expand_activity_groups_tree_view_name_col(&self) {
+        fetch_from!(self, activity_groups_tree_view);
+        activity_groups_tree_view
+            .get_column(0)
+            .unwrap()
+            .set_expand(true);
     }
 
     pub fn on_activity_added(&mut self, data: &Data, activity: &Activity) {

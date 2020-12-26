@@ -160,7 +160,11 @@ impl Ui {
                 {
                     activity_groups_list_store.clear();
                     for group in groups {
-                        activity_groups_list_store.insert_with_values(None, &[0], &[&group]);
+                        activity_groups_list_store.insert_with_values(
+                            None,
+                            &[0, 1],
+                            &[&group, &"user-trash-symbolic"],
+                        );
                     }
                 },
                 activity_groups_tree_view

@@ -16,6 +16,7 @@ impl App {
         self.connect_rename_activity();
         self.connect_set_activity_duration();
         self.connect_add_to_activity();
+        self.connect_remove_group_from_activity();
 
         self.connect_clean_add_activity_entry();
         self.connect_clean_activity_name_entry();
@@ -277,5 +278,38 @@ impl App {
                 })
             )
         );
+    }
+
+    fn connect_remove_group_from_activity(&self) {
+        fetch_from!(
+            self.ui(),
+            activity_groups_tree_view,
+            activity_groups_list_store
+        );
+
+        let data = self.data.clone();
+        let ui = self.ui.clone();
+        app_register_signal!(
+            self,
+            activity_groups_tree_view,
+            activity_groups_tree_view.connect_row_activated(clone!(@strong ui, @strong data, @weak activity_groups_tree_view => move |_self, treepath, treeview_column| {
+        let delete_column = activity_groups_tree_view
+            .get_column(1)
+            .expect("Activity Groups tree view should have at least 2 columns");
+        if &delete_column == treeview_column {
+            let iter = activity_groups_list_store
+                .get_iter(treepath)
+                .expect("Row was activated, path should be valid");
+            let group_to_remove = activity_groups_list_store.get_value(&iter, 0);
+            let group_to_remove = group_to_remove
+                .get::<&str>()
+                .expect("Value should be gchararray")
+                .expect("Value should be gchararray");
+
+            let current_activity_id = ui.lock().unwrap().current_activity().as_ref().expect("Current activity should be set before performing any action on a group").id();
+            return_if_err!(data.lock().unwrap()
+                .remove_group_from_activity(current_activity_id, group_to_remove));
+        }
+            })));
     }
 }
