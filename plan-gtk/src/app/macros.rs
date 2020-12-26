@@ -73,6 +73,21 @@ macro_rules! assign_or_return {
     };
 }
 
+// Spin button to i8 safe conversions
+
+/// Safely converts SpinButton values to i8.
+macro_rules! safe_spinbutton_to_i8 {
+    ($spinbutton: ident => $output_var: ident) => {
+        let $output_var = i8::try_from($spinbutton.get_value().trunc() as i64)
+                    .expect("Spin value should be lower than 255");
+    };
+
+    ($spinbutton: ident => $output_var: ident, $($rest_button: ident => $rest_output_var: ident),*) => {
+        safe_spinbutton_to_i8!($spinbutton => $output_var);
+        safe_spinbutton_to_i8!($($rest_button => $rest_output_var),*);
+    };
+}
+
 // Return if err macros
 
 /// If the given expression fails, returns.
@@ -122,5 +137,17 @@ macro_rules! fetch_from {
     ($from: expr, $x: ident, $($rest:ident),*) => {
         fetch_from!($from, $x);
         fetch_from!($from, $($rest),*);
+    };
+}
+
+/// Fetches the components with given names from a given builder.
+macro_rules! fetch_from_builder {
+    ($builder: expr, $var:ident=$type:ty: $id: literal) => {
+        let $var:$type = $builder.get_object($id) .expect(&format!("Could not get {} from ui file", $id));
+    };
+
+    ($builder: expr, $var:ident =$type:ty: $id: literal, $($rest_var:ident=$rest_type:ty : $rest_id:literal),*) => {
+        fetch_from_builder!($builder, $var=$type:$id);
+        fetch_from_builder!($builder, $($rest_var=$rest_type:$rest_id),*);
     };
 }

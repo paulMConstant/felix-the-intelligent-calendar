@@ -3,6 +3,7 @@ mod macros;
 mod activities;
 mod entities;
 mod groups;
+mod work_hours;
 
 use crate::app::ui::Ui;
 use gtk::prelude::*;

@@ -172,10 +172,7 @@ impl App {
 
         macro_rules! set_duration_closure {
             ($data:ident, $ui:ident, $minutes_spin:ident, $hours_spin:ident) => {
-                let minutes = i8::try_from($minutes_spin.get_value().trunc() as i64)
-                    .expect("Spin value should be between 0 and 55");
-                let hours = i8::try_from($hours_spin.get_value().trunc() as i64)
-                    .expect("Spin value should be between 0 and 23");
+                safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
 
                 let id = $ui
                     .lock()

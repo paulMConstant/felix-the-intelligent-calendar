@@ -25,28 +25,34 @@ impl App {
         let data = self.data.clone();
         let ui = self.ui.clone();
 
+        macro_rules! add_entity_closure {
+            ($data:ident, $ui:ident, $entry:ident) => {
+                let entity_name = $entry.get_text();
+                with_blocked_signals!($ui.lock().unwrap(), $entry.set_text(""), $entry);
+                // If the name is empty, return without doing anything
+                no_notify_assign_or_return!(entity_name, clean_string(entity_name));
+                return_if_err!($data.lock().unwrap().add_entity(&entity_name));
+            };
+        }
+
         app_register_signal!(
             self,
             entity_add_button,
-            entity_add_button.connect_clicked(clone!(@strong data, @strong ui, @weak entity_add_entry => move |_| {
-                let entity_name = entity_add_entry.get_text();
-                with_blocked_signals!(ui.lock().unwrap(), entity_add_entry.set_text(""), entity_add_entry);
-                // If the name is empty, return without doing anything
-                no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-                return_if_err!(data.lock().unwrap().add_entity(&entity_name));
-            }))
+            entity_add_button.connect_clicked(
+                clone!(@strong data, @strong ui, @weak entity_add_entry => move |_| {
+                    add_entity_closure!(data, ui, entity_add_entry);
+                })
+            )
         );
 
         app_register_signal!(
             self,
             entity_add_entry,
-            entity_add_entry.connect_activate(clone!(@strong data, @strong ui, @weak entity_add_entry => move |_| {
-                let entity_name = entity_add_entry.get_text();
-                with_blocked_signals!(ui.lock().unwrap(), entity_add_entry.set_text(""), entity_add_entry);
-                // If the name is empty, return without doing anything
-                no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-                return_if_err!(data.lock().unwrap().add_entity(&entity_name));
-            }))
+            entity_add_entry.connect_activate(
+                clone!(@strong data, @strong ui, @weak entity_add_entry => move |_| {
+                    add_entity_closure!(data, ui, entity_add_entry);
+                })
+            )
         );
     }
 

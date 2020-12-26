@@ -2,8 +2,8 @@
 mod macros;
 mod activities;
 mod entities;
-//mod work_hours;
 mod groups;
+mod work_hours;
 //mod activity_insertion;
 mod general;
 mod header;

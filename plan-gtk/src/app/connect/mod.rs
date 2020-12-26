@@ -9,6 +9,7 @@ impl App {
         self.connect_entities_tab();
         self.connect_header_buttons();
         self.connect_groups_tab();
+        self.connect_work_hours_tab();
     }
 
     pub fn connect_data(&mut self) {

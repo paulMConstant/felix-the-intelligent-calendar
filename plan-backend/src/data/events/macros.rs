@@ -18,7 +18,7 @@ macro_rules! create_events_struct {
 
 macro_rules! create_events_new {
     ($events_name: ident: $($element: ident),*) => {
-        pub(crate) fn new() -> $events_name {
+        pub fn new() -> $events_name {
             $events_name {$($element: Vec::new()),* }
         }
     };
@@ -40,7 +40,7 @@ macro_rules! create_emit_events {
     ($($element: ident { $($param_name: ident : $param_type: ty),* }),*) => {
         paste! {
             $(
-        pub(crate) fn [<emit_ $element>](&mut self, data: &Data, $($param_name: $param_type),*) {
+        pub fn [<emit_ $element>](&mut self, data: &Data, $($param_name: $param_type),*) {
             for callback in &mut self.$element {
                 callback(data, $($param_name),*);
             }

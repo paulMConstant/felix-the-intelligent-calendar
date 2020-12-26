@@ -5,7 +5,7 @@ use crate::errors::Result;
 
 /// Operations on work hours
 impl Data {
-    /// Returns an immutable reference to the work hours.
+    /// Returns a copy of the work hours.
     #[must_use]
     pub fn work_hours(&self) -> Vec<TimeInterval> {
         self.work_hours.work_intervals().clone()
