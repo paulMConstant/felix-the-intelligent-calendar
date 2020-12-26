@@ -1,4 +1,4 @@
-// To be used by AppDataImpl
+// Block signals macros
 
 /// Use 'with_blocked_signals' instead.
 macro_rules! block_signals {
@@ -57,26 +57,6 @@ macro_rules! with_blocked_signals {
     };
 }
 
-/// Should be used only in the App impl.
-///
-/// # Arguments
-///
-/// $self: self, $widget: name of the widget, $connection: normal connection expression
-///
-/// # Definition
-///
-/// macro_rules! app_register_signal {
-/// ($self: ident, $widget: ident, $connection: expr) => {
-///     let signal = $connection;
-///     $self.app\_data.lock().unwrap().register\_signal($widget, signal);
-/// };
-macro_rules! app_register_signal {
-    ($self: expr, $widget: ident, $connection: expr) => {
-        let signal = $connection;
-        $self.ui().register_signal($widget, signal);
-    };
-}
-
 // Notify macros
 
 /// If the given expression fails, notifies the user and returns.
@@ -92,6 +72,8 @@ macro_rules! assign_or_return {
         let $var = res.expect("Error case should have been taken care of in macro above");
     };
 }
+
+// Return if err macros
 
 /// If the given expression fails, returns.
 /// Else, assigns the variable with given name to the result.
@@ -119,24 +101,11 @@ macro_rules! return_if_err {
 /// If the given expression fails, silently returns.
 macro_rules! no_notify_return_if_err {
     ($expr: expr) => {
-        if let Err(_) = $expr {
+        if $expr.is_err() {
             return;
         }
     };
 }
-// Fetch ui macros
-
-/// Fetches the gtk component with given name from the builder.
-macro_rules! fetch_ui_from_builder {
-    ($from: expr, $id: literal) => {
-        $from
-            .builder
-            .get_object($id)
-            .expect(&format!("Could not get {} from ui file", $id)[..])
-    };
-}
-
-// Free macros
 
 /// Creates variables with the same name as object methods.
 ///
