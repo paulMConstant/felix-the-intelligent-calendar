@@ -14,11 +14,15 @@ use std::fmt;
 /// assert_eq!(format!("{}", error), "This interval is not valid.");
 /// ```
 #[derive(Debug, Clone)]
-pub struct InvalidInterval { }
+pub struct InvalidInterval {}
 
 impl fmt::Display for InvalidInterval {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-       write!(f, "{}.", tr("This interval is not valid. The end must be greater than the beginning"))
+        write!(
+            f,
+            "{}.",
+            tr("This interval is not valid. The end must be greater than the beginning")
+        )
     }
 }
 

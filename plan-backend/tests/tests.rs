@@ -35,8 +35,8 @@ mod errors {
     mod duration_too_short;
     mod empty_name;
     mod interval_overlaps;
+    mod invalid_interval;
     mod name_taken;
     mod not_enough_time;
     mod not_in;
-    mod invalid_interval;
 }

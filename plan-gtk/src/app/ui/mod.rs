@@ -18,6 +18,7 @@ pub struct Ui {
     current_activity: Option<Activity>,
     work_interval_builders: Arc<Mutex<Vec<gtk::Builder>>>,
     work_interval_editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
+    work_interval_remove_callback: Arc<dyn Fn(usize)>,
 }
 
 impl Ui {
@@ -31,6 +32,9 @@ impl Ui {
             work_interval_builders: Arc::new(Mutex::new(Vec::new())),
             work_interval_editing_done_callback: Arc::new(Box::new(|_, _| {
                 panic!("Work interval editing done callback was called before being set")
+            })),
+            work_interval_remove_callback: Arc::new(Box::new(|_| {
+                panic!("Work interval remove callback was called before being set")
             })),
         }
     }
@@ -62,6 +66,12 @@ impl Ui {
         self.work_interval_editing_done_callback = work_interval_editing_done_callback;
     }
 
+    pub fn set_work_interval_remove_callback(
+        &mut self,
+        work_interval_remove_callback: Arc<dyn Fn(usize)>,
+    ) {
+        self.work_interval_remove_callback = work_interval_remove_callback;
+    }
     pub fn show_mainwindow(&mut self) {
         fetch_from!(self, main_window);
         main_window.show_all();
