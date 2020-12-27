@@ -14,7 +14,7 @@ macro_rules! start_editing_callback {
                     if index == $position_of_interval {
                         // This button ends the editing of current interval
                         edit_button.set_sensitive(true);
-                        set_button_icon(&edit_button, "document-edit-symbolic");
+                        set_editing_done_icon_for_button(&edit_button);
                         make_spinbuttons_sensitive(&builder, true);
 
                         let editing_done_callback = $editing_done_callback.clone();
@@ -94,7 +94,7 @@ impl Ui {
         fetch_from_builder!(builder,
                             edit_button=gtk::Button:"TimeIntervalEditButton",
                             delete_button=gtk::Button:"TimeIntervalDeleteButton");
-        set_button_icon(&edit_button, "document-edit-symbolic");
+        set_start_editing_icon_for_button(&edit_button);
         let work_interval_builders = self.work_interval_builders.clone();
         let editing_done_callback = self.work_interval_editing_done_callback.clone();
 
@@ -118,7 +118,7 @@ impl Ui {
         fetch_from_builder!(builder,
                             edit_button=gtk::Button:"TimeIntervalEditButton",
                             delete_button=gtk::Button:"TimeIntervalDeleteButton");
-        set_button_icon(&edit_button, "object-select-symbolic");
+        set_editing_done_icon_for_button(&edit_button);
 
         let editing_done_callback = self.work_interval_editing_done_callback.clone();
         edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
@@ -161,6 +161,14 @@ fn new_time_interval_builder() -> gtk::Builder {
         .add_from_resource("/com/github/paulmconstant/plan/ui/time_interval.ui")
         .expect("Could not load ui file: time_interval.ui");
     builder
+}
+
+fn set_editing_done_icon_for_button(button: &gtk::Button) {
+    set_button_icon(&button, "object-select-symbolic");
+}
+
+fn set_start_editing_icon_for_button(button: &gtk::Button) {
+    set_button_icon(&button, "document-edit-symbolic");
 }
 
 fn set_button_icon(button: &gtk::Button, icon_name: &str) {
