@@ -73,51 +73,67 @@ impl Ui {
         );
 
         if let Some(interval) = interval {
-            edit_button.set_label("Edit");
+            edit_button.set_label("");
+            let image =
+                gtk::Image::from_icon_name(Some("document-edit-symbolic"), gtk::IconSize::Button);
+            edit_button.set_image(Some(&image));
+            edit_button.set_always_show_image(true);
             let work_interval_builders = self.work_interval_builders.clone();
             let editing_done_callback = self.work_interval_editing_done_callback.clone();
 
             edit_button.connect_clicked(move |_| {
                 for (index, builder) in work_interval_builders.lock().unwrap().iter().enumerate() {
-        fetch_from_builder!(builder,
-                            edit_button=gtk::Button:"TimeIntervalEditButton",
-                            interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
-                            interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
-                            interval_end_hours=gtk::SpinButton:"IntervalEndHourSpin",
-                            interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
-                           );
+                    fetch_from_builder!(builder,
+                        edit_button=gtk::Button:"TimeIntervalEditButton",
+                        interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
+                        interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
+                        interval_end_hours=gtk::SpinButton:"IntervalEndHourSpin",
+                        interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
+                    );
                     if index == position_of_interval {
-                        edit_button.set_visible(true);
-                        edit_button.set_label("Ok");
-                        interval_begin_hours.set_editable(true);
-                        interval_begin_minutes.set_editable(true);
-                        interval_end_hours.set_editable(true);
-                        interval_end_minutes.set_editable(true);
+                        edit_button.set_sensitive(true);
+                        edit_button.set_label("");
+                        let image = gtk::Image::from_icon_name(Some("object-select-symbolic"), gtk::IconSize::Button);
+                        edit_button.set_image(Some(&image));
+                        edit_button.set_always_show_image(true);
+                        interval_begin_hours.set_sensitive(true);
+                        interval_begin_minutes.set_sensitive(true);
+                        interval_end_hours.set_sensitive(true);
+                        interval_end_minutes.set_sensitive(true);
                         let editing_done_callback = editing_done_callback.clone();
                         edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
                         edit_button.connect_clicked(clone!(@weak edit_button => move |_| edit_button.set_label("Edit")));
                     } else {
-                        edit_button.set_visible(false);
+                        edit_button.set_sensitive(false);
                     }
                 }
             });
 
-            interval_begin_hours.set_editable(false);
-            interval_begin_minutes.set_editable(false);
-            interval_end_hours.set_editable(false);
-            interval_end_minutes.set_editable(false);
+            interval_begin_hours.set_sensitive(false);
+            interval_begin_minutes.set_sensitive(false);
+            interval_end_hours.set_sensitive(false);
+            interval_end_minutes.set_sensitive(false);
 
             interval_begin_hours.set_value(interval.beginning().hours() as f64);
             interval_begin_minutes.set_value(interval.beginning().minutes() as f64);
             interval_end_hours.set_value(interval.end().hours() as f64);
             interval_end_minutes.set_value(interval.end().minutes() as f64);
         } else {
-            edit_button.set_label("Ok");
+            edit_button.set_label("");
+            let image =
+                gtk::Image::from_icon_name(Some("object-select-symbolic"), gtk::IconSize::Button);
+            edit_button.set_image(Some(&image));
+            edit_button.set_always_show_image(true);
             let editing_done_callback = self.work_interval_editing_done_callback.clone();
             edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
             edit_button.connect_clicked(
                 clone!(@weak edit_button => move |_| edit_button.set_label("Edit")),
             );
+            for builder in self.work_interval_builders.lock().unwrap().iter() {
+                fetch_from_builder!(builder,
+                    edit_button=gtk::Button:"TimeIntervalEditButton");
+                edit_button.set_sensitive(false);
+            }
         };
 
         let time_interval: gtk::Box = builder

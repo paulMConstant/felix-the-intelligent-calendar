@@ -115,39 +115,55 @@ impl App {
     }
 
     fn connect_add_entity_to_group(&self) {
-        fetch_from!(
-            self.ui(),
-            entity_into_group_name_entry,
-            create_entity_before_adding_to_group_switch
-        );
+        macro_rules! add_entity_to_group_closure {
+            ($data:ident, $ui: ident, $entity_into_group_name_entry:ident,
+             $create_entity_before_adding_to_group_switch:ident) => {
+                clone!(@strong $ui,
+                       @strong $data,
+                       @weak $entity_into_group_name_entry,
+                       @weak $create_entity_before_adding_to_group_switch => move |_| {
+                let mut data = $data.lock().unwrap();
+                let group_in_which_to_add = $ui.lock().unwrap().current_group().as_ref()
+                    .expect("Current group should be selected before accessing any group-related filed")
+                    .name();
+                let entity_name = $entity_into_group_name_entry.get_text();
+                with_blocked_signals!(
+                    $ui.lock().unwrap(),
+                    $entity_into_group_name_entry.set_text(""),
+                    $entity_into_group_name_entry
+                );
+
+                no_notify_assign_or_return!(entity_name, clean_string(entity_name));
+                if $create_entity_before_adding_to_group_switch.get_active()
+                    && data.entity(&entity_name).is_err() {
+                    return_if_err!(data.add_entity(&entity_name));
+                }
+
+                return_if_err!(
+                    data
+                    .add_entity_to_group(group_in_which_to_add, entity_name));
+                    })
+            };
+        }
 
         let data = self.data.clone();
         let ui = self.ui.clone();
-        let entity_into_group_name_entry = entity_into_group_name_entry.clone();
+
+        fetch_from!(
+            self.ui(),
+            entity_into_group_name_entry,
+            create_entity_before_adding_to_group_switch
+        );
+
         app_register_signal!(
             self,
             entity_into_group_name_entry,
-            entity_into_group_name_entry.connect_activate(clone!(@strong ui, @strong data, @weak entity_into_group_name_entry,
-                                                                 @weak create_entity_before_adding_to_group_switch => move |_| {
-        let group_in_which_to_add = ui.lock().unwrap().current_group().as_ref()
-            .expect("Current group should be selected before accessing any group-related filed")
-            .name();
-        let entity_name = entity_into_group_name_entry.get_text();
-        with_blocked_signals!(
-            ui.lock().unwrap(),
-            entity_into_group_name_entry.set_text(""),
-            entity_into_group_name_entry
-        );
-
-        no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-        if create_entity_before_adding_to_group_switch.get_active() {
-            return_if_err!(data.lock().unwrap().add_entity(&entity_name));
-        }
-
-        return_if_err!(
-            data.lock().unwrap()
-            .add_entity_to_group(group_in_which_to_add, entity_name));
-            }))
+            entity_into_group_name_entry.connect_activate(add_entity_to_group_closure!(
+                data,
+                ui,
+                entity_into_group_name_entry,
+                create_entity_before_adding_to_group_switch
+            ))
         );
 
         fetch_from!(
@@ -160,26 +176,12 @@ impl App {
         app_register_signal!(
             self,
             add_to_group_button,
-            add_to_group_button.connect_clicked(clone!(@strong data, @strong ui, @strong entity_into_group_name_entry, @weak create_entity_before_adding_to_group_switch => move |_| {
-        let group_in_which_to_add = ui.lock().unwrap().current_group().as_ref()
-            .expect("Current group should be selected before accessing any group-related filed")
-            .name();
-        let entity_name = entity_into_group_name_entry.get_text();
-        with_blocked_signals!(
-            ui.lock().unwrap(),
-            entity_into_group_name_entry.set_text(""),
-            entity_into_group_name_entry
-        );
-
-        no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-        if create_entity_before_adding_to_group_switch.get_active() {
-            return_if_err!(data.lock().unwrap().add_entity(&entity_name));
-        }
-
-        return_if_err!(
-            data.lock().unwrap()
-            .add_entity_to_group(group_in_which_to_add, entity_name));
-            }))
+            add_to_group_button.connect_clicked(add_entity_to_group_closure!(
+                data,
+                ui,
+                entity_into_group_name_entry,
+                create_entity_before_adding_to_group_switch
+            ))
         );
     }
 

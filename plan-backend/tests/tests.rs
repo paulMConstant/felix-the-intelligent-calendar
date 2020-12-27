@@ -38,4 +38,5 @@ mod errors {
     mod name_taken;
     mod not_enough_time;
     mod not_in;
+    mod invalid_interval;
 }

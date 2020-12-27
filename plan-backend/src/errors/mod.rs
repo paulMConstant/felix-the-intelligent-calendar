@@ -8,6 +8,7 @@ pub mod interval_overlaps;
 pub mod name_taken;
 pub mod not_enough_time;
 pub mod not_in;
+pub mod invalid_interval;
 
 use std::error::Error;
 
