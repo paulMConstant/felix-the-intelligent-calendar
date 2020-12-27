@@ -2,7 +2,7 @@ use glib::clone;
 use gtk::prelude::*;
 
 use crate::app::notify::notify_err;
-use crate::app::ui::helpers::get_selection_from_treeview;
+use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::App;
 use plan_backend::data::{clean_string, ActivityID, Time};
 use plan_backend::errors::does_not_exist::DoesNotExist;

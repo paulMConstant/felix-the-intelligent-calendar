@@ -1,4 +1,4 @@
-use crate::app::ui::helpers::get_next_element;
+use crate::app::ui::helpers::collections::get_next_element;
 use crate::app::ui::Ui;
 
 use plan_backend::data::{Data, Entity};

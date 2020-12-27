@@ -1,4 +1,4 @@
-use crate::app::ui::helpers::tree_path_from_selection_index;
+use crate::app::ui::helpers::tree::tree_path_from_selection_index;
 use crate::app::ui::Ui;
 use plan_backend::data::{Activity, Data};
 

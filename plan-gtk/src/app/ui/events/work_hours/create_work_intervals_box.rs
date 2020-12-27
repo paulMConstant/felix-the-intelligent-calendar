@@ -1,3 +1,4 @@
+use crate::app::ui::helpers::format::format_time_spin_button;
 use crate::app::ui::Ui;
 
 use plan_backend::data::TimeInterval;
@@ -8,24 +9,28 @@ use gtk::prelude::*;
 macro_rules! start_editing_callback {
     ($work_interval_builders:ident, $position_of_interval: ident, $editing_done_callback: ident) => {
         move |_| {
-                for (index, builder) in $work_interval_builders.lock().unwrap().iter().enumerate() {
+            for (index, builder) in $work_interval_builders.lock().unwrap().iter().enumerate() {
+                if index == $position_of_interval {
                     fetch_from_builder!(builder, edit_button=gtk::Button:"TimeIntervalEditButton");
+                    // This button ends the editing of current interval
+                    edit_button.set_sensitive(true);
+                    set_editing_done_icon_for_button(&edit_button);
+                    make_spinbuttons_sensitive(&builder, true);
 
-                    if index == $position_of_interval {
-                        // This button ends the editing of current interval
-                        edit_button.set_sensitive(true);
-                        set_editing_done_icon_for_button(&edit_button);
-                        make_spinbuttons_sensitive(&builder, true);
-
-                        let editing_done_callback = $editing_done_callback.clone();
-                        edit_button.connect_clicked(clone!(@weak builder => move |_|
-                           editing_done_callback($position_of_interval, builder.clone())));
-                    } else {
-                        // All other buttons are not to be touched until editing is done
-                        edit_button.set_sensitive(false);
+                    let editing_done_callback = $editing_done_callback.clone();
+                    edit_button.connect_clicked(clone!(@weak builder => move |_|
+                       editing_done_callback($position_of_interval, builder.clone())));
+                } else {
+                    // All other buttons are not to be touched until editing is done
+                    fetch_from_builder!(builder,
+                                        edit_button=gtk::Button:"TimeIntervalEditButton",
+                                        delete_button=gtk::Button:"TimeIntervalDeleteButton");
+                    for button in &[edit_button, delete_button] {
+                        button.set_sensitive(false);
                     }
                 }
             }
+        }
     };
 }
 
@@ -66,6 +71,8 @@ impl Ui {
     ) -> gtk::Box {
         let builder = new_time_interval_builder();
 
+        format_time_interval_spinbuttons(&builder);
+
         if let Some(interval) = interval {
             self.init_time_interval_builder_with_given_interval(
                 &builder,
@@ -95,6 +102,7 @@ impl Ui {
                             edit_button=gtk::Button:"TimeIntervalEditButton",
                             delete_button=gtk::Button:"TimeIntervalDeleteButton");
         set_start_editing_icon_for_button(&edit_button);
+
         let work_interval_builders = self.work_interval_builders.clone();
         let editing_done_callback = self.work_interval_editing_done_callback.clone();
 
@@ -122,6 +130,8 @@ impl Ui {
 
         let editing_done_callback = self.work_interval_editing_done_callback.clone();
         edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
+
+        init_spinbuttons_to_default_value(&builder);
         self.init_delete_button_callback(&delete_button, position_of_interval);
     }
 
@@ -199,12 +209,49 @@ fn make_spinbuttons_sensitive(builder: &gtk::Builder, sensitive: bool) {
         interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
     );
 
-    for widget in &[
+    for spinbutton in &[
         interval_begin_hours,
         interval_begin_minutes,
         interval_end_hours,
         interval_end_minutes,
     ] {
-        widget.set_sensitive(sensitive);
+        spinbutton.set_sensitive(sensitive);
+    }
+}
+
+fn format_time_interval_spinbuttons(builder: &gtk::Builder) {
+    fetch_from_builder!(builder,
+        interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
+        interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
+        interval_end_hours=gtk::SpinButton:"IntervalEndHourSpin",
+        interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
+    );
+
+    for spinbutton in &[
+        interval_begin_hours,
+        interval_begin_minutes,
+        interval_end_hours,
+        interval_end_minutes,
+    ] {
+        format_time_spin_button(spinbutton);
+    }
+}
+
+fn init_spinbuttons_to_default_value(builder: &gtk::Builder) {
+    fetch_from_builder!(builder,
+        interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
+        interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
+        interval_end_hours=gtk::SpinButton:"IntervalEndHourSpin",
+        interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
+    );
+    let buttons = [
+        interval_begin_hours,
+        interval_begin_minutes,
+        interval_end_hours,
+        interval_end_minutes,
+    ];
+    let values = [8.0, 0.0, 12.0, 15.0];
+    for (spinbutton, default_value) in buttons.iter().zip(values.iter()) {
+        spinbutton.set_value(*default_value);
     }
 }

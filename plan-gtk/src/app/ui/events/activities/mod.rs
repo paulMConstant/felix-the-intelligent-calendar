@@ -1,6 +1,6 @@
 mod update;
 
-use crate::app::ui::helpers::get_next_element;
+use crate::app::ui::helpers::{collections::get_next_element, format::format_time_spin_button};
 use crate::app::ui::Ui;
 
 use plan_backend::data::{Activity, Data};
@@ -11,6 +11,7 @@ impl Ui {
     pub(super) fn on_init_activities(&mut self) {
         self.update_current_activity(None);
         self.expand_activity_groups_tree_view_name_col();
+        self.set_duration_spinbutton_format();
     }
 
     fn expand_activity_groups_tree_view_name_col(&self) {
@@ -19,6 +20,17 @@ impl Ui {
             .get_column(0)
             .unwrap()
             .set_expand(true);
+    }
+
+    fn set_duration_spinbutton_format(&self) {
+        fetch_from!(
+            self,
+            activity_duration_hour_spin,
+            activity_duration_minute_spin
+        );
+        for spinbutton in &[activity_duration_hour_spin, activity_duration_minute_spin] {
+            format_time_spin_button(spinbutton);
+        }
     }
 
     pub fn on_activity_added(&mut self, data: &Data, activity: &Activity) {

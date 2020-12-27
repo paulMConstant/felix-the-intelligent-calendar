@@ -1,4 +1,4 @@
-use crate::app::ui::helpers::cleaned_input;
+use crate::app::ui::helpers::format::cleaned_input;
 use crate::app::ui::Ui;
 
 use gtk::prelude::*;

@@ -1,7 +1,7 @@
 use glib::clone;
 use gtk::prelude::*;
 
-use crate::app::ui::helpers::{cleaned_input, get_selection_from_treeview};
+use crate::app::ui::helpers::{format::cleaned_input, tree::get_selection_from_treeview};
 use crate::app::App;
 
 use plan_backend::data::clean_string;
