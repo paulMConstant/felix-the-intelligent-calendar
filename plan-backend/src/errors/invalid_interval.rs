@@ -11,7 +11,8 @@ use std::fmt;
 ///
 /// let error = InvalidInterval::new();
 ///
-/// assert_eq!(format!("{}", error), "This interval is not valid.");
+/// assert_eq!(format!("{}", error),
+///     "This interval is not valid. The end must be greater than the beginning.");
 /// ```
 #[derive(Debug, Clone)]
 pub struct InvalidInterval {}
