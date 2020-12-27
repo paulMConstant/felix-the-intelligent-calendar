@@ -17,6 +17,7 @@ impl App {
         self.connect_set_activity_duration();
         self.connect_add_to_activity();
         self.connect_remove_group_from_activity();
+        self.connect_remove_entity_from_activity();
 
         self.connect_clean_add_activity_entry();
         self.connect_clean_activity_name_entry();
@@ -69,8 +70,10 @@ impl App {
                     let activity_id = activity_id_str
                         .parse::<ActivityID>()
                         .expect("Error when parsing activity ID from model");
-                    assign_or_return!(activity, data.lock().unwrap().activity(activity_id));
-                    ui.lock().unwrap().on_activity_selected(activity.clone());
+
+                    let data = data.lock().unwrap();
+                    assign_or_return!(activity, data.activity(activity_id));
+                    ui.lock().unwrap().on_activity_selected(&data, activity.clone());
                 }
                 })
             )
@@ -211,10 +214,15 @@ impl App {
         app_register_signal!(
             self,
             activity_duration_hour_spin,
-            activity_duration_hour_spin.connect_changed(clone!(@strong data, @strong ui,
-                                                                 @weak activity_duration_minute_spin, @weak activity_duration_hour_spin=> move |_| {
-                set_duration_closure!(data, ui, activity_duration_minute_spin, activity_duration_hour_spin);
-            }))
+            activity_duration_hour_spin.connect_changed(
+                clone!(@strong data, @strong ui, @weak activity_duration_minute_spin,
+                           @weak activity_duration_hour_spin=> move |_| {
+                    set_duration_closure!(data,
+                                          ui,
+                                          activity_duration_minute_spin,
+                                          activity_duration_hour_spin);
+                })
+            )
         );
     }
 
@@ -289,7 +297,9 @@ impl App {
         app_register_signal!(
             self,
             activity_groups_tree_view,
-            activity_groups_tree_view.connect_row_activated(clone!(@strong ui, @strong data, @weak activity_groups_tree_view => move |_self, treepath, treeview_column| {
+            activity_groups_tree_view.connect_row_activated(
+                clone!(@strong ui, @strong data, @weak activity_groups_tree_view
+                       => move |_self, treepath, treeview_column| {
         let delete_column = activity_groups_tree_view
             .get_column(1)
             .expect("Activity Groups tree view should have at least 2 columns");
@@ -303,9 +313,55 @@ impl App {
                 .expect("Value should be gchararray")
                 .expect("Value should be gchararray");
 
-            let current_activity_id = ui.lock().unwrap().current_activity().as_ref().expect("Current activity should be set before performing any action on a group").id();
+            let current_activity_id = ui.lock().unwrap().current_activity().as_ref()
+                .expect("Current activity should be set before performing any action on a group").id();
             return_if_err!(data.lock().unwrap()
                 .remove_group_from_activity(current_activity_id, group_to_remove));
+        }
+            })));
+    }
+
+    fn connect_remove_entity_from_activity(&self) {
+        fetch_from!(
+            self.ui(),
+            activity_entities_tree_view,
+            activity_entities_list_store
+        );
+
+        let data = self.data.clone();
+        let ui = self.ui.clone();
+        app_register_signal!(
+            self,
+            activity_entities_tree_view,
+            activity_entities_tree_view.connect_row_activated(
+                clone!(@strong ui, @strong data, @weak activity_entities_tree_view =>
+                       move |_self, treepath, treeview_column| {
+        let delete_column = activity_entities_tree_view
+            .get_column(1)
+            .expect("Activity Entities tree view should have at least 2 columns");
+        if &delete_column == treeview_column {
+            let iter = activity_entities_list_store
+                .get_iter(treepath)
+                .expect("Row was activated, path should be valid");
+            let entity_to_remove = activity_entities_list_store.get_value(&iter, 0);
+            let entity_to_remove = entity_to_remove
+                .get::<&str>()
+                .expect("Value should be gchararray")
+                .expect("Value should be gchararray");
+
+            let current_activity_id = ui.lock().unwrap().current_activity().as_ref()
+                .expect("Current activity should be set before performing any action on a group").id();
+
+            let mut data = data.lock().unwrap();
+            assign_or_return!(activity, data.activity(current_activity_id));
+            let activity_entities = activity.entities_sorted();
+
+            if activity_entities.contains(&entity_to_remove.to_owned()) {
+                return_if_err!(data.remove_entity_from_activity(current_activity_id, entity_to_remove));
+            } else {
+                // The entity was removed from a group of the activity and should be readded.
+                return_if_err!(data.add_entity_to_activity(current_activity_id, entity_to_remove));
+            }
         }
             })));
     }
