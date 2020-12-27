@@ -1,5 +1,3 @@
-//! Custom errors following Rust By Example guideline
-//! https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/boxing_errors.html
 pub mod already_in;
 pub mod does_not_exist;
 pub mod duration_too_short;
