@@ -20,6 +20,8 @@
       <column type="gboolean"/>
       <!-- column-name Color -->
       <column type="gchararray"/>
+      <!-- column-name Tooltip -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkListStore" id="ActivityGroupsListStore">
@@ -741,6 +743,7 @@
                             <property name="can-focus">True</property>
                             <property name="model">ActivityEntitiesListStore</property>
                             <property name="headers-clickable">False</property>
+                            <property name="tooltip-column">4</property>
                             <property name="activate-on-single-click">True</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection"/>

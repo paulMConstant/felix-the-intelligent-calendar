@@ -27,14 +27,15 @@ impl Ui {
                     activity_entities_list_store.clear();
                     // Iteration over a BTreeMap is sorted by key.
                     for (entity_name, not_in_activity_but_in_group) in entities.iter() {
-                        let (icon, strikethrough, color) = match not_in_activity_but_in_group {
-                            Some(_group) => ("list-add-symbolic", true, "grey"), // TODO add group as tooltip
-                            None => ("user-trash-symbolic", false, "black"),
+                        let (icon, strikethrough, color, tooltip) = match not_in_activity_but_in_group {
+                            Some(group) => ("list-add-symbolic", true, "grey", 
+                            format!("{} is excluded from the group '{}'. Click on '+' to add them to the activity again.", &entity_name, group)),
+                            None => ("user-trash-symbolic", false, "black", String::new()),
                         };
                         activity_entities_list_store.insert_with_values(
                             None,
-                            &[0, 1, 2, 3],
-                            &[&entity_name, &icon, &strikethrough, &color],
+                            &[0, 1, 2, 3, 4],
+                            &[&entity_name, &icon, &strikethrough, &color, &tooltip],
                         );
                     }
                 },
