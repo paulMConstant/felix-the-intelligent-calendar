@@ -1,9 +1,9 @@
 #[macro_use]
 mod macros;
 mod activities;
+mod activity_insertion;
 mod entities;
-mod groups;
-mod work_hours;
-//mod activity_insertion;
 mod general;
+mod groups;
 mod header;
+mod work_hours;

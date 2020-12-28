@@ -19,39 +19,45 @@ impl App {
         self.connect_remove_group_from_activity();
         self.connect_remove_entity_from_activity();
 
-        self.connect_clean_add_activity_entry();
-        self.connect_clean_activity_name_entry();
-        self.connect_clean_activity_add_to_entry();
+        self.connect_clean_activity_entries();
     }
 
     fn connect_add_activity(&self) {
+        macro_rules! add_activity_closure {
+            ($data: ident, $ui: ident, $activity_add_entry: ident) => {
+                clone!(@strong $data, @strong $ui, @weak $activity_add_entry => move |_| {
+                    let activity_name = $activity_add_entry.get_text();
+                    with_blocked_signals!($ui.lock().unwrap(), $activity_add_entry.set_text(""), $activity_add_entry);
+
+                    no_notify_assign_or_return!(activity_name, clean_string(activity_name));
+                    return_if_err!($data.lock().unwrap().add_activity(activity_name));
+                })
+            };
+        }
+
         fetch_from!(self.ui(), activity_add_button, activity_add_entry);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
+
         app_register_signal!(
             self,
             activity_add_button,
-            activity_add_button.connect_clicked(clone!(@strong data, @strong ui, @weak activity_add_entry => move |_| {
-                let activity_name = activity_add_entry.get_text();
-                with_blocked_signals!(ui.lock().unwrap(), activity_add_entry.set_text(""), activity_add_entry);
-
-                no_notify_assign_or_return!(activity_name, clean_string(activity_name));
-                return_if_err!(data.lock().unwrap().add_activity(activity_name));
-                                                                    }))
+            activity_add_button.connect_clicked(add_activity_closure!(
+                data,
+                ui,
+                activity_add_entry
+            ))
         );
 
         app_register_signal!(
             self,
             activity_add_entry,
-            activity_add_entry.connect_activate(clone!(@strong data, @strong ui, @weak activity_add_entry => move |_| {
-
-                let activity_name = activity_add_entry.get_text();
-                with_blocked_signals!(ui.lock().unwrap(), activity_add_entry.set_text(""), activity_add_entry);
-
-                no_notify_assign_or_return!(activity_name, clean_string(activity_name));
-                return_if_err!(data.lock().unwrap().add_activity(activity_name));
-                             }))
+            activity_add_entry.connect_activate(add_activity_closure!(
+                data,
+                ui,
+                activity_add_entry
+            ))
         );
     }
 
@@ -114,52 +120,6 @@ impl App {
             no_notify_assign_or_return!(new_name, clean_string(new_name));
             return_if_err!(data.lock().unwrap().set_activity_name(activity_to_rename_id, new_name));
             }))
-        );
-    }
-
-    fn connect_clean_add_activity_entry(&self) {
-        fetch_from!(self.ui(), activity_add_entry);
-
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            activity_add_entry,
-            activity_add_entry.connect_changed(
-                clone!(@strong ui, @weak activity_add_entry => move |_| {
-                ui.lock().unwrap().event_clean_entry_content(activity_add_entry);
-                                     })
-            )
-        );
-    }
-
-    fn connect_clean_activity_name_entry(&self) {
-        fetch_from!(self.ui(), activity_name_entry);
-
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            activity_name_entry,
-            activity_name_entry.connect_changed(
-                clone!(@strong ui, @weak activity_name_entry => move |_| {
-
-                ui.lock().unwrap().event_clean_entry_content(activity_name_entry);
-                                         })
-            )
-        );
-    }
-
-    fn connect_clean_activity_add_to_entry(&self) {
-        fetch_from!(self.ui(), activity_add_to_entry);
-
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            activity_add_to_entry,
-            activity_add_to_entry.connect_changed(
-                clone!(@strong ui, @weak activity_add_to_entry => move |_| {
-                    ui.lock().unwrap().event_clean_entry_content(activity_add_to_entry);
-                })
-            )
         );
     }
 
@@ -234,6 +194,7 @@ impl App {
 
         macro_rules! add_to_activity_closure {
             ($data: ident, $ui: ident, $entry: ident) => {
+            clone!(@strong $data, @strong $ui, @weak $entry => move |_| {
                 let activity_id = $ui
                     .lock()
                     .unwrap()
@@ -259,17 +220,18 @@ impl App {
                     let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
                     notify_err(err);
                 }
+            })
             };
         }
 
         app_register_signal!(
             self,
             activity_add_to_entry,
-            activity_add_to_entry.connect_activate(
-                clone!(@strong ui, @strong data, @weak activity_add_to_entry => move |_| {
-                    add_to_activity_closure!(data, ui, activity_add_to_entry);
-                })
-            )
+            activity_add_to_entry.connect_activate(add_to_activity_closure!(
+                data,
+                ui,
+                activity_add_to_entry
+            ))
         );
 
         fetch_from!(self.ui(), activity_add_to_entry, activity_add_to_button);
@@ -277,11 +239,11 @@ impl App {
         app_register_signal!(
             self,
             activity_add_to_button,
-            activity_add_to_button.connect_clicked(
-                clone!(@strong data, @strong ui, @weak activity_add_to_entry => move |_| {
-                    add_to_activity_closure!(data, ui, activity_add_to_entry);
-                })
-            )
+            activity_add_to_button.connect_clicked(add_to_activity_closure!(
+                data,
+                ui,
+                activity_add_to_entry
+            ))
         );
     }
 
@@ -364,5 +326,14 @@ impl App {
             }
         }
             })));
+    }
+
+    fn connect_clean_activity_entries(&self) {
+        connect_clean!(
+            self,
+            activity_add_entry,
+            activity_add_to_entry,
+            activity_name_entry
+        );
     }
 }

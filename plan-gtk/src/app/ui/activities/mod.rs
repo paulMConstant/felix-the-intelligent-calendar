@@ -77,7 +77,7 @@ impl Ui {
     }
 
     pub fn on_entities_or_groups_changed<T>(&mut self, data: &Data, _anything: T) {
-        self.update_activities_completion_list_store(data);
+        self.update_entity_group_completion_list_store(data);
 
         if let Some(current_activity) = &self.current_activity {
             let new_current_activity = data

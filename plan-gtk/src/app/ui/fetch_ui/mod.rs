@@ -1,6 +1,7 @@
 #[macro_use]
-mod macros;
+pub mod macros;
 mod activities;
+mod activity_insertion_area;
 mod entities;
 mod groups;
 mod work_hours;
@@ -22,5 +23,10 @@ impl Ui {
     #[must_use]
     pub fn data_button(&self) -> gtk::Button {
         fetch_ui_from_builder!(self, "DataButton")
+    }
+
+    #[must_use]
+    pub fn entity_and_group_completion_list_store(&self) -> gtk::ListStore {
+        fetch_ui_from_builder!(self, "EntityAndGroupCompletionListStore")
     }
 }

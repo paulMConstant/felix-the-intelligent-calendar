@@ -89,11 +89,6 @@ impl Ui {
     }
 
     #[must_use]
-    pub fn activity_participants_completion_list_store(&self) -> gtk::ListStore {
-        fetch_ui_from_builder!(self, "ActivityParticipantsCompletionListStore")
-    }
-
-    #[must_use]
     pub fn activity_add_to_button(&self) -> gtk::Button {
         fetch_ui_from_builder!(self, "ActivityAddToButton")
     }

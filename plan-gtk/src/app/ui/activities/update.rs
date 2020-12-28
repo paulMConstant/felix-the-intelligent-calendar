@@ -1,6 +1,6 @@
 use crate::app::ui::helpers::tree::tree_path_from_selection_index;
 use crate::app::ui::Ui;
-use plan_backend::data::{Activity, Data, Group};
+use plan_backend::data::{Activity, Group};
 
 use gettextrs::gettext as tr;
 use gtk::prelude::*;
@@ -182,28 +182,5 @@ impl Ui {
     fn hide_current_activity_view(&self) {
         fetch_from!(self, activity_specific_pane);
         activity_specific_pane.hide();
-    }
-
-    pub(super) fn update_activities_completion_list_store(&self, data: &Data) {
-        fetch_from!(self, activity_participants_completion_list_store);
-        activity_participants_completion_list_store.clear();
-        for entity_name in data
-            .entities_sorted()
-            .into_iter()
-            .map(|entity| entity.name())
-        {
-            activity_participants_completion_list_store.insert_with_values(
-                None,
-                &[0, 1],
-                &[&entity_name, &format!("avatar-default-symbolic")],
-            );
-        }
-        for group_name in data.groups_sorted().into_iter().map(|group| group.name()) {
-            activity_participants_completion_list_store.insert_with_values(
-                None,
-                &[0, 1],
-                &[&group_name, &format!("system-users-symbolic")],
-            );
-        }
     }
 }

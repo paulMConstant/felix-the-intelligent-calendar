@@ -1,13 +1,21 @@
-pub mod events;
+#[macro_use]
 pub mod fetch_ui;
 pub mod helpers;
 pub mod signals;
+
+mod activities;
+mod activity_insertion_area;
+mod common;
+mod entities;
+mod groups;
+mod work_hours;
 
 use glib::signal::SignalHandlerId;
 use gtk::prelude::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+use activity_insertion_area::ActivityInsertionArea;
 use plan_backend::data::{Activity, Entity, Group};
 
 pub struct Ui {
@@ -19,6 +27,7 @@ pub struct Ui {
     work_interval_builders: Arc<Mutex<Vec<gtk::Builder>>>,
     work_interval_editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
     work_interval_remove_callback: Arc<dyn Fn(usize)>,
+    activity_insertion_area: ActivityInsertionArea,
 }
 
 impl Ui {
@@ -36,7 +45,15 @@ impl Ui {
             work_interval_remove_callback: Arc::new(Box::new(|_| {
                 panic!("Work interval remove callback was called before being set")
             })),
+            activity_insertion_area: ActivityInsertionArea::new(),
         }
+    }
+
+    pub(super) fn init_ui_state(&mut self) {
+        self.on_init_activities();
+        self.on_init_entities();
+        self.on_init_groups();
+        self.on_init_activity_insertion_area();
     }
 
     #[must_use]
@@ -72,6 +89,7 @@ impl Ui {
     ) {
         self.work_interval_remove_callback = work_interval_remove_callback;
     }
+
     pub fn show_mainwindow(&mut self) {
         fetch_from!(self, main_window);
         main_window.show_all();

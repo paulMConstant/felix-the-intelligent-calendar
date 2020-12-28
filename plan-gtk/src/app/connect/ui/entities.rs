@@ -15,8 +15,7 @@ impl App {
         self.connect_set_entity_mail();
         self.connect_set_send_mail_to();
 
-        self.connect_clean_add_entity_entry();
-        self.connect_clean_entity_name_entry();
+        self.connect_clean_entity_entries();
     }
 
     fn connect_add_entity(&self) {
@@ -156,33 +155,7 @@ impl App {
         );
     }
 
-    fn connect_clean_add_entity_entry(&self) {
-        fetch_from!(self.ui(), entity_add_entry);
-
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            entity_add_entry,
-            entity_add_entry.connect_changed(
-                clone!(@strong ui, @weak entity_add_entry => move |_| {
-                    ui.lock().unwrap().event_clean_entry_content(entity_add_entry);
-                })
-            )
-        );
-    }
-
-    fn connect_clean_entity_name_entry(&self) {
-        fetch_from!(self.ui(), entity_name_entry);
-
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            entity_name_entry,
-            entity_name_entry.connect_changed(
-                clone!(@strong ui, @weak entity_name_entry => move |_| {
-                    ui.lock().unwrap().event_clean_entry_content(entity_name_entry);
-                })
-            )
-        );
+    fn connect_clean_entity_entries(&self) {
+        connect_clean!(self, entity_add_entry, entity_name_entry);
     }
 }
