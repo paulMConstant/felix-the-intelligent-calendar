@@ -170,6 +170,7 @@
                 <property name="wide-handle">True</property>
                 <child>
                   <object class="GtkBox">
+                    <property name="height-request">300</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
@@ -214,9 +215,6 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="model">ActivitiesListStore</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
-                        </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="ActivityNameCol">
                             <property name="title" translatable="yes">Activities</property>
@@ -242,12 +240,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkPaned" id="ActivitySpecificPane">
+                  <object class="GtkBox" id="ActivitySpecificBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="wide-handle">True</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkBox">
+                        <property name="height-request">300</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
@@ -322,7 +320,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                         <child>
@@ -336,6 +334,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="margin-top">5</property>
+                                <property name="margin-bottom">5</property>
                                 <child>
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
@@ -431,7 +430,7 @@
                                             <property name="label" translatable="yes">Color :</property>
                                           </object>
                                           <packing>
-                                            <property name="expand">False</property>
+                                            <property name="expand">True</property>
                                             <property name="fill">True</property>
                                             <property name="position">0</property>
                                           </packing>
@@ -457,6 +456,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">True</property>
                                                 <property name="receives-default">True</property>
+                                                <property name="margin-end">2</property>
                                                 <property name="title" translatable="yes">Pick Activity Color :</property>
                                                 <property name="rgba">rgb(52,101,164)</property>
                                               </object>
@@ -503,7 +503,7 @@
                                             <property name="label" translatable="yes">Inserted :</property>
                                           </object>
                                           <packing>
-                                            <property name="expand">False</property>
+                                            <property name="expand">True</property>
                                             <property name="fill">True</property>
                                             <property name="position">0</property>
                                           </packing>
@@ -549,6 +549,7 @@
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Interval :</property>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -706,48 +707,69 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">2</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="resize">False</property>
-                        <property name="shrink">False</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkPaned" id="ActivityMembersPane">
+                        <property name="width-request">160</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="vexpand">False</property>
+                        <property name="border-width">0</property>
                         <property name="orientation">vertical</property>
+                        <property name="wide-handle">True</property>
                         <child>
-                          <object class="GtkTreeView" id="ActivityGroupsTreeView">
+                          <object class="GtkScrolledWindow">
+                            <property name="height-request">50</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="model">ActivityGroupsListStore</property>
-                            <property name="headers-clickable">False</property>
-                            <property name="activate-on-single-click">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
-                            </child>
+                            <property name="hscrollbar-policy">external</property>
+                            <property name="vscrollbar-policy">external</property>
+                            <property name="shadow-type">etched-in</property>
                             <child>
-                              <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
-                                <property name="title" translatable="yes">Groups</property>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="shadow-type">none</property>
                                 <child>
-                                  <object class="GtkCellRendererText" id="ActivityGroupsNameRenderer"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="DeleteIcons">
-                                <child>
-                                  <object class="GtkCellRendererPixbuf" id="DeleteIcon1"/>
-                                  <attributes>
-                                    <attribute name="icon-name">1</attribute>
-                                  </attributes>
+                                  <object class="GtkTreeView" id="ActivityGroupsTreeView">
+                                    <property name="height-request">50</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="model">ActivityGroupsListStore</property>
+                                    <property name="headers-clickable">False</property>
+                                    <property name="activate-on-single-click">True</property>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
+                                        <property name="title" translatable="yes">Groups in activity</property>
+                                        <child>
+                                          <object class="GtkCellRendererText" id="ActivityGroupsNameRenderer"/>
+                                          <attributes>
+                                            <attribute name="text">0</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="DeleteIcons">
+                                        <child>
+                                          <object class="GtkCellRendererPixbuf" id="DeleteIcon1"/>
+                                          <attributes>
+                                            <attribute name="icon-name">1</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
                             </child>
@@ -758,54 +780,70 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkTreeView" id="ActivityEntitiesTreeView">
+                          <object class="GtkScrolledWindow">
+                            <property name="height-request">50</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="model">ActivityEntitiesListStore</property>
-                            <property name="headers-clickable">False</property>
-                            <property name="tooltip-column">4</property>
-                            <property name="activate-on-single-click">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
-                            </child>
+                            <property name="hscrollbar-policy">external</property>
+                            <property name="vscrollbar-policy">external</property>
+                            <property name="shadow-type">etched-in</property>
                             <child>
-                              <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
-                                <property name="title" translatable="yes">Entities</property>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
                                 <child>
-                                  <object class="GtkCellRendererText" id="ActivityEntitiesNameRenderer"/>
-                                  <attributes>
-                                    <attribute name="foreground">3</attribute>
-                                    <attribute name="strikethrough">2</attribute>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="IconColumn">
-                                <child>
-                                  <object class="GtkCellRendererPixbuf" id="DeleteOrReAddIcon"/>
-                                  <attributes>
-                                    <attribute name="icon-name">1</attribute>
-                                  </attributes>
+                                  <object class="GtkTreeView" id="ActivityEntitiesTreeView">
+                                    <property name="height-request">50</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="model">ActivityEntitiesListStore</property>
+                                    <property name="headers-clickable">False</property>
+                                    <property name="tooltip-column">4</property>
+                                    <property name="activate-on-single-click">True</property>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
+                                        <property name="title" translatable="yes">Entities in activity</property>
+                                        <child>
+                                          <object class="GtkCellRendererText" id="ActivityEntitiesNameRenderer"/>
+                                          <attributes>
+                                            <attribute name="foreground">3</attribute>
+                                            <attribute name="strikethrough">2</attribute>
+                                            <attribute name="text">0</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="IconColumn">
+                                        <child>
+                                          <object class="GtkCellRendererPixbuf" id="DeleteOrReAddIcon"/>
+                                          <attributes>
+                                            <attribute name="icon-name">1</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
                             </child>
                           </object>
                           <packing>
                             <property name="resize">True</property>
-                            <property name="shrink">False</property>
+                            <property name="shrink">True</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="resize">True</property>
-                        <property name="shrink">False</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">False</property>
+                    <property name="resize">True</property>
                     <property name="shrink">False</property>
                   </packing>
                 </child>

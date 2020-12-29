@@ -4,8 +4,8 @@ use crate::app::ui::Ui;
 
 impl Ui {
     #[must_use]
-    pub fn activity_specific_pane(&self) -> gtk::Paned {
-        fetch_ui_from_builder!(self, "ActivitySpecificPane")
+    pub fn activity_specific_box(&self) -> gtk::Box {
+        fetch_ui_from_builder!(self, "ActivitySpecificBox")
     }
 
     #[must_use]

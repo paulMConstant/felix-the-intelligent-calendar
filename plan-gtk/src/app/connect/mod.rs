@@ -10,7 +10,7 @@ impl App {
         self.connect_header_buttons();
         self.connect_groups_tab();
         self.connect_work_hours_tab();
-        self.connect_activity_insertion_area();
+        self.connect_activity_insertion();
     }
 
     pub fn connect_data(&mut self) {

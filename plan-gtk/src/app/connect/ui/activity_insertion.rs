@@ -7,7 +7,7 @@ use glib::clone;
 use gtk::prelude::*;
 
 impl App {
-    pub fn connect_activity_insertion_area(&self) {
+    pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
 
         self.connect_clean_show_schedule_entry();

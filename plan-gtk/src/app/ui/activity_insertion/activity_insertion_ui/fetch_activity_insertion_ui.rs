@@ -1,11 +1,11 @@
 use gtk::prelude::*;
 
-use super::ActivityInsertionArea;
+use super::ActivityInsertionUi;
 
-impl ActivityInsertionArea {
+impl ActivityInsertionUi {
     #[must_use]
-    pub fn insertion_area_box(&self) -> gtk::Box {
-        fetch_ui_from_builder!(self, "InsertionAreaBox")
+    pub fn insertion_box(&self) -> gtk::Box {
+        fetch_ui_from_builder!(self, "ActivityInsertionBox")
     }
 
     #[must_use]

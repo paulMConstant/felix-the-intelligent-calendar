@@ -1,7 +1,7 @@
 #[macro_use]
 pub mod macros;
 mod activities;
-mod activity_insertion_area;
+mod activity_insertion;
 mod entities;
 mod groups;
 mod work_hours;

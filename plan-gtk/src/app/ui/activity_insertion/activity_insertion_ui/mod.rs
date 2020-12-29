@@ -5,33 +5,33 @@ use gtk::prelude::*;
 
 use std::sync::{Arc, Mutex};
 
-pub struct ActivityInsertionArea {
+pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Vec<String>>>,
 }
 
-impl ActivityInsertionArea {
+impl ActivityInsertionUi {
     #[must_use]
-    pub fn new() -> ActivityInsertionArea {
+    pub fn new() -> ActivityInsertionUi {
         let builder = gtk::Builder::new();
         builder
-            .add_from_resource("/com/github/paulmconstant/plan/ui/activity_insertion_area.ui")
-            .expect("Could not load ui file: activity_insertion_area.ui");
+            .add_from_resource("/com/github/paulmconstant/plan/ui/activity_insertion.ui")
+            .expect("Could not load ui file: activity_insertion.ui");
 
-        let activity_insertion_area = ActivityInsertionArea {
+        let activity_insertion = ActivityInsertionUi {
             builder,
             schedules_to_show: Arc::new(Mutex::new(Vec::new())),
         };
 
-        activity_insertion_area.connect_draw();
+        activity_insertion.connect_draw();
 
-        activity_insertion_area
+        activity_insertion
     }
 
     #[must_use]
-    pub(super) fn get_insertion_area_box(&self) -> gtk::Box {
-        fetch_from!(self, insertion_area_box);
-        insertion_area_box
+    pub(super) fn get_insertion_box(&self) -> gtk::Box {
+        fetch_from!(self, insertion_box);
+        insertion_box
     }
 
     pub(super) fn show_entity_schedule(&mut self, entity_to_show: String) {

@@ -90,7 +90,7 @@ impl Ui {
     fn update_current_activity_view(&self, groups: &Vec<&Group>) {
         fetch_from!(
             self,
-            activity_specific_pane,
+            activity_specific_box,
             activity_name_entry,
             activity_duration_hour_spin,
             activity_duration_minute_spin,
@@ -102,7 +102,7 @@ impl Ui {
             activity_insertion_time_box
         );
 
-        activity_specific_pane.show();
+        activity_specific_box.show();
 
         let activity = self
             .current_activity
@@ -120,7 +120,7 @@ impl Ui {
 
                 if let Some(interval) = activity.insertion_interval() {
                     activity_inserted_switch.set_active(true);
-                    activity_insertion_time_box.set_sensitive(true);
+                    activity_insertion_time_box.set_visible(true);
 
                     let beginning = interval.beginning();
                     activity_beginning_hour_spin.set_value(beginning.hours() as f64);
@@ -131,7 +131,7 @@ impl Ui {
                     activity_end_minute_spin.set_value(end.minutes() as f64);
                 } else {
                     activity_inserted_switch.set_active(false);
-                    activity_insertion_time_box.set_sensitive(false);
+                    activity_insertion_time_box.set_visible(false);
                     for spinbutton in &[
                         &activity_beginning_hour_spin,
                         &activity_beginning_minute_spin,
@@ -180,7 +180,7 @@ impl Ui {
     }
 
     fn hide_current_activity_view(&self) {
-        fetch_from!(self, activity_specific_pane);
-        activity_specific_pane.hide();
+        fetch_from!(self, activity_specific_box);
+        activity_specific_box.hide();
     }
 }

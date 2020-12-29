@@ -1,4 +1,4 @@
-use super::ActivityInsertionArea;
+use super::ActivityInsertionUi;
 
 use cairo;
 use gtk::prelude::*;
@@ -12,6 +12,7 @@ const HALF_PIXEL: f64 = 0.5;
 
 const FULL_LINE_RGB: f64 = 0.7;
 const DASH_LINE_RGB: f64 = 0.8;
+const CORNER_SEPARATOR_LINE_RGB: f64 = 0.89;
 const BACKGROUND_RGB: f64 = 0.99;
 const HOUR_FONT_RGB: f64 = 0.4;
 const SCHEDULE_FONT_RGB: f64 = 0.2;
@@ -22,12 +23,12 @@ const SCHEDULE_FONT_SIZE: f64 = 20.0;
 const LINE_WIDTH: f64 = 0.5;
 
 const HEADER_SEPARATOR_HEIGHT_PROPORTION: f64 = 0.33;
-const SCHEDULE_FONT_Y_OFFSET: f64 = 10.0;
+const SCHEDULE_FONT_Y_OFFSET: f64 = 12.0;
 
 const MIN_SCHEDULE_WIDTH: f64 = 200.0;
 const MAX_SCHEDULE_WIDTH: f64 = 450.0;
 
-impl ActivityInsertionArea {
+impl ActivityInsertionUi {
     pub(super) fn connect_draw(&self) {
         self.connect_draw_hours();
         self.connect_draw_corner();
@@ -114,7 +115,11 @@ fn draw_corner(c: &cairo::Context, width: f64, height: f64) {
     paint_background_uniform(c);
 
     // Draw the hour-schedule separation line
-    c.set_source_rgb(FULL_LINE_RGB, FULL_LINE_RGB, FULL_LINE_RGB);
+    c.set_source_rgb(
+        CORNER_SEPARATOR_LINE_RGB,
+        CORNER_SEPARATOR_LINE_RGB,
+        CORNER_SEPARATOR_LINE_RGB,
+    );
     c.set_dash(&[], 0.0);
     c.move_to(width, height);
     c.line_to(width, HEADER_SEPARATOR_HEIGHT_PROPORTION * height);

@@ -4,7 +4,7 @@ pub mod helpers;
 pub mod signals;
 
 mod activities;
-mod activity_insertion_area;
+mod activity_insertion;
 mod common;
 mod entities;
 mod groups;
@@ -15,7 +15,7 @@ use gtk::prelude::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use activity_insertion_area::ActivityInsertionArea;
+use activity_insertion::ActivityInsertionUi;
 use plan_backend::data::{Activity, Entity, Group};
 
 pub struct Ui {
@@ -27,7 +27,7 @@ pub struct Ui {
     work_interval_builders: Arc<Mutex<Vec<gtk::Builder>>>,
     work_interval_editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
     work_interval_remove_callback: Arc<dyn Fn(usize)>,
-    activity_insertion_area: ActivityInsertionArea,
+    activity_insertion: ActivityInsertionUi,
 }
 
 impl Ui {
@@ -45,7 +45,7 @@ impl Ui {
             work_interval_remove_callback: Arc::new(Box::new(|_| {
                 panic!("Work interval remove callback was called before being set")
             })),
-            activity_insertion_area: ActivityInsertionArea::new(),
+            activity_insertion: ActivityInsertionUi::new(),
         }
     }
 
@@ -53,7 +53,7 @@ impl Ui {
         self.on_init_activities();
         self.on_init_entities();
         self.on_init_groups();
-        self.on_init_activity_insertion_area();
+        self.on_init_activity_insertion();
     }
 
     #[must_use]
