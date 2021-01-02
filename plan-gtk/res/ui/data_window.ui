@@ -120,6 +120,7 @@
                   <object class="GtkScrolledWindow" id="WorkHoursScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="hscrollbar-policy">always</property>
                     <property name="shadow-type">in</property>
                     <child>
                       <placeholder/>

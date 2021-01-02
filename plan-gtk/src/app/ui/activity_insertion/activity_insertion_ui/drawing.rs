@@ -3,8 +3,6 @@ use super::ActivityInsertionUi;
 use cairo;
 use gtk::prelude::*;
 
-use std::sync::{Arc, Mutex};
-
 const NUM_HOURS_IN_DAY: i32 = 24;
 
 // Cairo calculates from the half of a pixel. This is used as an offset.
@@ -19,7 +17,7 @@ const SCHEDULE_FONT_RGB: f64 = 0.2;
 
 const DASH_SIZE: f64 = 5.0;
 const HOUR_FONT_SIZE: f64 = 14.0;
-const SCHEDULE_FONT_SIZE: f64 = 20.0;
+const SCHEDULE_FONT_SIZE: f64 = 16.0;
 const LINE_WIDTH: f64 = 0.5;
 
 const HEADER_SEPARATOR_HEIGHT_PROPORTION: f64 = 0.33;
@@ -63,23 +61,32 @@ impl ActivityInsertionUi {
     }
 
     fn connect_draw_schedules(&self) {
-        fetch_from!(self, schedules_drawing);
+        fetch_from!(self, schedules_drawing, header_scrolled_window);
+        let schedules = self.schedules_to_show.clone();
 
         schedules_drawing.connect_draw(move |w, c| {
-            draw_schedules(
-                &c,
-                w.get_allocated_width() as f64,
-                w.get_allocated_height() as f64,
-            );
+            let header_visible_width = header_scrolled_window.get_allocated_width() as f64;
+            let schedules = schedules.lock().unwrap();
+            if let Some(width_per_schedule) =
+                resize_draw_area(schedules.len(), w, header_visible_width)
+            {
+                draw_schedules(&c, w, &schedules, width_per_schedule);
+            }
             gtk::Inhibit(false)
         });
     }
 
     fn connect_draw_header(&self) {
-        fetch_from!(self, header_drawing);
+        fetch_from!(self, header_drawing, header_scrolled_window);
         let schedules = self.schedules_to_show.clone();
         header_drawing.connect_draw(move |w, c| {
-            draw_header(schedules.clone(), &c, w);
+            let header_visible_width = header_scrolled_window.get_allocated_width() as f64;
+            let schedules = schedules.lock().unwrap();
+            if let Some(width_per_schedule) =
+                resize_draw_area(schedules.len(), w, header_visible_width)
+            {
+                draw_header(&c, w, &schedules, width_per_schedule);
+            }
             gtk::Inhibit(false)
         });
     }
@@ -126,38 +133,82 @@ fn draw_corner(c: &cairo::Context, width: f64, height: f64) {
     c.stroke();
 }
 
-fn draw_schedules(c: &cairo::Context, width: f64, height: f64) {
+fn draw_schedules(
+    c: &cairo::Context,
+    w: &gtk::DrawingArea,
+    schedules: &Vec<String>,
+    width_per_schedule: f64,
+) {
+    let width = w.get_allocated_width() as f64;
+    let height = w.get_allocated_height() as f64;
     draw_background_and_lines(c, width, height);
+
+    let nb_schedules = schedules.len();
+    // Draw schedule separators
+    c.set_source_rgb(FULL_LINE_RGB, FULL_LINE_RGB, FULL_LINE_RGB);
+    c.set_line_width(LINE_WIDTH);
+    c.set_dash(&[], 0.0);
+    let mut current_x = 0.0;
+    for _i in 0..nb_schedules {
+        current_x += width_per_schedule;
+        c.move_to(current_x, height);
+        c.line_to(current_x, 0.0);
+    }
+    c.stroke();
 }
 
-fn draw_header(schedules: Arc<Mutex<Vec<String>>>, c: &cairo::Context, w: &gtk::DrawingArea) {
+/// Resizes the draw area if necessary, else returns the width which each schedule should take.
+fn resize_draw_area(nb_schedules: usize, w: &gtk::DrawingArea, visible_width: f64) -> Option<f64> {
+    let width = w.get_allocated_width() as f64;
+    let height = w.get_allocated_height() as f64;
+
+    let width_per_schedule = compute_schedule_width(nb_schedules, visible_width);
+
+    let width_taken_by_schedules = width_per_schedule * nb_schedules as f64;
+    match width_per_schedule * nb_schedules as f64 {
+        required_width if required_width > width => {
+            // Header is too small
+            w.set_size_request(width_taken_by_schedules as i32, height as i32);
+            w.queue_resize();
+            None
+        }
+        required_width if required_width < width && width > visible_width => {
+            // Header is too big
+            w.set_size_request(visible_width as i32, height as i32);
+            w.queue_resize();
+            None
+        }
+        _ => Some(width_per_schedule),
+    }
+}
+
+fn compute_schedule_width(nb_schedules: usize, visible_widget_width: f64) -> f64 {
+    let width_per_schedule = visible_widget_width / nb_schedules as f64;
+
+    let width_per_schedule = width_per_schedule.max(MIN_SCHEDULE_WIDTH);
+    let width_per_schedule = width_per_schedule.min(MAX_SCHEDULE_WIDTH);
+    width_per_schedule
+}
+
+fn draw_header(
+    c: &cairo::Context,
+    w: &gtk::DrawingArea,
+    schedules: &Vec<String>,
+    width_per_schedule: f64,
+) {
     // TODO resizing will not work when schedules are removed.
-    // 1 - Should first try to resize to "visible size"
-    // 2 - Calculate the size of schedules outside
-    // 3 - Draw schedule separations
-    // 3 - Make schedules and header one single scroll bar
+    // 1 - Should first try to resize to "visible size" OK
+    // 2 - Calculate the size of schedules outside OK
+    // 3 - Draw schedule separations OK
+    // 3 - Make schedules and header one single scroll bar OK
     // 4 - Add remaining time, deletion
     // 5 - Draw schedules
     // 6 - Support for drag & drop (via eventBox)
 
     // Get schedules width
-    let width = w.get_allocated_width() as f64;
     let height = w.get_allocated_height() as f64;
 
-    no_notify_assign_or_return!(schedules, schedules.try_lock());
     let nb_schedules = schedules.len();
-    let width_per_schedule = width / nb_schedules as f64;
-
-    let width_per_schedule = width_per_schedule.max(MIN_SCHEDULE_WIDTH);
-    let width_per_schedule = width_per_schedule.min(MAX_SCHEDULE_WIDTH);
-
-    // Resize drawing area
-    let width_taken_by_schedules = width_per_schedule * nb_schedules as f64;
-    if width_per_schedule * nb_schedules as f64 > width {
-        w.set_size_request(width_taken_by_schedules as i32, height as i32);
-        w.queue_resize();
-        return;
-    }
 
     paint_background_uniform(c);
 

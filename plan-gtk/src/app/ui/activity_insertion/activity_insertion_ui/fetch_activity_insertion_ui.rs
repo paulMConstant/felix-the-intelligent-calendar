@@ -27,4 +27,19 @@ impl ActivityInsertionUi {
     pub fn corner_drawing(&self) -> gtk::DrawingArea {
         fetch_ui_from_builder!(self, "CornerDrawing")
     }
+
+    #[must_use]
+    pub fn header_scrolled_window(&self) -> gtk::ScrolledWindow {
+        fetch_ui_from_builder!(self, "HeaderScrolledWindow")
+    }
+
+    #[must_use]
+    pub fn schedule_scrolled_window(&self) -> gtk::ScrolledWindow {
+        fetch_ui_from_builder!(self, "ScheduleScrolledWindow")
+    }
+
+    #[must_use]
+    pub fn hours_scrolled_window(&self) -> gtk::ScrolledWindow {
+        fetch_ui_from_builder!(self, "HoursScrolledWindow")
+    }
 }

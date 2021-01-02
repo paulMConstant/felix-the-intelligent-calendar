@@ -1,6 +1,7 @@
 mod drawing;
 mod fetch_activity_insertion_ui;
 
+use glib::clone;
 use gtk::prelude::*;
 
 use std::sync::{Arc, Mutex};
@@ -24,6 +25,7 @@ impl ActivityInsertionUi {
         };
 
         activity_insertion.connect_draw();
+        activity_insertion.connect_schedule_window_scroll();
 
         activity_insertion
     }
@@ -35,11 +37,49 @@ impl ActivityInsertionUi {
     }
 
     pub(super) fn show_entity_schedule(&mut self, entity_to_show: String) {
-        self.schedules_to_show.lock().unwrap().push(entity_to_show);
+        let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
+        if schedules_to_show.contains(&entity_to_show) {
+            return;
+        }
 
-        fetch_from!(self, header_drawing, hours_drawing);
-        for drawing in &[header_drawing, hours_drawing] {
+        schedules_to_show.push(entity_to_show);
+        schedules_to_show.sort();
+        drop(schedules_to_show);
+
+        fetch_from!(self, header_drawing, schedules_drawing);
+        for drawing in &[header_drawing, schedules_drawing] {
             drawing.queue_draw();
         }
+    }
+
+    fn connect_schedule_window_scroll(&self) {
+        fetch_from!(
+            self,
+            hours_scrolled_window,
+            header_scrolled_window,
+            schedule_scrolled_window
+        );
+
+        header_scrolled_window.get_hadjustment().unwrap()
+           .connect_value_changed(clone!(@weak schedule_scrolled_window => move |hadjustment|
+             schedule_scrolled_window.get_hadjustment().unwrap().set_value(hadjustment.get_value()))
+        );
+
+        schedule_scrolled_window
+            .get_hadjustment()
+            .unwrap()
+            .connect_value_changed(clone!(@weak header_scrolled_window => move |hadjustment|
+             header_scrolled_window.get_hadjustment().unwrap().set_value(hadjustment.get_value())));
+
+        hours_scrolled_window.get_vadjustment().unwrap()
+           .connect_value_changed(clone!(@weak schedule_scrolled_window => move |vadjustment|
+             schedule_scrolled_window.get_vadjustment().unwrap().set_value(vadjustment.get_value()))
+        );
+
+        schedule_scrolled_window
+            .get_vadjustment()
+            .unwrap()
+            .connect_value_changed(clone!(@weak hours_scrolled_window => move |vadjustment|
+             hours_scrolled_window.get_vadjustment().unwrap().set_value(vadjustment.get_value())));
     }
 }
