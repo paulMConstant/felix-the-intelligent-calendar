@@ -350,9 +350,10 @@ impl Data {
         )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)?;
+
         self.events()
             .borrow_mut()
-            .emit_entity_custom_work_hours_changed(self);
+            .emit_custom_work_hours_changed(self);
         Ok(())
         // TODO update possible insertion times
     }
@@ -402,7 +403,7 @@ impl Data {
             .remove_custom_work_interval_for(&entity_name, interval)?;
         self.events()
             .borrow_mut()
-            .emit_entity_custom_work_hours_changed(self);
+            .emit_custom_work_hours_changed(self);
         Ok(())
         // TODO update possible insertion times
     }
@@ -452,7 +453,7 @@ impl Data {
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
         self.events()
             .borrow_mut()
-            .emit_entity_custom_work_hours_changed(self);
+            .emit_custom_work_hours_changed(self);
         Ok(())
         // TODO update possible insertion times
     }

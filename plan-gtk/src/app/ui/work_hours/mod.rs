@@ -11,6 +11,7 @@ impl Ui {
     }
 
     pub fn on_work_hours_changed(&self, data: &Data) {
-        self.work_hours_builder.on_work_hours_changed(data);
+        self.work_hours_builder
+            .on_work_hours_changed(data.work_hours());
     }
 }

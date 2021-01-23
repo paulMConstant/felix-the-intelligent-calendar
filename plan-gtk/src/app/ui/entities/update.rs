@@ -43,6 +43,9 @@ impl Ui {
             entity_mail_entry,
             entity_send_mail_switch
         );
+
+        self.custom_work_hours_builder
+            .on_work_hours_changed(current_entity.custom_work_hours());
     }
 
     fn hide_current_entity_view(&self) {

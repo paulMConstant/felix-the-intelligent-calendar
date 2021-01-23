@@ -1,7 +1,7 @@
 use crate::app::ui::helpers::collections::get_next_element;
 use crate::app::ui::Ui;
 
-use plan_backend::data::{Data, Entity};
+use plan_backend::data::{Data, Entity, TimeInterval};
 
 mod update;
 
@@ -29,5 +29,27 @@ impl Ui {
     pub fn on_entity_renamed(&mut self, data: &Data, entity: &Entity) {
         self.update_current_entity(Some(entity.clone()));
         self.update_entities_treeview(&data.entities_sorted());
+    }
+
+    pub fn on_add_custom_work_hour(&self, current_work_hours: Vec<TimeInterval>) {
+        self.custom_work_hours_builder
+            .on_add_work_hour(current_work_hours);
+    }
+
+    pub fn on_custom_work_hours_changed(&mut self, data: &Data) {
+        let current_entity_name = self
+            .current_entity
+            .as_ref()
+            .expect("Current entity should be set before custom work hours change")
+            .name();
+
+        let new_current_entity = data
+            .entity(current_entity_name)
+            .expect("Current entity should exist when custom work hours change");
+        let new_custom_work_hours = new_current_entity.custom_work_hours();
+
+        self.update_current_entity(Some(new_current_entity));
+        self.custom_work_hours_builder
+            .on_work_hours_changed(new_custom_work_hours);
     }
 }

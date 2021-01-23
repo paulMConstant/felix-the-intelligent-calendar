@@ -354,7 +354,7 @@
                                   <placeholder/>
                                 </child>
                                 <child>
-                                  <object class="GtkButton" id="AddIntervalButton">
+                                  <object class="GtkButton" id="CustomWorkHoursAddButton">
                                     <property name="visible">True</property>
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">True</property>

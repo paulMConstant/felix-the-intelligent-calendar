@@ -7,6 +7,7 @@ impl App {
     pub fn connect_ui(&self) {
         self.connect_activities_tab();
         self.connect_entities_tab();
+        self.connect_custom_work_hours();
         self.connect_header_buttons();
         self.connect_groups_tab();
         self.connect_work_hours_tab();

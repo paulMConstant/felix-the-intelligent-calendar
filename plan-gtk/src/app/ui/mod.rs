@@ -59,6 +59,11 @@ impl Ui {
     }
 
     #[must_use]
+    pub(super) fn custom_work_hours_builder(&mut self) -> &mut WorkHoursBuilder {
+        &mut self.custom_work_hours_builder
+    }
+
+    #[must_use]
     pub(super) fn current_entity(&self) -> Option<Entity> {
         self.current_entity.clone()
     }

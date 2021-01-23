@@ -1,6 +1,6 @@
 use crate::app::ui::helpers::format::format_time_spin_button;
 
-use plan_backend::data::{Data, TimeInterval};
+use plan_backend::data::TimeInterval;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -83,9 +83,9 @@ impl WorkHoursBuilder {
         self.add_new_work_hours(current_work_hours, true);
     }
 
-    pub fn on_work_hours_changed(&self, data: &Data) {
+    pub fn on_work_hours_changed(&self, work_hours: Vec<TimeInterval>) {
         self.remove_work_hours_if_any();
-        self.add_new_work_hours(data.work_hours(), false);
+        self.add_new_work_hours(work_hours, false);
     }
 
     fn remove_work_hours_if_any(&self) {

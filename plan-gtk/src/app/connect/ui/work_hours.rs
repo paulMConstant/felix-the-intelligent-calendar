@@ -1,15 +1,15 @@
 use crate::app::notify::notify_err;
 use crate::app::App;
 
-use plan_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
-use plan_backend::errors::invalid_interval::InvalidInterval;
-use plan_backend::errors::Result;
-
 use glib::clone;
 use gtk::prelude::*;
 
 use std::convert::TryFrom;
 use std::sync::Arc;
+
+use plan_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use plan_backend::errors::invalid_interval::InvalidInterval;
+use plan_backend::errors::Result;
 
 macro_rules! reset_work_hours_if_err {
     ($data:ident, $operation:expr) => {

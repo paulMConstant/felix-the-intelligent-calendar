@@ -52,4 +52,9 @@ impl Ui {
     pub fn custom_work_hours_scrolled_window(&self) -> gtk::ScrolledWindow {
         fetch_ui_from_builder!(self, "CustomWorkHoursScrolledWindow")
     }
+
+    #[must_use]
+    pub fn custom_work_hours_add_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "CustomWorkHoursAddButton")
+    }
 }
