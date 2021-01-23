@@ -1,4 +1,4 @@
-use crate::app::{notify::notify_err, App};
+use crate::app::{notify::notify_err, ui::EntityToShow, App};
 
 use plan_backend::data::clean_string;
 use plan_backend::errors::does_not_exist::DoesNotExist;
@@ -28,10 +28,10 @@ impl App {
 
                 let data = $data.lock().unwrap();
                 if let Ok(entity) = data.entity(&entity_or_group_to_show) {
-                    ui.on_show_entity_schedule(entity.name());
+                    ui.on_show_entity_schedule(EntityToShow::new(entity.name(), &data));
                 } else if let Ok(group) = data.group(&entity_or_group_to_show) {
                     for entity_name in group.entities_sorted() {
-                        ui.on_show_entity_schedule(entity_name);
+                        ui.on_show_entity_schedule(EntityToShow::new(entity_name, &data));
                     }
                 } else {
                     let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_show);

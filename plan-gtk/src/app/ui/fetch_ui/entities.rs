@@ -44,11 +44,6 @@ impl Ui {
     }
 
     #[must_use]
-    pub fn entity_custom_work_hours_switch(&self) -> gtk::Switch {
-        fetch_ui_from_builder!(self, "EntityCustomWorkHoursSwitch")
-    }
-
-    #[must_use]
     pub fn entity_specific_box(&self) -> gtk::Box {
         fetch_ui_from_builder!(self, "EntitySpecificBox")
     }

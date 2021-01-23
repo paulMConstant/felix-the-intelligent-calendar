@@ -20,7 +20,6 @@ impl Ui {
     fn remove_work_hours_if_any(&self) {
         fetch_from!(self, work_hours_scrolled_window);
 
-        // One spot is occupied by AddWorkHourButton. Button + work hours > 1
         for child in work_hours_scrolled_window.get_children() {
             work_hours_scrolled_window.remove(&child);
         }

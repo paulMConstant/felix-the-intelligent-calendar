@@ -22,8 +22,7 @@ impl Ui {
             entity_specific_box,
             entity_name_entry,
             entity_send_mail_switch,
-            entity_mail_entry,
-            entity_custom_work_hours_switch
+            entity_mail_entry
         );
 
         let current_entity = self
@@ -38,13 +37,10 @@ impl Ui {
             {
                 entity_name_entry.set_text(&current_entity.name());
                 entity_mail_entry.set_text(&current_entity.mail());
-                entity_custom_work_hours_switch
-                    .set_active(current_entity.custom_work_hours().is_empty() == false);
                 entity_send_mail_switch.set_active(current_entity.send_me_a_mail());
             },
             entity_name_entry,
             entity_mail_entry,
-            entity_custom_work_hours_switch,
             entity_send_mail_switch
         );
     }

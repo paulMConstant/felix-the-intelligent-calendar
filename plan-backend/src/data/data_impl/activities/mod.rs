@@ -23,6 +23,21 @@ impl Data {
         self.activities.get_by_id(id)
     }
 
+    /// Returns the activities in which the given entity participates.
+    #[must_use]
+    pub fn activities_of<S>(&self, entity_name: S) -> Result<Vec<&Activity>>
+    where
+        S: Into<String>,
+    {
+        let entity_name = clean_string(entity_name)?;
+        Ok(self
+            .activities_sorted()
+            .iter()
+            .cloned()
+            .filter(|activity| activity.entities_sorted().contains(&entity_name))
+            .collect())
+    }
+
     /// Adds an activity with the formatted given name.
     ///
     /// Automatically assigns a unique id.

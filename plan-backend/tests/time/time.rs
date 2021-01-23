@@ -93,3 +93,11 @@ fn invalid_new() {
 fn display() {
     assert_eq!(format!("{}", Time::new(1, 5)), "01:05");
 }
+
+#[test]
+fn n_times_min_discretization_5_minutes() {
+    // Assuming MIN_TIME_DISCRETIZATION = 5 minutes
+    let time = Time::new(1, 15);
+    let expected = 12 + 3;
+    assert_eq!(time.n_times_min_discretization(), expected);
+}

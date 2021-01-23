@@ -12,8 +12,7 @@ impl Data {
         &self,
         entity_name: &String,
     ) -> Time {
-        self.activities
-            .sorted_by_name()
+        self.activities_sorted()
             .iter()
             .filter_map(|activity| {
                 if activity.entities_sorted().contains(&entity_name) {

@@ -120,7 +120,10 @@
   </object>
   <object class="GtkApplicationWindow" id="MainWindow">
     <property name="can-focus">False</property>
+    <property name="window-position">center</property>
+    <property name="type-hint">desktop</property>
     <property name="decorated">False</property>
+    <property name="gravity">center</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -132,12 +135,38 @@
             <property name="can-focus">False</property>
             <property name="title" translatable="yes">Plan</property>
             <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Close</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Maximize/Minimize</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="DataButton">
                 <property name="label" translatable="yes">Data</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
+              <packing>
+                <property name="position">2</property>
+              </packing>
             </child>
             <child>
               <object class="GtkButton">
@@ -147,7 +176,7 @@
                 <property name="image">SettingsIcon</property>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>
@@ -215,6 +244,9 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="model">ActivitiesListStore</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="ActivityNameCol">
                             <property name="title" translatable="yes">Activities</property>
@@ -748,6 +780,9 @@
                                     <property name="model">ActivityGroupsListStore</property>
                                     <property name="headers-clickable">False</property>
                                     <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
                                         <property name="title" translatable="yes">Groups in activity</property>
@@ -801,6 +836,9 @@
                                     <property name="headers-clickable">False</property>
                                     <property name="tooltip-column">4</property>
                                     <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
                                         <property name="title" translatable="yes">Entities in activity</property>

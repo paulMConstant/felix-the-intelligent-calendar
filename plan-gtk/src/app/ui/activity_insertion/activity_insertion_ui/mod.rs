@@ -6,9 +6,11 @@ use gtk::prelude::*;
 
 use std::sync::{Arc, Mutex};
 
+use crate::app::ui::EntityToShow;
+
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
-    schedules_to_show: Arc<Mutex<Vec<String>>>,
+    schedules_to_show: Arc<Mutex<Vec<EntityToShow>>>,
 }
 
 impl ActivityInsertionUi {
@@ -36,14 +38,32 @@ impl ActivityInsertionUi {
         insertion_box
     }
 
-    pub(super) fn show_entity_schedule(&mut self, entity_to_show: String) {
+    #[must_use]
+    pub(super) fn shown_entities(&self) -> Vec<String> {
+        self.schedules_to_show
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|entity| entity.name().clone())
+            .collect()
+    }
+
+    pub(super) fn show_entities_schedule(&mut self, entities_to_show: Vec<EntityToShow>) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
-        if schedules_to_show.contains(&entity_to_show) {
-            return;
+        // First push all entities
+        for entity_to_show in entities_to_show {
+            if let Some(index) = schedules_to_show
+                .iter()
+                .position(|entity| entity == &entity_to_show)
+            {
+                schedules_to_show.remove(index);
+            }
+
+            schedules_to_show.push(entity_to_show);
         }
 
-        schedules_to_show.push(entity_to_show);
-        schedules_to_show.sort();
+        // Then sort and draw
+        schedules_to_show.sort_by(|a, b| a.name().cmp(b.name()));
         drop(schedules_to_show);
 
         fetch_from!(self, header_drawing, schedules_drawing);

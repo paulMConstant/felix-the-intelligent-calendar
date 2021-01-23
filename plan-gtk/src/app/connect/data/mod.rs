@@ -21,6 +21,6 @@ impl App {
         connect_entity_removed_from_activity => |activity| {on_activity_entities_changed},
         connect_group_added_to_activity => |activity| { on_activity_groups_changed },
         connect_group_removed_from_activity => |activity| { on_activity_groups_changed},
-        connect_work_hours_changed => | | { on_work_hours_changed }
+        connect_work_hours_changed => | | { on_work_hours_changed, on_work_hours_changed_update_schedules }
     );
 }

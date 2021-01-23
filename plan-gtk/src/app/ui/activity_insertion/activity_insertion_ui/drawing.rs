@@ -3,6 +3,10 @@ use super::ActivityInsertionUi;
 use cairo;
 use gtk::prelude::*;
 
+use crate::app::ui::EntityToShow;
+
+use plan_backend::data::{TimeInterval, MIN_TIME_DISCRETIZATION};
+
 const NUM_HOURS_IN_DAY: i32 = 24;
 
 // Cairo calculates from the half of a pixel. This is used as an offset.
@@ -11,7 +15,9 @@ const HALF_PIXEL: f64 = 0.5;
 const FULL_LINE_RGB: f64 = 0.7;
 const DASH_LINE_RGB: f64 = 0.8;
 const CORNER_SEPARATOR_LINE_RGB: f64 = 0.89;
-const BACKGROUND_RGB: f64 = 0.99;
+
+const IN_WORK_HOURS_RGB: f64 = 0.99;
+const OUTSIDE_WORK_HOURS_RGB: f64 = 0.93;
 const HOUR_FONT_RGB: f64 = 0.4;
 const SCHEDULE_FONT_RGB: f64 = 0.2;
 
@@ -93,7 +99,8 @@ impl ActivityInsertionUi {
 }
 
 fn draw_hours(c: &cairo::Context, width: f64, height: f64) {
-    draw_background_and_lines(c, width, height);
+    paint_background_uniform(c, IN_WORK_HOURS_RGB);
+    draw_hour_lines(c, width, height);
 
     // Draw the hour numbers
     c.set_source_rgb(HOUR_FONT_RGB, HOUR_FONT_RGB, HOUR_FONT_RGB);
@@ -119,7 +126,7 @@ fn draw_hours(c: &cairo::Context, width: f64, height: f64) {
 }
 
 fn draw_corner(c: &cairo::Context, width: f64, height: f64) {
-    paint_background_uniform(c);
+    paint_background_uniform(c, IN_WORK_HOURS_RGB);
 
     // Draw the hour-schedule separation line
     c.set_source_rgb(
@@ -136,13 +143,18 @@ fn draw_corner(c: &cairo::Context, width: f64, height: f64) {
 fn draw_schedules(
     c: &cairo::Context,
     w: &gtk::DrawingArea,
-    schedules: &Vec<String>,
+    schedules: &Vec<EntityToShow>,
     width_per_schedule: f64,
 ) {
     let width = w.get_allocated_width() as f64;
     let height = w.get_allocated_height() as f64;
-    draw_background_and_lines(c, width, height);
+    paint_background_uniform(c, OUTSIDE_WORK_HOURS_RGB);
 
+    let work_hours_of_entities = schedules.iter().map(|entity| entity.work_hours());
+    draw_inside_work_hours_background(c, height, width_per_schedule, work_hours_of_entities);
+    // TODO Draw inserted activities
+
+    draw_hour_lines(c, width, height);
     let nb_schedules = schedules.len();
     // Draw schedule separators
     c.set_source_rgb(FULL_LINE_RGB, FULL_LINE_RGB, FULL_LINE_RGB);
@@ -193,10 +205,10 @@ fn compute_schedule_width(nb_schedules: usize, visible_widget_width: f64) -> f64
 fn draw_header(
     c: &cairo::Context,
     w: &gtk::DrawingArea,
-    schedules: &Vec<String>,
+    schedules: &Vec<EntityToShow>,
     width_per_schedule: f64,
 ) {
-    // TODO resizing will not work when schedules are removed.
+    // TODO resizing will not work when schedules are removed ?
     // 1 - Should first try to resize to "visible size" OK
     // 2 - Calculate the size of schedules outside OK
     // 3 - Draw schedule separations OK
@@ -210,7 +222,7 @@ fn draw_header(
 
     let nb_schedules = schedules.len();
 
-    paint_background_uniform(c);
+    paint_background_uniform(c, IN_WORK_HOURS_RGB);
 
     // Draw schedule separators
     c.set_source_rgb(FULL_LINE_RGB, FULL_LINE_RGB, FULL_LINE_RGB);
@@ -228,7 +240,7 @@ fn draw_header(
     c.set_source_rgb(SCHEDULE_FONT_RGB, SCHEDULE_FONT_RGB, SCHEDULE_FONT_RGB);
     c.set_font_size(SCHEDULE_FONT_SIZE);
     let mut current_x = 0.0;
-    for entity_name in schedules.iter() {
+    for entity_name in schedules.iter().map(|entity| entity.name()) {
         let size_of_text = c.text_extents(&entity_name).width;
         // Center the text
         let x_offset = (width_per_schedule - size_of_text) / 2.0;
@@ -238,9 +250,7 @@ fn draw_header(
     }
 }
 
-fn draw_background_and_lines(c: &cairo::Context, width: f64, height: f64) {
-    paint_background_uniform(c);
-
+fn draw_hour_lines(c: &cairo::Context, width: f64, height: f64) {
     // Draw hour lines
     c.set_line_width(LINE_WIDTH);
     c.set_source_rgb(FULL_LINE_RGB, FULL_LINE_RGB, FULL_LINE_RGB);
@@ -267,11 +277,42 @@ fn draw_background_and_lines(c: &cairo::Context, width: f64, height: f64) {
     c.stroke();
 }
 
-fn paint_background_uniform(c: &cairo::Context) {
-    c.set_source_rgb(BACKGROUND_RGB, BACKGROUND_RGB, BACKGROUND_RGB);
+fn paint_background_uniform(c: &cairo::Context, color: f64) {
+    c.set_source_rgb(color, color, color);
     c.paint();
 }
 
 fn get_height_for_one_hour(total_height: f64) -> f64 {
     total_height / NUM_HOURS_IN_DAY as f64
+}
+
+fn get_height_for_min_discretization(total_height: f64) -> f64 {
+    let num_min_discretization_in_hour = 60 / MIN_TIME_DISCRETIZATION.minutes();
+    get_height_for_one_hour(total_height) / num_min_discretization_in_hour as f64
+}
+
+fn draw_inside_work_hours_background<'a, TimeIntervalIterator>(
+    c: &cairo::Context,
+    height: f64,
+    width_per_schedule: f64,
+    work_hours_of_entities: TimeIntervalIterator,
+) where
+    TimeIntervalIterator: Iterator<Item = &'a Vec<TimeInterval>>,
+{
+    let min_discretization_height = get_height_for_min_discretization(height);
+
+    c.set_source_rgb(IN_WORK_HOURS_RGB, IN_WORK_HOURS_RGB, IN_WORK_HOURS_RGB);
+
+    let mut current_x = 0.0;
+    for work_hours in work_hours_of_entities {
+        for interval in work_hours {
+            let height_begin = interval.beginning().n_times_min_discretization() as f64
+                * min_discretization_height;
+            let height_to_paint =
+                interval.duration().n_times_min_discretization() as f64 * min_discretization_height;
+            c.rectangle(current_x, height_begin, width_per_schedule, height_to_paint);
+            c.fill();
+        }
+        current_x += width_per_schedule;
+    }
 }

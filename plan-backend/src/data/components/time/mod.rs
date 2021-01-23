@@ -12,7 +12,7 @@ pub const MIN_TIME_DISCRETIZATION: Time = Time {
 
 /// Minimal time structure with minute precision.
 ///
-/// Any Time structure should be kept in [00:00, 23:55] and be a multiple of
+/// Any Time structure should be kept in [00:00, 24:00] and be a multiple of
 /// MIN\_TIME\_DISCRETIZATION. Any operation (addition/substraction) which violates these
 /// constraints will panic.
 ///
@@ -33,7 +33,7 @@ impl Time {
     ///
     /// # Panics
     ///
-    /// Panics if the time is invalid, i.e. not in [00:00, 23:55]
+    /// Panics if the time is invalid, i.e. not in [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
     ///
     /// # Example
@@ -41,23 +41,23 @@ impl Time {
     /// ```
     /// # use plan_backend::data::Time;
     /// let time_earliest = Time::new(0, 0);
-    /// let time_latest = Time::new(23, 55);
+    /// let time_latest = Time::new(24, 0);
     ///
     /// // Too late
-    /// assert!(std::panic::catch_unwind(|| { Time::new(24, 0) }).is_err());
+    /// assert!(std::panic::catch_unwind(|| Time::new(24, 5)).is_err()) ;
     ///
     /// // Not a multiple of MIN_TIME_DISCRETIZATION
-    /// assert!(std::panic::catch_unwind(|| { Time::new(23, 54) }).is_err());
+    /// assert!(std::panic::catch_unwind(|| Time::new(23, 54)).is_err());
     /// ```
     #[must_use]
     pub fn new(hours: i8, minutes: i8) -> Time {
         assert!(
-            hours < 24
+            (hours < 24 || hours == 24 && minutes == 0)
                 && minutes < 60
                 && hours >= 0
                 && minutes >= 0
                 && minutes % MIN_TIME_DISCRETIZATION.minutes() == 0,
-            "Time must be kept in [00:00, 23:55] and be a multiple of MIN_TIME_DISCRETIZATION"
+            "Time must be kept in [00:00, 24:00] and be a multiple of MIN_TIME_DISCRETIZATION"
         );
         Time { hours, minutes }
     }
@@ -74,12 +74,29 @@ impl Time {
         self.minutes
     }
 
+    /// Returns the number of times MIN\_TIME\_DISCRETIZATION fits in the Time.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use plan_backend::data::Time;
+    /// // Assuming MIN_TIME_DISCRETIZATION = 5
+    /// let time = Time::new(2, 30);
+    /// let expected = 2 * 60 / 5 + 30 / 5;
+    /// assert_eq!(time.n_times_min_discretization(), expected);
+    /// ```
+    #[must_use]
+    pub fn n_times_min_discretization(&self) -> i32 {
+        self.minutes as i32 / MIN_TIME_DISCRETIZATION.minutes() as i32
+            + self.hours as i32 * (60 / MIN_TIME_DISCRETIZATION.minutes() as i32)
+    }
+
     /// Adds or substracts hours.
     /// Hours can be negative to substract.
     ///
     /// # Panics
     ///
-    /// Panics if the result is invalid, i.e. not in [00:00, 23:55]
+    /// Panics if the result is invalid, i.e. not in [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
     ///
     /// # Example
@@ -94,7 +111,7 @@ impl Time {
         let new_hours = self.hours + hours;
         assert!(
             new_hours >= 0 && new_hours < 24,
-            "The resulting time must be in [00:00, 23:55]"
+            "The resulting time must be in [00:00, 24:00]"
         );
         self.hours = new_hours;
     }
@@ -104,7 +121,7 @@ impl Time {
     ///
     /// # Panics
     ///
-    /// Panics if minutes.abs() >= 60 or if the result is invalid, i.e. not in [00:00, 23:55]
+    /// Panics if minutes.abs() >= 60 or if the result is invalid, i.e. not in [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
     ///
     /// # Example
@@ -135,7 +152,7 @@ impl Time {
     ///
     /// # Panics
     ///
-    /// Panics if minutes.abs() >= 60 or if the result is invalid, i.e. [00:00, 23:55]
+    /// Panics if minutes.abs() >= 60 or if the result is invalid, i.e. [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
     ///
     /// # Example
@@ -253,5 +270,3 @@ impl std::fmt::Display for Time {
         write!(f, "{:02}:{:02}", self.hours, self.minutes)
     }
 }
-
-// This class is public. It is tested in integration tests, in the 'tests' folder.

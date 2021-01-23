@@ -17,7 +17,7 @@ macro_rules! generate_private_connect_function {
 
             events.borrow_mut().$event(Box::new(
                     clone!(@strong ui => move |data| {
-                           ui.lock().unwrap().$($callback),*(data);
+                           call_ui_events!(ui.lock().unwrap(), $($callback),* : data);
                     }
                 )));
         }

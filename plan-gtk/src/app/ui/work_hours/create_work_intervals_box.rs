@@ -6,6 +6,53 @@ use plan_backend::data::TimeInterval;
 use glib::clone;
 use gtk::prelude::*;
 
+use std::sync::{Arc, Mutex};
+
+impl Ui {
+    pub(super) fn create_work_intervals_box(
+        &self,
+        current_work_hours: Vec<TimeInterval>,
+        add_work_hour: bool,
+    ) -> gtk::Box {
+        let work_intervals_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let mut work_intervals: Vec<gtk::Box> = Vec::with_capacity(current_work_hours.len() + 1);
+        self.work_interval_builders.lock().unwrap().clear();
+
+        // Add the current work hours and a new one
+        for (index, interval) in current_work_hours.iter().enumerate() {
+            work_intervals.push(new_registered_work_interval(
+                self.work_interval_builders.clone(),
+                Some(*interval),
+                index,
+                self.work_interval_editing_done_callback.clone(),
+                self.work_interval_remove_callback.clone(),
+            ));
+        }
+        if add_work_hour {
+            let position_of_interval = current_work_hours.len();
+            work_intervals.push(new_registered_work_interval(
+                self.work_interval_builders.clone(),
+                None,
+                position_of_interval,
+                self.work_interval_editing_done_callback.clone(),
+                self.work_interval_remove_callback.clone(),
+            ));
+            // The new work hour is being edited - prevent other intervals from being edited
+            make_other_buttons_insensitive(
+                position_of_interval,
+                &self.work_interval_builders.lock().unwrap(),
+            );
+        }
+
+        // Pack the work interval boxes into the main box
+        for interval in work_intervals {
+            work_intervals_box.pack_start(&interval, true, true, 0);
+        }
+
+        work_intervals_box
+    }
+}
+
 macro_rules! start_editing_callback {
     ($work_interval_builders:ident, $position_of_interval: ident, $editing_done_callback: ident) => {
         move |_| {
@@ -34,134 +81,101 @@ macro_rules! start_editing_callback {
     };
 }
 
-impl Ui {
-    pub(super) fn create_work_intervals_box(
-        &self,
-        current_work_hours: Vec<TimeInterval>,
-        add_work_hour: bool,
-    ) -> gtk::Box {
-        let work_intervals_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let mut work_intervals: Vec<gtk::Box> = Vec::with_capacity(current_work_hours.len() + 1);
-        self.work_interval_builders.lock().unwrap().clear();
+/// Creates a new work interval and stores its builder in work_interval_builders.
+fn new_registered_work_interval(
+    work_interval_builders: Arc<Mutex<Vec<gtk::Builder>>>,
+    interval: Option<TimeInterval>,
+    position_of_interval: usize,
+    editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
+    work_interval_remove_callback: Arc<dyn Fn(usize)>,
+) -> gtk::Box {
+    let builder = new_time_interval_builder();
 
-        // Add the current work hours and a new one
-        for (index, interval) in current_work_hours.iter().enumerate() {
-            work_intervals.push(self.new_registered_work_interval(Some(*interval), index));
-        }
-        if add_work_hour {
-            let position_of_interval = current_work_hours.len();
-            work_intervals.push(self.new_registered_work_interval(None, position_of_interval));
-            // The new work hour is being edited - prevent other intervals from being edited
-            self.make_other_buttons_insensitive(position_of_interval);
-        }
+    format_time_interval_spinbuttons(&builder);
 
-        // Pack the work interval boxes into the main box
-        for interval in work_intervals {
-            work_intervals_box.pack_start(&interval, true, true, 0);
-        }
-
-        work_intervals_box
-    }
-
-    /// Creates a new work interval and stores its builder in self.create_work_interval_builders.
-    fn new_registered_work_interval(
-        &self,
-        interval: Option<TimeInterval>,
-        position_of_interval: usize,
-    ) -> gtk::Box {
-        let builder = new_time_interval_builder();
-
-        format_time_interval_spinbuttons(&builder);
-
-        if let Some(interval) = interval {
-            self.init_time_interval_builder_with_given_interval(
-                &builder,
-                interval,
-                position_of_interval,
-            );
-        } else {
-            self.init_time_interval_builder_without_interval(&builder, position_of_interval);
-        };
-
-        let time_interval: gtk::Box = builder
-            .get_object("TimeIntervalBox")
-            .expect("Could not load TimeIntervalBox");
-
-        self.work_interval_builders.lock().unwrap().push(builder);
-
-        time_interval
-    }
-
-    fn init_time_interval_builder_with_given_interval(
-        &self,
-        builder: &gtk::Builder,
-        interval: TimeInterval,
-        position_of_interval: usize,
-    ) {
-        fetch_from_builder!(builder,
-                            edit_button=gtk::Button:"TimeIntervalEditButton",
-                            delete_button=gtk::Button:"TimeIntervalDeleteButton");
-        set_start_editing_icon_for_button(&edit_button);
-
-        let work_interval_builders = self.work_interval_builders.clone();
-        let editing_done_callback = self.work_interval_editing_done_callback.clone();
-
-        edit_button.connect_clicked(start_editing_callback!(
-            work_interval_builders,
+    if let Some(interval) = interval {
+        init_time_interval_builder_with_given_interval(
+            &builder,
+            work_interval_builders.clone(),
+            interval,
             position_of_interval,
-            editing_done_callback
-        ));
+            editing_done_callback.clone(),
+            work_interval_remove_callback.clone(),
+        );
+    } else {
+        init_time_interval_builder_without_interval(
+            &builder,
+            position_of_interval,
+            editing_done_callback.clone(),
+            work_interval_remove_callback.clone(),
+        );
+    };
 
-        self.init_delete_button_callback(&delete_button, position_of_interval);
+    let time_interval: gtk::Box = builder
+        .get_object("TimeIntervalBox")
+        .expect("Could not load TimeIntervalBox");
 
-        make_spinbuttons_sensitive(&builder, false);
-        update_interval_spinbuttons(&builder, interval);
-    }
+    work_interval_builders.lock().unwrap().push(builder);
 
-    fn init_time_interval_builder_without_interval(
-        &self,
-        builder: &gtk::Builder,
-        position_of_interval: usize,
-    ) {
+    time_interval
+}
+
+fn init_time_interval_builder_with_given_interval(
+    builder: &gtk::Builder,
+    work_interval_builders: Arc<Mutex<Vec<gtk::Builder>>>,
+    interval: TimeInterval,
+    position_of_interval: usize,
+    editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
+    work_interval_remove_callback: Arc<dyn Fn(usize)>,
+) {
+    fetch_from_builder!(builder,
+                        edit_button=gtk::Button:"TimeIntervalEditButton",
+                        delete_button=gtk::Button:"TimeIntervalDeleteButton");
+    set_start_editing_icon_for_button(&edit_button);
+
+    edit_button.connect_clicked(start_editing_callback!(
+        work_interval_builders,
+        position_of_interval,
+        editing_done_callback
+    ));
+
+    delete_button.connect_clicked(move |_| work_interval_remove_callback(position_of_interval));
+
+    make_spinbuttons_sensitive(&builder, false);
+    update_interval_spinbuttons(&builder, interval);
+}
+
+fn init_time_interval_builder_without_interval(
+    builder: &gtk::Builder,
+    position_of_interval: usize,
+    editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
+    work_interval_remove_callback: Arc<dyn Fn(usize)>,
+) {
+    fetch_from_builder!(builder,
+                        edit_button=gtk::Button:"TimeIntervalEditButton",
+                        delete_button=gtk::Button:"TimeIntervalDeleteButton");
+    set_editing_done_icon_for_button(&edit_button);
+
+    edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
+
+    init_spinbuttons_to_default_value(&builder);
+    delete_button.connect_clicked(move |_| work_interval_remove_callback(position_of_interval));
+}
+
+fn make_other_buttons_insensitive(
+    position_of_sensitive_button: usize,
+    work_interval_builders: &Vec<gtk::Builder>,
+) {
+    for (index, builder) in work_interval_builders.iter().enumerate() {
+        if index == position_of_sensitive_button {
+            continue;
+        }
         fetch_from_builder!(builder,
                             edit_button=gtk::Button:"TimeIntervalEditButton",
                             delete_button=gtk::Button:"TimeIntervalDeleteButton");
-        set_editing_done_icon_for_button(&edit_button);
-
-        let editing_done_callback = self.work_interval_editing_done_callback.clone();
-        edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
-
-        init_spinbuttons_to_default_value(&builder);
-        self.init_delete_button_callback(&delete_button, position_of_interval);
-    }
-
-    fn make_other_buttons_insensitive(&self, position_of_sensitive_button: usize) {
-        for (index, builder) in self
-            .work_interval_builders
-            .lock()
-            .unwrap()
-            .iter()
-            .enumerate()
-        {
-            if index == position_of_sensitive_button {
-                continue;
-            }
-            fetch_from_builder!(builder,
-                                edit_button=gtk::Button:"TimeIntervalEditButton",
-                                delete_button=gtk::Button:"TimeIntervalDeleteButton");
-            for button in &[edit_button, delete_button] {
-                button.set_sensitive(false);
-            }
+        for button in &[edit_button, delete_button] {
+            button.set_sensitive(false);
         }
-    }
-
-    fn init_delete_button_callback(
-        &self,
-        delete_button: &gtk::Button,
-        position_of_interval: usize,
-    ) {
-        let remove_work_interval_callback = self.work_interval_remove_callback.clone();
-        delete_button.connect_clicked(move |_| remove_work_interval_callback(position_of_interval));
     }
 }
 

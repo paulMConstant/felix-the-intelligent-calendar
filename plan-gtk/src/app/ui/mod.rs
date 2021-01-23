@@ -15,7 +15,9 @@ use gtk::prelude::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use activity_insertion::ActivityInsertionUi;
+use activity_insertion::activity_insertion_ui::ActivityInsertionUi;
+pub use activity_insertion::entity_to_show::EntityToShow;
+
 use plan_backend::data::{Activity, Entity, Group};
 
 pub struct Ui {
