@@ -47,4 +47,9 @@ impl Ui {
     pub fn entity_specific_box(&self) -> gtk::Box {
         fetch_ui_from_builder!(self, "EntitySpecificBox")
     }
+
+    #[must_use]
+    pub fn custom_work_hours_scrolled_window(&self) -> gtk::ScrolledWindow {
+        fetch_ui_from_builder!(self, "CustomWorkHoursScrolledWindow")
+    }
 }

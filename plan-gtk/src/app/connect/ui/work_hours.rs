@@ -23,9 +23,20 @@ macro_rules! reset_work_hours_if_err {
 
 impl App {
     pub fn connect_work_hours_tab(&self) {
+        self.init_work_hours_builder();
         self.connect_add_work_hour();
         self.set_work_hour_editing_done_callback();
         self.set_work_hour_remove_callback();
+    }
+
+    fn init_work_hours_builder(&self) {
+        fetch_from!(self.ui(), work_hours_scrolled_window);
+
+        self.ui
+            .lock()
+            .unwrap()
+            .work_hours_builder()
+            .set_work_hours_scrolled_window(work_hours_scrolled_window);
     }
 
     fn connect_add_work_hour(&self) {
@@ -82,6 +93,7 @@ impl App {
         self.ui
             .lock()
             .unwrap()
+            .work_hours_builder()
             .set_work_interval_editing_done_callback(work_hour_editing_done_callback);
     }
 
@@ -101,6 +113,7 @@ impl App {
         self.ui
             .lock()
             .unwrap()
+            .work_hours_builder()
             .set_work_interval_remove_callback(work_hour_editing_done_callback);
     }
 }
