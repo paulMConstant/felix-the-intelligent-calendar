@@ -13,7 +13,7 @@ use std::rc::Rc;
 create_events!(Events:
     entity_added { new_entity: &Entity },
     entity_removed { position_of_removed_entity: usize },
-    entity_renamed { entity: &Entity },
+    entity_renamed { entity: &Entity, old_name: &String },
     custom_work_hours_changed {},
     group_added {new_group: &Group},
     group_removed {position_of_removed_group: usize },

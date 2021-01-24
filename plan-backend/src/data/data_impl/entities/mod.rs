@@ -168,7 +168,7 @@ impl Data {
 
         self.events()
             .borrow_mut()
-            .emit_entity_renamed(self, &entity);
+            .emit_entity_renamed(self, &entity, &old_name);
         Ok(new_name)
     }
 

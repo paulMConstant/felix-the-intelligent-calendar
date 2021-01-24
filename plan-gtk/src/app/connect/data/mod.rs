@@ -7,8 +7,10 @@ use glib::clone;
 impl App {
     generate_connect_data_function!(connect_data_events:
         connect_entity_added => |entity| { on_entity_added, on_entities_or_groups_changed },
-        connect_entity_renamed => |entity| { on_entity_renamed, on_group_members_changed, on_entities_or_groups_changed },
-        connect_entity_removed => |position| { on_entity_removed, on_group_members_changed, on_entities_or_groups_changed },
+        connect_entity_renamed => |entity, old_name| { on_entity_renamed, on_entity_in_group_renamed,
+            on_entity_in_activity_renamed, on_entity_renamed_update_schedules },
+        connect_entity_removed => |position| { on_entity_removed, on_group_members_changed,
+            on_entities_or_groups_changed, on_entity_removed_update_schedules },
         connect_group_added => |group| { on_group_added, on_entities_or_groups_changed },
         connect_group_renamed => |group| { on_group_renamed, on_entities_or_groups_changed },
         connect_group_removed => |position| { on_group_removed, on_entities_or_groups_changed },
@@ -23,5 +25,6 @@ impl App {
         connect_group_removed_from_activity => |activity| { on_activity_groups_changed},
         connect_work_hours_changed => | | { on_work_hours_changed, on_work_hours_changed_update_schedules },
         connect_custom_work_hours_changed => | | { on_custom_work_hours_changed, on_work_hours_changed_update_schedules }
+        // connect_function_from_data => |arg1, arg2, argN| { handler1_in_ui, handlerN_in_ui }
     );
 }

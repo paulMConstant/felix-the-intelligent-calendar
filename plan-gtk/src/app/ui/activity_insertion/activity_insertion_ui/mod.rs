@@ -63,8 +63,26 @@ impl ActivityInsertionUi {
         }
 
         // Then sort and draw
+        drop(schedules_to_show); // Borrow checker
+        self.draw_schedules_sorted();
+    }
+
+    pub(super) fn remove_entity_schedule(&mut self, name_of_entity_to_remove: &String) {
+        let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
+        if let Some(position) = schedules_to_show
+            .iter()
+            .position(|entity| entity.name() == name_of_entity_to_remove)
+        {
+            schedules_to_show.remove(position);
+            drop(schedules_to_show);
+            self.draw_schedules_sorted();
+        }
+    }
+
+    fn draw_schedules_sorted(&mut self) {
+        let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
+
         schedules_to_show.sort_by(|a, b| a.name().cmp(b.name()));
-        drop(schedules_to_show);
 
         fetch_from!(self, header_drawing, schedules_drawing);
         for drawing in &[header_drawing, schedules_drawing] {

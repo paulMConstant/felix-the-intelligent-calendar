@@ -4,7 +4,7 @@ mod update_entities_list_store;
 use crate::app::ui::helpers::{collections::get_next_element, format::format_time_spin_button};
 use crate::app::ui::Ui;
 
-use plan_backend::data::{Activity, Data};
+use plan_backend::data::{Activity, Data, Entity};
 
 use gtk::prelude::*;
 
@@ -74,6 +74,15 @@ impl Ui {
         self.update_current_activity_groups();
         // Entities in the group are added to the activity, so need to refresh the view as well
         self.update_current_activity_entities(&data.groups_sorted());
+    }
+
+    pub fn on_entity_in_activity_renamed(
+        &mut self,
+        data: &Data,
+        entity: &Entity,
+        _old_name: &String,
+    ) {
+        self.on_entities_or_groups_changed(data, entity);
     }
 
     pub fn on_entities_or_groups_changed<T>(&mut self, data: &Data, _anything: T) {

@@ -4,7 +4,7 @@ pub mod entity_to_show;
 use crate::app::ui::Ui;
 use entity_to_show::EntityToShow;
 
-use plan_backend::data::Data;
+use plan_backend::data::{Data, Entity};
 
 use gtk::prelude::*;
 
@@ -29,5 +29,19 @@ impl Ui {
 
         self.activity_insertion
             .show_entities_schedule(entities_to_show);
+    }
+
+    pub fn on_entity_renamed_update_schedules(
+        &mut self,
+        data: &Data,
+        entity: &Entity,
+        old_name: &String,
+    ) {
+        // TODO
+    }
+
+    pub fn on_entity_removed_update_schedules(&mut self, _data: &Data, position: usize) {
+        //TODO, old_name: &String) {
+        //self.activity_insertion.remove_entity_schedule(old_name);
     }
 }
