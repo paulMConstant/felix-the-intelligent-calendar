@@ -6,8 +6,12 @@ use gtk::prelude::*;
 use plan_backend::data::Entity;
 
 impl Ui {
-    pub(super) fn update_current_entity(&mut self, entity: Option<Entity>) {
+    pub(super) fn update_current_entity_name_only(&mut self, entity: Option<Entity>) {
         self.current_entity = entity;
+    }
+
+    pub(super) fn update_current_entity(&mut self, entity: Option<Entity>) {
+        self.update_current_entity_name_only(entity);
 
         if self.current_entity.is_some() {
             self.update_current_entity_view();

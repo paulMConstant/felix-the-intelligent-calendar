@@ -9,8 +9,9 @@ impl App {
         connect_entity_added => |entity| { on_entity_added, on_entities_or_groups_changed },
         connect_entity_renamed => |entity, old_name| { on_entity_renamed, on_entity_in_group_renamed,
             on_entity_in_activity_renamed, on_entity_renamed_update_schedules },
-        connect_entity_removed => |position| { on_entity_removed, on_group_members_changed,
-            on_entities_or_groups_changed, on_entity_removed_update_schedules },
+        connect_entity_removed => |position, name_of_removed_entity| {
+            on_entity_removed, on_entity_in_group_removed,
+            on_entity_in_activity_removed, on_entity_removed_update_schedules },
         connect_group_added => |group| { on_group_added, on_entities_or_groups_changed },
         connect_group_renamed => |group| { on_group_renamed, on_entities_or_groups_changed },
         connect_group_removed => |position| { on_group_removed, on_entities_or_groups_changed },

@@ -114,7 +114,7 @@ impl Data {
         );
         self.events()
             .borrow_mut()
-            .emit_entity_removed(self, position_of_removed_entity);
+            .emit_entity_removed(self, position_of_removed_entity, &name);
         Ok(())
     }
 

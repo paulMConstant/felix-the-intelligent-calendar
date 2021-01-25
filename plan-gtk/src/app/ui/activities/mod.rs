@@ -85,6 +85,15 @@ impl Ui {
         self.on_entities_or_groups_changed(data, entity);
     }
 
+    pub fn on_entity_in_activity_removed(
+        &mut self,
+        data: &Data,
+        position_of_removed_entity: usize,
+        _name_of_removed_entity: &String,
+    ) {
+        self.on_entities_or_groups_changed(data, position_of_removed_entity);
+    }
+
     pub fn on_entities_or_groups_changed<T>(&mut self, data: &Data, _anything: T) {
         self.update_entity_group_completion_list_store(data);
 

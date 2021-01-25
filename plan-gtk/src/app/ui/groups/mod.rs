@@ -46,6 +46,15 @@ impl Ui {
         self.on_group_members_changed(data, entity);
     }
 
+    pub fn on_entity_in_group_removed(
+        &mut self,
+        data: &Data,
+        position: usize,
+        _name_of_removed_entity: &String,
+    ) {
+        self.on_group_members_changed(data, position);
+    }
+
     pub fn on_group_members_changed<T>(&mut self, data: &Data, _anything: T) {
         if let Some(group) = &self.current_group {
             let updated_group = data.group(group.name()).expect(

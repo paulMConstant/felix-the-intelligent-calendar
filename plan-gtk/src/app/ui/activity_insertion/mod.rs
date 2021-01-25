@@ -20,6 +20,7 @@ impl Ui {
     }
 
     pub fn on_work_hours_changed_update_schedules(&mut self, data: &Data) {
+        // Update data
         let entities_to_show: Vec<_> = self
             .activity_insertion
             .shown_entities()
@@ -37,11 +38,20 @@ impl Ui {
         entity: &Entity,
         old_name: &String,
     ) {
-        // TODO
+        if self.activity_insertion.shown_entities().contains(old_name) {
+            self.activity_insertion.remove_entity_schedule(old_name);
+            let new_entity = EntityToShow::new(entity.name(), data);
+            self.activity_insertion
+                .show_entities_schedule(vec![new_entity]);
+        }
     }
 
-    pub fn on_entity_removed_update_schedules(&mut self, _data: &Data, position: usize) {
-        //TODO, old_name: &String) {
-        //self.activity_insertion.remove_entity_schedule(old_name);
+    pub fn on_entity_removed_update_schedules(
+        &mut self,
+        _data: &Data,
+        _position: usize,
+        old_name: &String,
+    ) {
+        self.activity_insertion.remove_entity_schedule(old_name);
     }
 }
