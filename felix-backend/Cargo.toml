@@ -1,0 +1,14 @@
+[package]
+name = "felix-backend"
+version = "0.1.0"
+authors = ["Paul Constant <constantpaul@hotmail.fr>"]
+edition = "2018"
+workspace = "../"
+
+[dependencies]
+gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
+paste = "1.0.4"
+
+[dev-dependencies]
+test-utils = { path = "test-utils" }
+assert-not-modified = "1.0.0"

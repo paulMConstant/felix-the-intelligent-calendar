@@ -1,9 +1,0 @@
-[package]
-name = "test-utils"
-version = "0.1.0"
-authors = ["Paul Constant <constantpaul@hotmail.fr>"]
-edition = "2018"
-workspace = "../../"
-
-[dependencies]
-plan-backend = { path = "../../plan-backend" }

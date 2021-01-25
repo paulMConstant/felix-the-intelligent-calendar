@@ -1,0 +1,960 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkListStore" id="ActivitiesListStore">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name ID1 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="ActivityEntitiesListStore">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name Icon -->
+      <column type="gchararray"/>
+      <!-- column-name Strikethrough -->
+      <column type="gboolean"/>
+      <!-- column-name Color -->
+      <column type="gchararray"/>
+      <!-- column-name Tooltip -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="ActivityGroupsListStore">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name DeleteIcon -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkImage" id="DeleteIcon">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">user-trash-symbolic</property>
+  </object>
+  <object class="GtkAdjustment" id="DurationHourAdjustment">
+    <property name="upper">23</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="DurationMinuteAdjustment">
+    <property name="upper">55</property>
+    <property name="step-increment">5</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkListStore" id="EntityAndGroupCompletionListStore">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name Type -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkEntryCompletion" id="EntityAndGroupsEntryCompletionActivities">
+    <property name="model">EntityAndGroupCompletionListStore</property>
+    <property name="minimum-key-length">0</property>
+    <property name="text-column">0</property>
+    <property name="inline-completion">True</property>
+    <property name="inline-selection">True</property>
+    <child>
+      <object class="GtkCellRendererText" id="EntryCompletionNameRenderer1"/>
+      <attributes>
+        <attribute name="text">0</attribute>
+      </attributes>
+    </child>
+    <child>
+      <object class="GtkCellRendererPixbuf" id="EntryCompletionTypeRenderer1"/>
+      <attributes>
+        <attribute name="icon-name">1</attribute>
+      </attributes>
+    </child>
+  </object>
+  <object class="GtkEntryCompletion" id="EntityAndGroupsEntryCompletionSchedules">
+    <property name="model">EntityAndGroupCompletionListStore</property>
+    <property name="minimum-key-length">0</property>
+    <property name="text-column">0</property>
+    <property name="inline-completion">True</property>
+    <property name="inline-selection">True</property>
+    <child>
+      <object class="GtkCellRendererText" id="EntryCompletionNameRenderer"/>
+      <attributes>
+        <attribute name="text">0</attribute>
+      </attributes>
+    </child>
+    <child>
+      <object class="GtkCellRendererPixbuf" id="EntryCompletionTypeRenderer"/>
+      <attributes>
+        <attribute name="icon-name">1</attribute>
+      </attributes>
+    </child>
+  </object>
+  <object class="GtkImage" id="SettingsIcon">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">emblem-system-symbolic</property>
+  </object>
+  <object class="GtkAdjustment" id="bActivityIntervalHour">
+    <property name="upper">23</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="bActivityIntervalMinute">
+    <property name="upper">55</property>
+    <property name="step-increment">5</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="eActivityIntervalHour">
+    <property name="upper">23</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="eActivityIntervalMinute">
+    <property name="upper">55</property>
+    <property name="step-increment">5</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkApplicationWindow" id="MainWindow">
+    <property name="can-focus">False</property>
+    <property name="window-position">center</property>
+    <property name="type-hint">desktop</property>
+    <property name="decorated">False</property>
+    <property name="gravity">center</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkHeaderBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="title" translatable="yes">Felix</property>
+            <property name="show-close-button">True</property>
+            <child>
+              <object class="GtkButton" id="DataButton">
+                <property name="label" translatable="yes">Data</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Work hours, entities, groups go here</property>
+              </object>
+              <packing>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="SettingsButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Settings - Language, user info, contact</property>
+                <property name="image">SettingsIcon</property>
+              </object>
+              <packing>
+                <property name="position">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkPaned" id="MainPane">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="wide-handle">True</property>
+            <child>
+              <object class="GtkPaned" id="ActivitiesPane">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="orientation">vertical</property>
+                <property name="wide-handle">True</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="height-request">300</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkEntry" id="ActivityAddEntry">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="placeholder-text" translatable="yes">Activity Name</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="ActivityAddButton">
+                            <property name="label" translatable="yes">Add Activity</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkTreeView" id="ActivitiesTreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">ActivitiesListStore</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="ActivityNameCol">
+                            <property name="title" translatable="yes">Activities</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="ActivityNameRenderer"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="ActivitySpecificBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="height-request">300</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkEntry" id="ActivityNameEntry">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="placeholder-text" translatable="yes">Activity</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="ActivityRemoveButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="image">DeleteIcon</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkEntry" id="ActivityAddToEntry">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="placeholder-text" translatable="yes">Entity or Group</property>
+                                <property name="completion">EntityAndGroupsEntryCompletionActivities</property>
+                                <property name="input-purpose">name</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="ActivityAddToButton">
+                                <property name="label" translatable="yes">Add to Activity</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-top">5</property>
+                                <property name="margin-bottom">5</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="xpad">10</property>
+                                    <property name="label" translatable="yes">Duration :</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="ActivityDurationHourSpin">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="text" translatable="yes">0</property>
+                                        <property name="caps-lock-warning">False</property>
+                                        <property name="input-purpose">number</property>
+                                        <property name="orientation">vertical</property>
+                                        <property name="adjustment">DurationHourAdjustment</property>
+                                        <property name="snap-to-ticks">True</property>
+                                        <property name="numeric">True</property>
+                                        <property name="wrap">True</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="label" translatable="yes">:</property>
+                                        <property name="yalign">0.38999998569488525</property>
+                                        <attributes>
+                                          <attribute name="scale" value="3"/>
+                                        </attributes>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSpinButton" id="ActivityDurationMinuteSpin">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="text" translatable="yes">0</property>
+                                        <property name="caps-lock-warning">False</property>
+                                        <property name="input-purpose">number</property>
+                                        <property name="orientation">vertical</property>
+                                        <property name="adjustment">DurationMinuteAdjustment</property>
+                                        <property name="snap-to-ticks">True</property>
+                                        <property name="numeric">True</property>
+                                        <property name="wrap">True</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="orientation">vertical</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="xpad">10</property>
+                                            <property name="label" translatable="yes">Color :</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">True</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="orientation">vertical</property>
+                                            <child>
+                                              <object class="GtkLabel">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkColorButton" id="ActivityColorButton">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="receives-default">True</property>
+                                                <property name="margin-end">2</property>
+                                                <property name="title" translatable="yes">Pick Activity Color :</property>
+                                                <property name="rgba">rgb(52,101,164)</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">1</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkLabel">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="xpad">10</property>
+                                            <property name="label" translatable="yes">Inserted :</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">True</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSwitch" id="ActivityInsertedSwitch">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">4</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox" id="ActivityInsertionTimeBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-bottom">5</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Interval :</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSpinButton" id="ActivityBeginningHourSpin">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="text" translatable="yes">3</property>
+                                    <property name="caps-lock-warning">False</property>
+                                    <property name="input-purpose">number</property>
+                                    <property name="orientation">vertical</property>
+                                    <property name="adjustment">bActivityIntervalHour</property>
+                                    <property name="snap-to-ticks">True</property>
+                                    <property name="numeric">True</property>
+                                    <property name="wrap">True</property>
+                                    <property name="value">3</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">:</property>
+                                    <property name="yalign">0.38999998569488525</property>
+                                    <attributes>
+                                      <attribute name="scale" value="3"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSpinButton" id="ActivityBeginningMinuteSpin">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="text" translatable="yes">10</property>
+                                    <property name="caps-lock-warning">False</property>
+                                    <property name="input-purpose">number</property>
+                                    <property name="orientation">vertical</property>
+                                    <property name="adjustment">bActivityIntervalMinute</property>
+                                    <property name="snap-to-ticks">True</property>
+                                    <property name="numeric">True</property>
+                                    <property name="wrap">True</property>
+                                    <property name="value">10</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">-</property>
+                                    <property name="yalign">0.3199999928474426</property>
+                                    <attributes>
+                                      <attribute name="scale" value="4"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSpinButton" id="ActivityEndHourSpin">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="editable">False</property>
+                                    <property name="text" translatable="yes">0</property>
+                                    <property name="caps-lock-warning">False</property>
+                                    <property name="input-purpose">number</property>
+                                    <property name="orientation">vertical</property>
+                                    <property name="adjustment">eActivityIntervalHour</property>
+                                    <property name="snap-to-ticks">True</property>
+                                    <property name="numeric">True</property>
+                                    <property name="wrap">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">5</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">:</property>
+                                    <property name="yalign">0.38999998569488525</property>
+                                    <attributes>
+                                      <attribute name="scale" value="3"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">6</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSpinButton" id="ActivityEndMinuteSpin">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="editable">False</property>
+                                    <property name="text" translatable="yes">0</property>
+                                    <property name="caps-lock-warning">False</property>
+                                    <property name="input-purpose">number</property>
+                                    <property name="orientation">vertical</property>
+                                    <property name="adjustment">eActivityIntervalMinute</property>
+                                    <property name="snap-to-ticks">True</property>
+                                    <property name="numeric">True</property>
+                                    <property name="wrap">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">7</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">8</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkPaned" id="ActivityMembersPane">
+                        <property name="width-request">160</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="vexpand">False</property>
+                        <property name="border-width">0</property>
+                        <property name="orientation">vertical</property>
+                        <property name="wide-handle">True</property>
+                        <child>
+                          <object class="GtkScrolledWindow">
+                            <property name="height-request">50</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hscrollbar-policy">external</property>
+                            <property name="vscrollbar-policy">external</property>
+                            <property name="shadow-type">etched-in</property>
+                            <child>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="shadow-type">none</property>
+                                <child>
+                                  <object class="GtkTreeView" id="ActivityGroupsTreeView">
+                                    <property name="height-request">50</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="model">ActivityGroupsListStore</property>
+                                    <property name="headers-clickable">False</property>
+                                    <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
+                                        <property name="title" translatable="yes">Groups in activity</property>
+                                        <child>
+                                          <object class="GtkCellRendererText" id="ActivityGroupsNameRenderer"/>
+                                          <attributes>
+                                            <attribute name="text">0</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="DeleteIcons">
+                                        <child>
+                                          <object class="GtkCellRendererPixbuf" id="DeleteIcon1"/>
+                                          <attributes>
+                                            <attribute name="icon-name">1</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="resize">True</property>
+                            <property name="shrink">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow">
+                            <property name="height-request">50</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hscrollbar-policy">external</property>
+                            <property name="vscrollbar-policy">external</property>
+                            <property name="shadow-type">etched-in</property>
+                            <child>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkTreeView" id="ActivityEntitiesTreeView">
+                                    <property name="height-request">50</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="model">ActivityEntitiesListStore</property>
+                                    <property name="headers-clickable">False</property>
+                                    <property name="tooltip-column">4</property>
+                                    <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
+                                        <property name="title" translatable="yes">Entities in activity</property>
+                                        <child>
+                                          <object class="GtkCellRendererText" id="ActivityEntitiesNameRenderer"/>
+                                          <attributes>
+                                            <attribute name="foreground">3</attribute>
+                                            <attribute name="strikethrough">2</attribute>
+                                            <attribute name="text">0</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn" id="IconColumn">
+                                        <child>
+                                          <object class="GtkCellRendererPixbuf" id="DeleteOrReAddIcon"/>
+                                          <attributes>
+                                            <attribute name="icon-name">1</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="resize">True</property>
+                            <property name="shrink">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">False</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">False</property>
+                <property name="shrink">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="InsertionBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="ShowScheduleEntry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="placeholder-text" translatable="yes">Entity Or Group</property>
+                        <property name="completion">EntityAndGroupsEntryCompletionSchedules</property>
+                        <property name="input-purpose">name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="ShowScheduleButton">
+                        <property name="label" translatable="yes">Show Schedule</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="ExportSchedulesButton">
+                        <property name="label" translatable="yes">Export Schedules...</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">False</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

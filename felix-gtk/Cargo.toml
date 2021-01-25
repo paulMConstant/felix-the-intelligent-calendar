@@ -1,0 +1,23 @@
+[package]
+name = "felix-gtk"
+version = "0.1.0"
+authors = ["Paul Constant <constantpaul@hotmail.fr>"]
+edition = "2018"
+workspace = "../"
+
+build = "build.rs"
+
+[dependencies]
+felix-backend = { path = "../felix-backend" }
+glib = "0.10.3"
+notify-rust = "4.0.0"
+gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
+cairo-rs = "0.9"
+
+[dependencies.gtk]
+version = "0.9.0"
+features = ["v3_22"]
+
+[dependencies.gio]
+version = ""
+features = ["v2_44"]
