@@ -16,6 +16,7 @@ const NUM_HOURS_IN_DAY: i32 = 24;
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
+    // TODO maybe not pixbuf but window ?time_tooltip: gtk::Pixbuf,
 }
 
 impl ActivityInsertionUi {

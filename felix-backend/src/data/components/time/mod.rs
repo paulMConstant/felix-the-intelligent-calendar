@@ -62,6 +62,30 @@ impl Time {
         Time { hours, minutes }
     }
 
+    /// Creates a new time object composed of the sum of n times the MIN\TIME\_DISCRETIZATION
+    /// constant.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the resulting time is invalid, i.e. not in [00:00, 24:00]
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use felix_backend::data::Time;
+    /// let n_times_min_discretization = 30;
+    /// // Assuming MIN_TIME_DISCRETIZATION = 5 minutes
+    /// let expected = Time::new(2, 30);
+    /// assert_eq!(Time::from_n_times_min_discretization(n_times_min_discretization), expected);
+    /// ```
+    #[must_use]
+    pub fn from_n_times_min_discretization(n_times_min_discretization: i32) -> Time {
+        let total_minutes = n_times_min_discretization * MIN_TIME_DISCRETIZATION.minutes() as i32;
+        let hours = (total_minutes / 60) as i8;
+        let minutes = (total_minutes % 60) as i8;
+        Time::new(hours, minutes)
+    }
+
     /// Simple getter for the hours.
     #[must_use]
     pub fn hours(&self) -> i8 {

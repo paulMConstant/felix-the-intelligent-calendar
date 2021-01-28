@@ -2,12 +2,10 @@ use super::{ActivityInsertionUi, Schedules};
 
 use crate::app::ui::drag_config::*;
 
-use felix_backend::data::ActivityID;
+use felix_backend::data::{ActivityID, Time};
 
 use glib::clone;
 use gtk::prelude::*;
-
-use std::sync::{Arc, Mutex};
 
 use byteorder::ByteOrder;
 
@@ -30,9 +28,14 @@ impl ActivityInsertionUi {
 
     fn connect_drag_motion(&self) {
         fetch_from!(self, schedules_drawing);
+        let schedules = &self.schedules_to_show;
+
         schedules_drawing.connect_drag_motion(
-            clone!(@strong schedules_drawing => move |_drawing_area, _drag_context, _x, _y, _timestamp| {
-            glib::signal::Inhibit(false)
+            clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area, _drag_context, _x, y, _timestamp| {
+                let insertion_time = get_time_on_y(y, &schedules.lock().unwrap());
+                schedules_drawing.set_tooltip_text(Some(&insertion_time.to_string())); // TODO something else
+                println!("{}", insertion_time);
+                glib::signal::Inhibit(false)
         }));
     }
 
@@ -41,26 +44,34 @@ impl ActivityInsertionUi {
         let schedules = &self.schedules_to_show;
 
         schedules_drawing.connect_drag_data_received(
-            clone!(@strong schedules => move |_drawing_area, _drag_context, x, _y, selection_data, _info, _timestamp| {
+            clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area,
+                   _drag_context, x, y, selection_data, _info, _timestamp| {
             if selection_data.get_data_type().name() != DRAG_TYPE {
                 return;
             }
-            if let Some(entity_name) = get_name_of_entity_dropped_on(x, schedules.clone()) {
+            let schedules = schedules.lock().unwrap();
+            if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
                 let activity_id: ActivityID = byteorder::NativeEndian::read_u32(&selection_data.get_data());
-                // TODO find time
-                println!("Insert activity ID {} for entity {}", activity_id, entity_name);
+                let insertion_time = get_time_on_y(y, &schedules);
+                println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
             }
         }));
     }
 }
 
-fn get_name_of_entity_dropped_on(x: i32, schedules: Arc<Mutex<Schedules>>) -> Option<String> {
-    let schedules = schedules.lock().unwrap();
-    let index_of_entity: usize = (x / schedules.width_per_schedule as i32) as usize;
+#[must_use]
+fn get_name_of_entity_from_x(x: i32, schedules: &Schedules) -> Option<String> {
+    let index_of_entity = (x / schedules.width_per_schedule as i32) as usize;
 
     if index_of_entity < schedules.entities_to_show.len() {
         Some(schedules.entities_to_show[index_of_entity].name().clone())
     } else {
         None
     }
+}
+
+#[must_use]
+fn get_time_on_y(y: i32, schedules: &Schedules) -> Time {
+    let n_times_min_discretization = (y as f64 / schedules.height_per_min_discretization) as i32;
+    Time::from_n_times_min_discretization(n_times_min_discretization)
 }

@@ -101,3 +101,14 @@ fn n_times_min_discretization_5_minutes() {
     let expected = 12 + 3;
     assert_eq!(time.n_times_min_discretization(), expected);
 }
+
+#[test]
+fn from_n_times_min_discretization() {
+    let n_times_min_discretization = 43;
+    // Assuming MIN_TIME_DISCRETIZATION = 5 minutes
+    let expected = Time::new(3, 35);
+    assert_eq!(
+        Time::from_n_times_min_discretization(n_times_min_discretization),
+        expected
+    );
+}
