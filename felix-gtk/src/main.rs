@@ -1,3 +1,5 @@
+extern crate byteorder;
+extern crate gdk;
 extern crate gio;
 extern crate gtk;
 

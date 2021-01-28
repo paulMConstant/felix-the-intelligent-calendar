@@ -1,16 +1,21 @@
 mod drawing;
+mod drop;
 mod fetch_activity_insertion_ui;
+mod schedules;
+
+use crate::app::ui::EntityToShow;
+use schedules::Schedules;
 
 use glib::clone;
 use gtk::prelude::*;
 
 use std::sync::{Arc, Mutex};
 
-use crate::app::ui::EntityToShow;
+const NUM_HOURS_IN_DAY: i32 = 24;
 
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
-    schedules_to_show: Arc<Mutex<Vec<EntityToShow>>>,
+    schedules_to_show: Arc<Mutex<Schedules>>,
 }
 
 impl ActivityInsertionUi {
@@ -23,11 +28,12 @@ impl ActivityInsertionUi {
 
         let activity_insertion = ActivityInsertionUi {
             builder,
-            schedules_to_show: Arc::new(Mutex::new(Vec::new())),
+            schedules_to_show: Arc::new(Mutex::new(Schedules::new())),
         };
 
         activity_insertion.connect_draw();
         activity_insertion.connect_schedule_window_scroll();
+        activity_insertion.enable_drop();
 
         activity_insertion
     }
@@ -43,6 +49,7 @@ impl ActivityInsertionUi {
         self.schedules_to_show
             .lock()
             .unwrap()
+            .entities_to_show
             .iter()
             .map(|entity| entity.name().clone())
             .collect()
@@ -53,13 +60,14 @@ impl ActivityInsertionUi {
         // First push all entities
         for entity_to_show in entities_to_show {
             if let Some(index) = schedules_to_show
+                .entities_to_show
                 .iter()
                 .position(|entity| entity == &entity_to_show)
             {
-                schedules_to_show.remove(index);
+                schedules_to_show.entities_to_show.remove(index);
             }
 
-            schedules_to_show.push(entity_to_show);
+            schedules_to_show.entities_to_show.push(entity_to_show);
         }
 
         // Then sort and draw
@@ -70,10 +78,11 @@ impl ActivityInsertionUi {
     pub(super) fn remove_entity_schedule(&mut self, name_of_entity_to_remove: &String) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
         if let Some(position) = schedules_to_show
+            .entities_to_show
             .iter()
             .position(|entity| entity.name() == name_of_entity_to_remove)
         {
-            schedules_to_show.remove(position);
+            schedules_to_show.entities_to_show.remove(position);
             drop(schedules_to_show);
             self.draw_schedules_sorted();
         }
@@ -82,7 +91,9 @@ impl ActivityInsertionUi {
     fn draw_schedules_sorted(&mut self) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
 
-        schedules_to_show.sort_by(|a, b| a.name().cmp(b.name()));
+        schedules_to_show
+            .entities_to_show
+            .sort_by(|a, b| a.name().cmp(b.name()));
 
         fetch_from!(self, header_drawing, schedules_drawing);
         for drawing in &[header_drawing, schedules_drawing] {

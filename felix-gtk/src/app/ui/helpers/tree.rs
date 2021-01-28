@@ -1,13 +1,12 @@
 use gtk::prelude::*;
 
 /// Gets the selected string from the tree view.
-pub fn get_selection_from_treeview(treeview: gtk::TreeView) -> Option<String> {
+pub fn get_selection_from_treeview(treeview: &gtk::TreeView, column: i32) -> Option<String> {
     let selection = treeview.get_selection().get_selected();
     if selection.is_none() {
         None
     } else {
         let (model, iter) = selection.expect("We treated the None case above");
-        let column = 0;
         let value = model.get_value(&iter, column);
         Some(
             value

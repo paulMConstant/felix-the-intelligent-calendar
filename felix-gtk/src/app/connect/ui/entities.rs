@@ -6,6 +6,8 @@ use crate::app::App;
 
 use felix_backend::data::clean_string;
 
+const ENTITY_NAME_COLUMN: i32 = 0;
+
 impl App {
     pub fn connect_entities_tab(&self) {
         self.connect_add_entity();
@@ -65,7 +67,8 @@ impl App {
             entities_tree_view,
             entities_tree_view.connect_cursor_changed(
                 clone!(@strong data, @strong ui, @weak entities_tree_view => move |_| {
-                    let selected_entity = get_selection_from_treeview(entities_tree_view);
+                    let selected_entity = get_selection_from_treeview(&entities_tree_view,
+                                                                      ENTITY_NAME_COLUMN);
                     if let Some(entity_name) = selected_entity {
                         assign_or_return!(entity, data.lock().unwrap().entity(entity_name));
                         ui.lock().unwrap().on_entity_selected(entity);

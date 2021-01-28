@@ -7,6 +7,8 @@ use felix_backend::data::clean_string;
 use glib::clone;
 use gtk::prelude::*;
 
+const GROUP_NAME_COLUMN: i32 = 0;
+
 impl App {
     pub fn connect_groups_tab(&self) {
         self.connect_add_group();
@@ -59,7 +61,8 @@ impl App {
             groups_tree_view,
             groups_tree_view.connect_cursor_changed(
                 clone!(@strong ui, @strong data, @weak groups_tree_view => move |_| {
-                let selected_group = get_selection_from_treeview(groups_tree_view);
+                let selected_group = get_selection_from_treeview(&groups_tree_view,
+                                                                 GROUP_NAME_COLUMN);
                 if let Some(group_name) = selected_group {
                     assign_or_return!(group, data.lock().unwrap().group(group_name));
                     ui.lock().unwrap().on_group_selected(group);

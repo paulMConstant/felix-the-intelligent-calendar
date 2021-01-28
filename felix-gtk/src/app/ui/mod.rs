@@ -1,5 +1,6 @@
 #[macro_use]
 pub mod fetch_ui;
+pub mod drag_config;
 pub mod helpers;
 pub mod signals;
 
@@ -14,6 +15,7 @@ use glib::signal::SignalHandlerId;
 use gtk::prelude::*;
 use std::collections::HashMap;
 
+pub use activities::activities_treeview_config;
 use activity_insertion::activity_insertion_ui::ActivityInsertionUi;
 pub use activity_insertion::entity_to_show::EntityToShow;
 

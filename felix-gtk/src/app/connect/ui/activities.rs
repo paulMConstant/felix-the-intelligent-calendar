@@ -2,10 +2,13 @@ use glib::clone;
 use gtk::prelude::*;
 
 use crate::app::notify::notify_err;
+use crate::app::ui::activities_treeview_config::ACTIVITY_ID_COLUMN;
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::App;
+
 use felix_backend::data::{clean_string, ActivityID, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
+
 use std::convert::TryFrom;
 
 impl App {
@@ -71,7 +74,7 @@ impl App {
             activities_tree_view,
             activities_tree_view.connect_cursor_changed(
                 clone!(@strong ui, @strong data, @weak activities_tree_view => move |_| {
-                let selected_activity_id = get_selection_from_treeview(activities_tree_view);
+                let selected_activity_id = get_selection_from_treeview(&activities_tree_view, ACTIVITY_ID_COLUMN);
                 if let Some(activity_id_str) = selected_activity_id {
                     let activity_id = activity_id_str
                         .parse::<ActivityID>()

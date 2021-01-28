@@ -1,3 +1,6 @@
+pub mod activities_treeview_config;
+
+mod drag;
 mod update;
 mod update_entities_list_store;
 
@@ -13,6 +16,7 @@ impl Ui {
         self.update_current_activity(&Vec::new(), None);
         self.expand_activity_groups_tree_view_name_col();
         self.expand_activity_entities_tree_view_name_col();
+        self.enable_drag_from_activities_treeview();
         self.set_duration_spinbutton_format();
     }
 
