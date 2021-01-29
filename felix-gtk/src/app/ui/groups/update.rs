@@ -54,7 +54,7 @@ impl Ui {
                         group_members_list_store.insert_with_values(
                             None,
                             &[0, 1],
-                            &[&entity_name, &"user-trash-symbolic"],
+                            &[&entity_name, &"action-unavailable-symbolic"],
                         );
                     }
                 },

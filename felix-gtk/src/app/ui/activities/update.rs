@@ -170,7 +170,7 @@ impl Ui {
                         activity_groups_list_store.insert_with_values(
                             None,
                             &[0, 1],
-                            &[&group, &"user-trash-symbolic"],
+                            &[&group, &"action-unavailable-symbolic"],
                         );
                     }
                 },

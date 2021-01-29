@@ -30,7 +30,7 @@ impl Ui {
                         let (icon, strikethrough, color, tooltip) = match not_in_activity_but_in_group {
                             Some(group) => ("list-add-symbolic", true, "grey", 
                             format!("{} is excluded from the group '{}'. Click on '+' to add them to the activity again.", &entity_name, group)),
-                            None => ("user-trash-symbolic", false, "black", String::new()),
+                            None => ("action-unavailable-symbolic", false, "black", String::new()),
                         };
                         activity_entities_list_store.insert_with_values(
                             None,
