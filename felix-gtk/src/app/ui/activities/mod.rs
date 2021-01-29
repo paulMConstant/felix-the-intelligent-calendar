@@ -7,7 +7,7 @@ mod update_entities_list_store;
 use crate::app::ui::helpers::{collections::get_next_element, format::format_time_spin_button};
 use crate::app::ui::Ui;
 
-use felix_backend::data::{Activity, Data, Entity};
+use felix_backend::data::{Activity, Data, Entity, Group};
 
 use gtk::prelude::*;
 
@@ -68,16 +68,21 @@ impl Ui {
         self.update_activities_treeview(&data.activities_sorted());
     }
 
+    pub fn on_group_members_changed_update_activity(&mut self, data: &Data, _group: &Group) {
+        if let Some(current_activity) = &self.current_activity {
+            let activity = data
+                .activity(current_activity.id())
+                .expect("Current activity does not exist in data !");
+            self.update_current_activity(&data.groups_sorted(), Some(activity));
+        }
+    }
+
     pub fn on_activity_entities_changed(&mut self, data: &Data, activity: &Activity) {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
-        self.update_current_activity_entities(&data.groups_sorted());
     }
 
     pub fn on_activity_groups_changed(&mut self, data: &Data, activity: &Activity) {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
-        self.update_current_activity_groups();
-        // Entities in the group are added to the activity, so need to refresh the view as well
-        self.update_current_activity_entities(&data.groups_sorted());
     }
 
     pub fn on_entity_in_activity_renamed(
