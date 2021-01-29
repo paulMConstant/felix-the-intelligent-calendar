@@ -39,7 +39,7 @@ impl Ui {
             // Create pixbuf
             let color = gdk_pixbuf::Colorspace::Rgb;
             let pixbuf = gdk_pixbuf::Pixbuf::new(color, false, 8, DRAG_WIDTH, DRAG_HEIGHT)
-                .expect("Not enough memory");
+                .expect("Not enough memory to create pixbuf");
 
             // Fill pixbuf with cairo
             let surface = cairo::ImageSurface::create(cairo::Format::ARgb32, DRAG_WIDTH, DRAG_HEIGHT)
@@ -49,19 +49,18 @@ impl Ui {
             context.set_source_rgb(DRAG_BACKGROUND_RGB, DRAG_BACKGROUND_RGB, DRAG_BACKGROUND_RGB);
             context.paint();
 
-            // Draw activity name with cairo
-            context.set_font_size(DRAG_FONT_SIZE as f64);
-            context.set_source_rgb(DRAG_FONT_RGB, DRAG_FONT_RGB, DRAG_FONT_RGB);
-
             // Get the name of the activity
             let selected_activity_name = get_selection_from_treeview(&activities_tree_view,
                                                                      ACTIVITY_NAME_COLUMN)
                 .expect("Dragging an activity when no activity is selected");
 
-            let size_of_text = context.text_extents(&selected_activity_name).width;
+            // Draw activity name with cairo
             // Center the text
+            let size_of_text = context.text_extents(&selected_activity_name).width;
             let x_offset = (DRAG_WIDTH as f64 - size_of_text) / 2.0;
             context.move_to(x_offset, DRAG_TEXT_Y_OFFSET);
+            context.set_font_size(DRAG_FONT_SIZE as f64);
+            context.set_source_rgb(DRAG_FONT_RGB, DRAG_FONT_RGB, DRAG_FONT_RGB);
             context.show_text(&selected_activity_name);
 
             // Assign pixbuf to drag

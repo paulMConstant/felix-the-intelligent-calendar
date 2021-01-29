@@ -1,7 +1,8 @@
 use super::computation::id_computation::{compute_incompatible_ids, generate_next_id};
 use super::ActivityMetadata;
-use crate::data::{Activity, ActivityID, Time};
-use crate::errors::{does_not_exist::DoesNotExist, Result};
+use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION};
+use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
+
 use std::collections::HashMap;
 
 /// Manages the collection of activities.
@@ -231,9 +232,14 @@ impl Activities {
     /// (< MIN\_TIME\_DISCRETIZATION).
     #[must_use]
     pub fn set_duration(&mut self, id: ActivityID, duration: Time) -> Result<()> {
+        if duration < MIN_TIME_DISCRETIZATION {
+            return Err(DurationTooShort::new());
+        }
+
         self.get_mut_by_id(id)?
             .computation_data
-            .set_duration(duration)
+            .set_duration(duration);
+        Ok(())
         // TODO update possible insertion times
     }
 

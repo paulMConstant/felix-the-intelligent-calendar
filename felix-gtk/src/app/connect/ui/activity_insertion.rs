@@ -1,7 +1,9 @@
 use crate::app::{notify::notify_err, ui::EntityToShow, App};
 
-use felix_backend::data::clean_string;
+use felix_backend::data::{clean_string, ActivityID, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
+
+use std::sync::Arc;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -9,6 +11,7 @@ use gtk::prelude::*;
 impl App {
     pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
+        self.set_activity_try_insert_callback();
 
         self.connect_clean_show_schedule_entry();
     }
@@ -65,6 +68,35 @@ impl App {
                 show_schedule_entry
             ))
         );
+    }
+
+    fn set_activity_try_insert_callback(&self) {
+        let data = self.data.clone();
+
+        self.ui
+            .lock()
+            .unwrap()
+            .set_activity_try_insert_callback(Arc::new(Box::new(
+                clone!(@strong data => move
+                        |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
+            let data = data.lock().unwrap();
+            let activity = data.activity(activity_id)
+                .expect("The activity we are inserting does not exist");
+
+            if activity.entities_sorted().contains(&entity_name) == false {
+                // Inserting activity for wrong entity
+                return;
+            }
+
+            if activity.possible_insertion_beginnings().contains(&insertion_time) == false {
+                // Inserting activity at wrong time
+                return;
+            }
+            // TODO
+             //data.insert_activity(activity_id, insetion_time)
+                 //.expect("Error while inserting activity, should have been checked for);
+            println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
+        }))));
     }
 
     fn connect_clean_show_schedule_entry(&self) {

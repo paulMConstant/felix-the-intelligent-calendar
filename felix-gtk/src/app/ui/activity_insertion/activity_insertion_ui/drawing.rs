@@ -25,12 +25,21 @@ const LINE_WIDTH: f64 = 0.5;
 const HEADER_SEPARATOR_HEIGHT_PROPORTION: f64 = 0.33;
 const SCHEDULE_FONT_Y_OFFSET: f64 = 12.0;
 
+const TIME_TOOLTIP_HEIGHT: i32 = 25;
+const TIME_TOOLTIP_WIDTH: i32 = 100;
+const TIME_TOOLTIP_FONT_SIZE: f64 = 14.0;
+const TIME_TOOLTIP_FONT_RGB: f64 = 0.0;
+const TIME_TOOLTIP_BACKGROUND_RGB: f64 = 0.9;
+const TIME_TOOLTIP_Y_OFFSET: f64 = 18.0;
+const TIME_TOOLTIP_X_OFFSET: f64 = 30.0;
+
 impl ActivityInsertionUi {
     pub(super) fn connect_draw(&self) {
         self.connect_draw_hours();
         self.connect_draw_corner();
         self.connect_draw_schedules();
         self.connect_draw_header();
+        self.connect_draw_time_tooltip();
     }
 
     fn connect_draw_hours(&self) {
@@ -81,6 +90,17 @@ impl ActivityInsertionUi {
             if schedule_size_ok_or_resize(schedules.clone(), w, header_visible_width) {
                 draw_header(&c, w, schedules.clone());
             }
+            gtk::Inhibit(false)
+        });
+    }
+
+    fn connect_draw_time_tooltip(&self) {
+        fetch_from!(self, schedules_drawing);
+
+        let schedules = self.schedules_to_show.clone();
+
+        schedules_drawing.connect_draw(move |_w, c| {
+            draw_time_tooltip(&c, schedules.clone());
             gtk::Inhibit(false)
         });
     }
@@ -288,5 +308,35 @@ fn draw_inside_work_hours_background(
             c.fill();
         }
         current_x += schedules.width_per_schedule;
+    }
+}
+
+fn draw_time_tooltip(c: &cairo::Context, schedules: Arc<Mutex<Schedules>>) {
+    let mut schedules = schedules.lock().unwrap();
+    if let Some(time_tooltip_to_draw) = &schedules.time_tooltip_to_draw {
+        let x = time_tooltip_to_draw.x_cursor;
+        let y = time_tooltip_to_draw.y_cursor - TIME_TOOLTIP_HEIGHT as f64;
+
+        // Draw rectangle
+        c.set_source_rgb(
+            TIME_TOOLTIP_BACKGROUND_RGB,
+            TIME_TOOLTIP_BACKGROUND_RGB,
+            TIME_TOOLTIP_BACKGROUND_RGB,
+        );
+        c.rectangle(x, y, TIME_TOOLTIP_WIDTH as f64, TIME_TOOLTIP_HEIGHT as f64);
+        c.fill();
+
+        // Write time
+        c.move_to(x + TIME_TOOLTIP_X_OFFSET, y + TIME_TOOLTIP_Y_OFFSET);
+        c.set_font_size(TIME_TOOLTIP_FONT_SIZE);
+        c.set_source_rgb(
+            TIME_TOOLTIP_FONT_RGB,
+            TIME_TOOLTIP_FONT_RGB,
+            TIME_TOOLTIP_FONT_RGB,
+        );
+        c.show_text(&time_tooltip_to_draw.time.to_string());
+
+        // Reset
+        schedules.time_tooltip_to_draw = None;
     }
 }

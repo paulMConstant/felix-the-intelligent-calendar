@@ -4,7 +4,9 @@ pub mod entity_to_show;
 use crate::app::ui::Ui;
 use entity_to_show::EntityToShow;
 
-use felix_backend::data::{Data, Entity};
+use felix_backend::data::{ActivityID, Data, Entity, Time};
+
+use std::sync::Arc;
 
 use gtk::prelude::*;
 
@@ -12,6 +14,14 @@ impl Ui {
     pub(super) fn on_init_activity_insertion(&self) {
         fetch_from!(self, insertion_box);
         insertion_box.pack_end(&self.activity_insertion.get_insertion_box(), true, true, 0);
+    }
+
+    pub fn set_activity_try_insert_callback(
+        &self,
+        callback: Arc<dyn Fn(String, ActivityID, Time)>,
+    ) {
+        self.activity_insertion
+            .set_activity_try_insert_callback(callback);
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {

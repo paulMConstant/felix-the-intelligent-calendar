@@ -1,4 +1,4 @@
-use super::{ActivityInsertionUi, Schedules};
+use super::{schedules::TimeTooltipToDraw, ActivityInsertionUi, Schedules};
 
 use crate::app::ui::drag_config::*;
 
@@ -31,10 +31,12 @@ impl ActivityInsertionUi {
         let schedules = &self.schedules_to_show;
 
         schedules_drawing.connect_drag_motion(
-            clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area, _drag_context, _x, y, _timestamp| {
-                let insertion_time = get_time_on_y(y, &schedules.lock().unwrap());
-                schedules_drawing.set_tooltip_text(Some(&insertion_time.to_string())); // TODO something else
-                println!("{}", insertion_time);
+            clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area, _drag_context, x, y, _timestamp| {
+                let mut schedules = schedules.lock().unwrap();
+                let time = get_time_on_y(y, &schedules);
+                let tooltip = TimeTooltipToDraw { x_cursor: x as f64, y_cursor: y as f64, time };
+                schedules.time_tooltip_to_draw = Some(tooltip);
+                schedules_drawing.queue_draw();
                 glib::signal::Inhibit(false)
         }));
     }
@@ -53,7 +55,7 @@ impl ActivityInsertionUi {
             if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
                 let activity_id: ActivityID = byteorder::NativeEndian::read_u32(&selection_data.get_data());
                 let insertion_time = get_time_on_y(y, &schedules);
-                println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
+                (schedules.try_insert_activity_callback)(entity_name, activity_id, insertion_time);
             }
         }));
     }

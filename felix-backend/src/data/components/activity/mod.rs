@@ -75,9 +75,7 @@ impl Activity {
 
     /// Simple getter for possible insertion times.
     #[must_use]
-    pub fn possible_insertion_beginnings(&self) -> HashSet<Time> {
-        self.computation_data
-            .possible_insertion_beginnings()
-            .clone()
+    pub fn possible_insertion_beginnings(&self) -> &HashSet<Time> {
+        &self.computation_data.possible_insertion_beginnings()
     }
 }

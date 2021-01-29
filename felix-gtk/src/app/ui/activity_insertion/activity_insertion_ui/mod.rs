@@ -6,6 +6,8 @@ mod schedules;
 use crate::app::ui::EntityToShow;
 use schedules::Schedules;
 
+use felix_backend::data::{ActivityID, Time};
+
 use glib::clone;
 use gtk::prelude::*;
 
@@ -16,7 +18,6 @@ const NUM_HOURS_IN_DAY: i32 = 24;
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
-    // TODO maybe not pixbuf but window ?time_tooltip: gtk::Pixbuf,
 }
 
 impl ActivityInsertionUi {
@@ -37,6 +38,16 @@ impl ActivityInsertionUi {
         activity_insertion.enable_drop();
 
         activity_insertion
+    }
+
+    pub fn set_activity_try_insert_callback(
+        &self,
+        callback: Arc<dyn Fn(String, ActivityID, Time)>,
+    ) {
+        self.schedules_to_show
+            .lock()
+            .unwrap()
+            .try_insert_activity_callback = callback;
     }
 
     #[must_use]

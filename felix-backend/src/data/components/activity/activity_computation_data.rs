@@ -1,5 +1,4 @@
 use crate::data::{ActivityID, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
-use crate::errors::{duration_too_short::DurationTooShort, Result};
 use std::collections::HashSet;
 
 /// Holds computation-related data : duration, insertion interval if inserted,
@@ -15,12 +14,18 @@ pub struct ActivityComputationData {
 impl ActivityComputationData {
     /// Creates new computation data.
     pub fn new() -> ActivityComputationData {
-        ActivityComputationData {
+        // TODO init insertion beginnings with nothing
+        let mut data = ActivityComputationData {
             duration: MIN_TIME_DISCRETIZATION,
             insertion_interval: None,
             possible_insertion_beginnings_if_no_conflict: HashSet::new(),
             incompatible_activity_ids: Vec::new(),
-        }
+        };
+        data.possible_insertion_beginnings_if_no_conflict
+            .insert(Time::new(10, 0));
+        data.possible_insertion_beginnings_if_no_conflict
+            .insert(Time::new(11, 0));
+        data
     }
 
     // *** Getters ***
@@ -55,16 +60,9 @@ impl ActivityComputationData {
 
     /// Simple setter for the duration.
     ///
-    /// # Errors
-    ///
-    /// Returns Err if the duration is too short (< MIN\_TIME\_DISCRETIZATION).
-    pub fn set_duration(&mut self, duration: Time) -> Result<()> {
-        if duration < MIN_TIME_DISCRETIZATION {
-            Err(DurationTooShort::new())
-        } else {
-            self.duration = duration;
-            Ok(())
-        }
+    /// Does not perform any check, the activities collection does it.
+    pub fn set_duration(&mut self, duration: Time) {
+        self.duration = duration;
     }
 
     /// Simple setter for incompatible activity ids.
@@ -72,6 +70,20 @@ impl ActivityComputationData {
     /// Does not perform any checks, the activities collection does it.
     pub fn set_incompatible_activity_ids(&mut self, incompatible_ids: Vec<ActivityID>) {
         self.incompatible_activity_ids = incompatible_ids;
+    }
+
+    /// Inserts the activity at given time.
+    ///
+    /// Does not perform any checks, the activity collection does it.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the insertion time + duration Time is invalid.
+    pub fn insert(&mut self, insertion_time: Time) {
+        self.insertion_interval = Some(TimeInterval::new(
+            insertion_time,
+            insertion_time + self.duration,
+        ));
     }
 }
 
