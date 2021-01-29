@@ -112,8 +112,6 @@ impl Ui {
                 .into_iter()
                 .find(|activity| activity.id() == current_activity.id());
             self.update_current_activity(&data.groups_sorted(), new_current_activity.cloned());
-            self.update_current_activity_entities(&data.groups_sorted());
-            self.update_current_activity_groups();
         }
     }
 }
