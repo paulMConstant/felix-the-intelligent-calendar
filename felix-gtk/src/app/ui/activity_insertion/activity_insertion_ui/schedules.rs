@@ -5,8 +5,8 @@ use felix_backend::data::{ActivityID, Time, MIN_TIME_DISCRETIZATION};
 
 use std::sync::Arc;
 
-const MIN_SCHEDULE_WIDTH: f64 = 200.0;
-const MAX_SCHEDULE_WIDTH: f64 = 450.0;
+const MIN_SCHEDULE_WIDTH: f64 = 350.0;
+const MAX_SCHEDULE_WIDTH: f64 = 550.0;
 
 pub struct TimeTooltipToDraw {
     pub x_cursor: f64,

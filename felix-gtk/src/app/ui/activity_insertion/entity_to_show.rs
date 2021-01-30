@@ -1,4 +1,4 @@
-use felix_backend::data::{Activity, Data, TimeInterval};
+use felix_backend::data::{Activity, Data, Time, TimeInterval};
 
 /// Simple struct holding an activity's name and insertion interval.
 pub struct ActivityNameAndInsertionTime {
@@ -31,6 +31,7 @@ pub struct EntityToShow {
     name: String,
     activities: Vec<ActivityNameAndInsertionTime>,
     work_hours: Vec<TimeInterval>,
+    free_time: Time,
 }
 
 impl EntityToShow {
@@ -45,6 +46,9 @@ impl EntityToShow {
                 .collect(),
             work_hours: data
                 .work_hours_of(&entity_name)
+                .expect("Every entity to show should exist in Data when created"),
+            free_time: data
+                .free_time_of(&entity_name)
                 .expect("Every entity to show should exist in Data when created"),
             name: entity_name,
         }
@@ -63,6 +67,11 @@ impl EntityToShow {
     #[must_use]
     pub fn work_hours(&self) -> &Vec<TimeInterval> {
         &self.work_hours
+    }
+
+    #[must_use]
+    pub fn free_time(&self) -> Time {
+        self.free_time
     }
 }
 

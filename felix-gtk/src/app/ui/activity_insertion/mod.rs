@@ -4,7 +4,7 @@ pub mod entity_to_show;
 use crate::app::ui::Ui;
 use entity_to_show::EntityToShow;
 
-use felix_backend::data::{ActivityID, Data, Entity, Time};
+use felix_backend::data::{Activity, ActivityID, Data, Entity, Time};
 
 use std::sync::Arc;
 
@@ -29,8 +29,15 @@ impl Ui {
             .show_entities_schedule(vec![entity_to_show]);
     }
 
+    pub fn on_activities_changed_update_schedules(&mut self, data: &Data, _: &Activity) {
+        self.update_schedules(data);
+    }
+
     pub fn on_work_hours_changed_update_schedules(&mut self, data: &Data) {
-        // Update data
+        self.update_schedules(data);
+    }
+
+    fn update_schedules(&mut self, data: &Data) {
         let entities_to_show: Vec<_> = self
             .activity_insertion
             .shown_entities()

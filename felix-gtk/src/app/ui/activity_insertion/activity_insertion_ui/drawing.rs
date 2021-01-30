@@ -1,5 +1,7 @@
 use super::{ActivityInsertionUi, Schedules, NUM_HOURS_IN_DAY};
 
+use felix_backend::data::Time;
+
 use cairo;
 use gtk::prelude::*;
 
@@ -19,7 +21,7 @@ const SCHEDULE_FONT_RGB: f64 = 0.2;
 
 const DASH_SIZE: f64 = 5.0;
 const HOUR_FONT_SIZE: f64 = 14.0;
-const SCHEDULE_FONT_SIZE: f64 = 16.0;
+const SCHEDULE_FONT_SIZE: f64 = 14.0;
 const LINE_WIDTH: f64 = 0.5;
 
 const HEADER_SEPARATOR_HEIGHT_PROPORTION: f64 = 0.33;
@@ -228,16 +230,23 @@ fn draw_header(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex<Sc
     c.set_source_rgb(SCHEDULE_FONT_RGB, SCHEDULE_FONT_RGB, SCHEDULE_FONT_RGB);
     c.set_font_size(SCHEDULE_FONT_SIZE);
     let mut current_x = 0.0;
-    for entity_name in schedules
-        .entities_to_show
-        .iter()
-        .map(|entity| entity.name())
-    {
-        let size_of_text = c.text_extents(&entity_name).width;
+    for entity in &schedules.entities_to_show {
+        let total_time: Time = entity
+            .work_hours()
+            .iter()
+            .map(|interval| interval.duration())
+            .sum();
+        let text = format!(
+            "{} - {} / {}",
+            entity.name(),
+            entity.free_time(),
+            total_time
+        );
+        let size_of_text = c.text_extents(&text).width;
         // Center the text
         let x_offset = (schedules.width_per_schedule - size_of_text) / 2.0;
         c.move_to(current_x + x_offset, height - SCHEDULE_FONT_Y_OFFSET);
-        c.show_text(&entity_name);
+        c.show_text(&text);
         current_x += schedules.width_per_schedule;
     }
 }
