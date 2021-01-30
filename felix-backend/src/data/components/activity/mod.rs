@@ -8,7 +8,7 @@ use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
 use std::collections::HashSet;
 
-pub type ActivityID = u32;
+pub type ActivityID = usize;
 
 /// An activity represents a group of entities which must meet during a defined period of time.
 ///

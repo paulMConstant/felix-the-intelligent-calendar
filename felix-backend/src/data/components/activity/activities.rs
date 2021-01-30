@@ -1,5 +1,5 @@
 use super::computation::id_computation::{compute_incompatible_ids, generate_next_id};
-use super::ActivityMetadata;
+use super::{ActivityComputationData, ActivityMetadata};
 use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION};
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
@@ -54,7 +54,6 @@ impl Activities {
     /// # Panics
     ///
     /// Panics if there is no id available under 65536.
-    #[must_use]
     pub fn add(&mut self, name: String) -> &Activity {
         let used_ids = self.activities.keys().collect();
         let id = generate_next_id(used_ids);
@@ -243,11 +242,37 @@ impl Activities {
         // TODO update possible insertion times
     }
 
-    // TODO
-    // * Make a copy of the computation data in a vector
-    // * Turn the incompatible ids into incompatible indexes
-    // * Return the result for computation
-    // fn fetch_computation(&self) -> Vec<ActivityComputationData>
+    /// Returns data ready for computation.
+    ///
+    /// The ids of incompatible activities are turned into indexes.
+    #[must_use]
+    fn fetch_computation(&self) -> Vec<ActivityComputationData> {
+        let activities = self.activities.values();
+        let mut computation_data: Vec<ActivityComputationData> = activities
+            .clone()
+            .map(|activity| activity.computation_data.clone())
+            .collect();
+
+        let ids: Vec<_> = activities.map(|other| other.metadata.id()).collect();
+
+        // Translate incompatible ids into incompatible indexes
+        // This is not the most efficient but this operation is not critical,
+        // the computation should be optimized, not this
+        for data in &mut computation_data {
+            let incompatible_ids = data.incompatible_activity_ids();
+            let mut incompatible_indexes: Vec<ActivityID> =
+                Vec::with_capacity(incompatible_ids.len());
+            for (index_of_other, id_of_other) in ids.iter().enumerate() {
+                // We don't care if we compare ourselves to ourselves,
+                // we cannot be incompatible with ourselves
+                if incompatible_ids.contains(&id_of_other) {
+                    incompatible_indexes.push(index_of_other);
+                }
+            }
+            data.set_incompatible_activity_ids(incompatible_indexes);
+        }
+        computation_data
+    }
 }
 
 // Private, inner tests
@@ -386,5 +411,52 @@ mod tests {
 
         assert_eq!(incompatible_c.len(), 1);
         assert!(incompatible_c.contains(&id_b));
+    }
+
+    #[test]
+    fn test_fetch_computation() {
+        let mut activity_collection = Activities::new();
+        activity_collection.add("0".to_owned());
+        activity_collection.add("1".to_owned());
+        activity_collection.add("2".to_owned());
+        activity_collection.add("3".to_owned());
+        activity_collection
+            .remove(2)
+            .expect("Could not remove activity");
+
+        // Ids are [0, 1, 3]
+        activity_collection
+            .get_mut_by_id(0)
+            .expect("Could not get activity by id")
+            .computation_data
+            .set_incompatible_activity_ids(vec![3]);
+        activity_collection
+            .get_mut_by_id(1)
+            .expect("Could not get activity by id")
+            .computation_data
+            .set_incompatible_activity_ids(vec![0, 3]);
+        activity_collection
+            .get_mut_by_id(3)
+            .expect("Could not get activity by id")
+            .computation_data
+            .set_incompatible_activity_ids(vec![1]);
+
+        let activities: Vec<Activity> = activity_collection.activities.values().cloned().collect();
+        // Assuming activities.values() returns the same order twice
+        // (activities.values() called in fetch_computation)
+        let computation_data: Vec<ActivityComputationData> =
+            activity_collection.fetch_computation();
+
+        for (activity, computation) in activities.iter().zip(computation_data) {
+            let mut ids = activity.computation_data.incompatible_activity_ids();
+            let mut ids_from_indexes = computation
+                .incompatible_activity_ids()
+                .iter()
+                .map(|&index| activities[index].id())
+                .collect::<Vec<ActivityID>>();
+            ids.sort();
+            ids_from_indexes.sort();
+            assert_eq!(ids, ids_from_indexes);
+        }
     }
 }

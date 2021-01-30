@@ -8,7 +8,7 @@ use std::convert::TryFrom;
 ///
 /// # Panics
 ///
-/// Panics if there is no id available under 65536.
+/// Panics if there is no id available fitting in ActivityID data type.
 pub fn generate_next_id(mut used_ids: Vec<&ActivityID>) -> ActivityID {
     // Fetch the ids in ascending order.
     used_ids.sort();
@@ -23,13 +23,13 @@ pub fn generate_next_id(mut used_ids: Vec<&ActivityID>) -> ActivityID {
             // Found a hole ! Return its index + 1.
             match ActivityID::try_from(index + 1) {
                 Ok(i) => i,
-                Err(_) => panic!("All 65536 ids have been used !"),
+                Err(_) => panic!("All ids have been used !"),
             }
         } else {
             // Hole not found : return the length of the used ids.
             match ActivityID::try_from(used_ids.len()) {
                 Ok(i) => i,
-                Err(_) => panic!("All 65536 ids have been used !"),
+                Err(_) => panic!("All ids have been used !"),
             }
         }
     }
@@ -56,6 +56,7 @@ pub fn compute_incompatible_ids(
         .collect()
 }
 
+/// Given activities, turns
 #[cfg(test)]
 mod tests {
     use super::*;

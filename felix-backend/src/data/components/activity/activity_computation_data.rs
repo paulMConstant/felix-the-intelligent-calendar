@@ -7,7 +7,7 @@ use std::collections::HashSet;
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
-    possible_insertion_beginnings_if_no_conflict: HashSet<Time>,
+    possible_insertion_times_if_no_conflict: HashSet<Time>,
     incompatible_activity_ids: Vec<ActivityID>,
 }
 
@@ -15,17 +15,12 @@ impl ActivityComputationData {
     /// Creates new computation data.
     pub fn new() -> ActivityComputationData {
         // TODO init insertion beginnings with nothing
-        let mut data = ActivityComputationData {
+        ActivityComputationData {
             duration: MIN_TIME_DISCRETIZATION,
             insertion_interval: None,
-            possible_insertion_beginnings_if_no_conflict: HashSet::new(),
+            possible_insertion_times_if_no_conflict: HashSet::new(),
             incompatible_activity_ids: Vec::new(),
-        };
-        data.possible_insertion_beginnings_if_no_conflict
-            .insert(Time::new(10, 0));
-        data.possible_insertion_beginnings_if_no_conflict
-            .insert(Time::new(11, 0));
-        data
+        }
     }
 
     // *** Getters ***
@@ -46,11 +41,10 @@ impl ActivityComputationData {
     #[must_use]
     pub fn possible_insertion_beginnings(&self) -> &HashSet<Time> {
         // TODO take conflicts into account
-        &self.possible_insertion_beginnings_if_no_conflict
+        &self.possible_insertion_times_if_no_conflict
     }
 
-    /// Getter for incompatible activities, used for testing. Should not go out of this module.
-    #[cfg(test)]
+    /// Simple getter for incompatible activities.
     #[must_use]
     pub fn incompatible_activity_ids(&self) -> Vec<ActivityID> {
         self.incompatible_activity_ids.clone()
