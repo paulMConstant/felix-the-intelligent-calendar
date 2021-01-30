@@ -34,6 +34,11 @@ impl Ui {
     }
 
     #[must_use]
+    pub fn create_entity_before_adding_to_group_box(&self) -> gtk::Box {
+        fetch_ui_from_builder!(self, "CreateEntityBeforeAddingToGroupBox")
+    }
+
+    #[must_use]
     pub fn groups_tree_view(&self) -> gtk::TreeView {
         fetch_ui_from_builder!(self, "GroupsTreeView")
     }
