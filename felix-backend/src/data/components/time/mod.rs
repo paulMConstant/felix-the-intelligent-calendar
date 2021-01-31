@@ -10,6 +10,8 @@ pub const MIN_TIME_DISCRETIZATION: Time = Time {
     minutes: 5,
 };
 
+pub const MIN_TIME_DISCRETIZATION_MINUTES: u16 = 5;
+
 /// Minimal time structure with minute precision.
 ///
 /// Any Time structure should be kept in [00:00, 24:00] and be a multiple of
@@ -96,6 +98,12 @@ impl Time {
     #[must_use]
     pub fn minutes(&self) -> i8 {
         self.minutes
+    }
+
+    /// Returns the total number of minutes in the given time.
+    #[must_use]
+    pub fn total_minutes(&self) -> u16 {
+        self.minutes as u16 + self.hours as u16 * 60
     }
 
     /// Returns the number of times MIN\_TIME\_DISCRETIZATION fits in the Time.
