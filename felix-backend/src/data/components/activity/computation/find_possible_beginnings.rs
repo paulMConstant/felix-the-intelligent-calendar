@@ -1,3 +1,15 @@
+//! Algorithm to find the possible beginnings of activities given the activity durations and the
+//! work hours.
+//!
+//! General overview:
+//! 1 - Fetch the durations as u16 for faster calculations
+//! 2 - Compute all possible duration sums (see tests)
+//! 3 - For each activity, try to insert one activity in every slot
+//! 4 - If the rest of the activities can be inserted in the remaining slots, then the time is
+//!   valid.
+//! 5 - The rest of the activities can be inserted in the remaining slots if their is a combination
+//!   of duration sums which fit in the remaining slots.
+
 use crate::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION_MINUTES};
 
 use std::collections::{HashMap, HashSet};
@@ -96,8 +108,8 @@ fn find_possible_beginnings(
                 }
 
                 // Sort to use the biggest work hours first.
-                // Sort decreasingly because we take the last element of the work hours each time.
-                new_work_hour_durations.sort_by(|a, b| b.cmp(a));
+                // Sort ascending because we take the last element of the work hours each time.
+                new_work_hour_durations.sort();
 
                 // Check if the rest of the activities fit in the schedule.
                 if can_fit_in_schedule(
@@ -125,7 +137,7 @@ fn find_possible_beginnings(
 }
 
 /// Given an array of durations, computes all possible sums using every combination.
-/// The sums are sorted in ascending order assuming the durations are sorted.
+/// The sums are sorted decreasingly if the durations are sorted increasingly.
 ///
 /// See the tests for examples.
 ///
@@ -134,15 +146,14 @@ fn find_possible_beginnings(
 /// Panics if the combinatorial is too high.
 /// Panics if the durations are not sorted in ascending order.
 fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
-    assert!(is_sorted(&durations));
     let pow_base: usize = 2;
     if let Some(set_size) = pow_base.checked_pow(durations.len() as u32) {
         let mut res = vec![SumAndDurationIndexes::new(); set_size];
 
-        // Run coutner from 000..0 to 111..1
+        // Run counter from 000..0 to 111..1
         for counter in 0..set_size {
             for duration_index in 0..durations.len() {
-                if counter & (1 << duration_index) > 0 {
+                if counter & (1 << duration_index) == 0 {
                     // The index was included in the counter. Add it to the result.
                     res[counter].indexes.insert(duration_index as u16);
                     res[counter].sum_minutes += durations[duration_index];
@@ -153,14 +164,6 @@ fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
     } else {
         panic!("Overflow : too many activities !");
     }
-}
-
-/// Checks that a slice is sorted (not strictly) by ascending order.
-fn is_sorted<T>(data: &[T]) -> bool
-where
-    T: Ord,
-{
-    data.windows(2).all(|w| w[0] <= w[1])
 }
 
 /// Returns true if the given durations can fit in the given time intervals.
@@ -180,21 +183,25 @@ fn can_fit_in_schedule(
         return false;
     }
 
+    // We instantly remove the last work interval.
+    // As we try to fit the biggest possible duration combination into it,
+    // no activity will fit in the remaining time.
+    // The time which remains is wasted.
     let work_interval_duration = work_interval_durations
         .pop()
         .expect("Popping from empty work interval duration ! This case should be handled before");
+
     // Because the sums are sorted decreasingly, any sum that is shorter than this one will
     // waste too much time to continue.
     let min_acceptable_duration_sum = work_interval_duration - time_which_can_be_wasted;
 
     for duration_sum in all_duration_sums
         .iter()
-        .filter(|duration_sum| duration_sum.sum_minutes >= min_acceptable_duration_sum)
+        .filter(|duration_sum| duration_sum.sum_minutes <= work_interval_duration)
     {
-        if duration_sum.sum_minutes > work_interval_duration {
-            // Early stop: the duration is too big to fit in this work interval.
-            // As durations are sorted by ascending order and intervals by descending order,
-            // the duration will not fit in any interval.
+        if duration_sum.sum_minutes < min_acceptable_duration_sum {
+            // Early stop: the duration will waste too much time;
+            // the next durations are too big for the remaining work hours.
             return false;
         }
         if duration_sum
@@ -226,40 +233,67 @@ fn can_fit_in_schedule(
     false
 }
 
-// TODO tests
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_is_sorted() {
-        assert!(is_sorted(&[1, 2, 2, 4]));
-        assert_eq!(is_sorted(&[1, 2, 2, 4, 3]), false);
-    }
-
-    #[test]
     fn test_compute_all_sums() {
-        let durations = vec![30, 80];
+        let durations = &[30, 80];
         let expected = vec![
+            SumAndDurationIndexes {
+                sum_minutes: 110,
+                indexes: [0, 1].iter().map(|&i| i as u16).collect::<HashSet<_>>(),
+            },
+            SumAndDurationIndexes {
+                sum_minutes: 80,
+                indexes: [1].iter().map(|&i| i as u16).collect::<HashSet<_>>(),
+            },
+            SumAndDurationIndexes {
+                sum_minutes: 30,
+                indexes: [0].iter().map(|&i| i as u16).collect::<HashSet<_>>(),
+            },
             SumAndDurationIndexes {
                 sum_minutes: 0,
                 indexes: HashSet::new(),
             },
-            SumAndDurationIndexes {
-                sum_minutes: 30,
-                indexes: [0].iter().map(|&i| i as usize).collect::<HashSet<_>>(),
-            },
-            SumAndDurationIndexes {
-                sum_minutes: 80,
-                indexes: [1].iter().map(|&i| i as usize).collect::<HashSet<_>>(),
-            },
-            SumAndDurationIndexes {
-                sum_minutes: 110,
-                indexes: [0, 1].iter().map(|&i| i as usize).collect::<HashSet<_>>(),
-            },
         ];
 
-        assert_eq!(compute_all_sums(&durations), expected);
+        assert_eq!(compute_all_sums(durations), expected);
+    }
+
+    #[test]
+    fn test_can_fit_in_schedule() {
+        // ARRAYS SORTED ASCENDING
+        test_case_can_fit_in_schedule(vec![30, 50], &[20, 40], true);
+        test_case_can_fit_in_schedule(vec![30, 39], &[20, 40], false);
+        test_case_can_fit_in_schedule(vec![30, 39, 50], &[20, 39, 40], true);
+        test_case_can_fit_in_schedule(vec![30, 39, 50], &[10, 20, 39, 40], true);
+        test_case_can_fit_in_schedule(vec![30, 39, 50], &[11, 20, 39, 40], false);
+    }
+
+    fn test_case_can_fit_in_schedule(
+        work_hour_durations: Vec<u16>,
+        activity_durations: &[u16],
+        expected: bool,
+    ) {
+        let all_activity_sums = compute_all_sums(activity_durations);
+        let time_which_can_be_wasted =
+            work_hour_durations.iter().sum::<u16>() - activity_durations.iter().sum::<u16>();
+        assert_eq!(
+            can_fit_in_schedule(
+                activity_durations.len(),
+                &all_activity_sums,
+                work_hour_durations,
+                time_which_can_be_wasted,
+                HashSet::new()
+            ),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_find_possible_beginnings() {
+        // TODO
     }
 }
