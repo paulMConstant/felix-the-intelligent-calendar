@@ -53,7 +53,8 @@ impl ActivityInsertionUi {
             }
             let schedules = schedules.lock().unwrap();
             if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
-                let activity_id: ActivityID = byteorder::NativeEndian::read_u32(&selection_data.get_data());
+                let activity_id: ActivityID = byteorder::NativeEndian::read_u32(
+                    &selection_data.get_data()) as ActivityID;
                 let insertion_time = get_time_on_y(y, &schedules);
                 (schedules.try_insert_activity_callback)(entity_name, activity_id, insertion_time);
             }

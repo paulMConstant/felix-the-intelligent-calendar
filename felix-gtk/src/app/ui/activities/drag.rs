@@ -86,7 +86,8 @@ impl Ui {
                 .expect("Error when parsing activity ID from activities model");
 
             let buffer: &mut [u8; DRAG_DATA_FORMAT] = &mut [0; DRAG_DATA_FORMAT];
-            byteorder::NativeEndian::write_u32(&mut buffer[0..DRAG_DATA_FORMAT], selected_activity_id);
+            byteorder::NativeEndian::write_u32(&mut buffer[0..DRAG_DATA_FORMAT],
+                                               selected_activity_id as u32);
             selection_data.set(&gdk::Atom::intern(DRAG_TYPE), DRAG_DATA_FORMAT as i32, buffer);
         }));
     }

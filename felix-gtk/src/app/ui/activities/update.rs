@@ -59,7 +59,7 @@ impl Ui {
                     activities_list_store.insert_with_values(
                         None,
                         &[0, 1],
-                        &[&activity.id(), &activity.name()],
+                        &[&(activity.id() as u32), &activity.name()],
                     );
                 }
             },

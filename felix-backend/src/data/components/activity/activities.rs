@@ -2,6 +2,7 @@ use super::computation::id_computation::{compute_incompatible_ids, generate_next
 use super::{ActivityComputationData, ActivityMetadata};
 use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION};
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
+use felix_computation_api::find_possible_beginnings::ActivityBeginnignsGivenDuration;
 
 use std::collections::HashMap;
 
@@ -10,6 +11,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Activities {
     activities: HashMap<ActivityID, Activity>,
+    possible_beginnings_given_entity: HashMap<String, ActivityBeginnignsGivenDuration>,
 }
 
 impl Activities {
@@ -18,6 +20,7 @@ impl Activities {
     pub fn new() -> Activities {
         Activities {
             activities: HashMap::new(),
+            possible_beginnings_given_entity: HashMap::new(),
         }
     }
 
