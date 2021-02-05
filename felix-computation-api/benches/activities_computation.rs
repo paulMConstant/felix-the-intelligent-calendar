@@ -1,9 +1,45 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use felix_computation_api::find_possible_beginnings::{can_fit_in_schedule, compute_all_sums};
+use felix_computation_api::find_possible_beginnings::{
+    can_fit_in_schedule, compute_all_sums, find_possible_beginnings, WorkHourInMinutes,
+};
 
 use std::collections::HashSet;
 
+fn bench_find_possible_beginnings(c: &mut Criterion) {
+    c.bench_function("Find possible beginnings", |b| {
+        b.iter(|| {
+            find_possible_beginnings(
+                &[
+                    WorkHourInMinutes::new(10, 30),
+                    WorkHourInMinutes::new(50, 120),
+                    WorkHourInMinutes::new(250, 450),
+                    WorkHourInMinutes::new(800, 935),
+                ],
+                &[20, 70, 200, 135],
+                &[15, 15, 20, 20, 30, 30, 40, 45, 60, 80],
+                5,
+            )
+        })
+    });
+}
+
+fn bench_can_fit_in_schedule(c: &mut Criterion) {
+    bench_case_can_fit_in_schedule(
+        c,
+        "Can fit in schedule false",
+        vec![240, 180],
+        &[20, 20, 25, 30, 50, 60, 225],
+    );
+    bench_case_can_fit_in_schedule(
+        c,
+        "Can fit in schedule true",
+        vec![240, 180],
+        &[20, 30, 30, 40, 50, 60, 70, 120],
+    );
+}
+
+/// Creates a bench case. Is not called directly by criterion.
 fn bench_case_can_fit_in_schedule(
     c: &mut Criterion,
     bench_name: &str,
@@ -27,24 +63,6 @@ fn bench_case_can_fit_in_schedule(
     });
 }
 
-fn bench_can_fit_in_schedule(c: &mut Criterion) {
-    bench_case_can_fit_in_schedule(c, "Little false", vec![30, 39, 50], &[11, 20, 39, 40]);
-    bench_case_can_fit_in_schedule(c, "Little true", vec![30, 39, 50], &[10, 20, 39, 40]);
-    // 4 hours, 3 hours
-    bench_case_can_fit_in_schedule(
-        c,
-        "Big false",
-        vec![240, 180],
-        &[20, 20, 25, 30, 50, 60, 225],
-    );
-    bench_case_can_fit_in_schedule(
-        c,
-        "Big true",
-        vec![240, 180],
-        &[20, 30, 30, 40, 50, 60, 70, 120],
-    );
-}
-
 fn bench_compute_all_sums(c: &mut Criterion) {
     let activity_durations = &[20, 30, 30, 40, 50, 60, 70, 80, 90, 120];
     c.bench_function("Compute all sums 10 activities", |b| {
@@ -52,5 +70,11 @@ fn bench_compute_all_sums(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_can_fit_in_schedule, bench_compute_all_sums);
+criterion_group!(
+    benches,
+    bench_can_fit_in_schedule,
+    bench_compute_all_sums,
+    bench_find_possible_beginnings
+);
+
 criterion_main!(benches);

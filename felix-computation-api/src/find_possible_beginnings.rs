@@ -31,13 +31,27 @@ impl SumAndDurationIndexes {
     }
 }
 
-/// TODO doc
-/// TODO make a struct {beginning, end}
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct WorkHourInMinutes {
+    beginning: u16,
+    end: u16,
+}
+
+impl WorkHourInMinutes {
+    pub fn new(beginning: u16, end: u16) -> WorkHourInMinutes {
+        WorkHourInMinutes { beginning, end }
+    }
+}
+
+/// Given the work hour beginnings, ends and durations, and activity durations,
+/// finds every possible starting time for every activity duration so that every activity
+/// can be inserted in one schedule.
+///
+/// Activity durations MUST BE SORTED IN ASCENDING ORDER.
 pub fn find_possible_beginnings(
-    work_hour_beginnings: Vec<u16>,
-    work_hour_ends: Vec<u16>,
-    work_hour_durations: Vec<u16>,
-    mut activity_durations: Vec<u16>,
+    work_hours: &[WorkHourInMinutes],
+    work_hour_durations: &[u16],
+    activity_durations: &[u16],
     minute_step: usize,
 ) -> ActivityBeginnignsGivenDuration {
     // Init result
@@ -47,7 +61,6 @@ pub fn find_possible_beginnings(
 
     // 1 - Compute all possible sums of activity durations (see tests)
     // Activity durations need to be sorted so that compute_all_sums output is sorted
-    activity_durations.sort();
     let all_duration_sums = compute_all_sums(&activity_durations);
     let time_which_can_be_wasted =
         work_hour_durations.iter().sum::<u16>() - activity_durations.iter().sum::<u16>();
@@ -75,7 +88,7 @@ pub fn find_possible_beginnings(
 
             // Iterate over each possible starting time in the work hour
             for mins_from_start in (0..last_time_we_need_to_check).step_by(minute_step) {
-                let mut new_work_hour_durations = work_hour_durations.clone();
+                let mut new_work_hour_durations = work_hour_durations.to_vec();
                 // Reduce the duration of the work interval by the duration of the activity
                 new_work_hour_durations[work_hour_index] -= activity_duration + mins_from_start;
                 if mins_from_start != 0 {
@@ -99,12 +112,12 @@ pub fn find_possible_beginnings(
                         .map(|&i| i as u16)
                         .collect::<HashSet<_>>(),
                 ) {
+                    let work_hour = work_hours[work_hour_index];
                     // The rest of the activities fit in the schedule.
                     // This insertion time is valid for the given duration.
-                    possible_beginnings
-                        .insert(work_hour_beginnings[work_hour_index] + mins_from_start);
+                    possible_beginnings.insert(work_hour.beginning + mins_from_start);
                     // Add the symmetry
-                    possible_beginnings.insert(work_hour_ends[work_hour_index] - mins_from_start);
+                    possible_beginnings.insert(work_hour.end - mins_from_start);
                 }
             }
         }

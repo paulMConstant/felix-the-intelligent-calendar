@@ -1,6 +1,9 @@
 use crate::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION_MINUTES};
 
-use felix_computation_api::find_possible_beginnings;
+use felix_computation_api::{
+    find_possible_beginnings,
+    find_possible_beginnings::{ActivityBeginnignsGivenDuration, WorkHourInMinutes},
+};
 
 /// Given the activities of an entity, computes the possible beginnings for a set duration.
 ///
@@ -8,21 +11,22 @@ use felix_computation_api::find_possible_beginnings;
 fn find_possible_beginnings(
     work_hours: &[TimeInterval],
     activity_durations: &[Time],
-) -> find_possible_beginnings::ActivityBeginnignsGivenDuration {
+) -> ActivityBeginnignsGivenDuration {
     // Turn time structs into minutes
-    let activity_durations = activity_durations
+    let mut activity_durations = activity_durations
         .iter()
         .map(|time| time.total_minutes())
         .collect::<Vec<_>>();
+    activity_durations.sort();
 
-    let work_hour_beginnings = work_hours
+    let work_hours_in_minutes = work_hours
         .iter()
-        .map(|&time_interval| time_interval.beginning().total_minutes())
-        .collect::<Vec<_>>();
-
-    let work_hour_ends = work_hours
-        .iter()
-        .map(|&time_interval| time_interval.end().total_minutes())
+        .map(|&time_interval| {
+            WorkHourInMinutes::new(
+                time_interval.beginning().total_minutes(),
+                time_interval.end().total_minutes(),
+            )
+        })
         .collect::<Vec<_>>();
 
     let work_hour_durations = work_hours
@@ -30,12 +34,10 @@ fn find_possible_beginnings(
         .map(|&time_interval| time_interval.duration().total_minutes())
         .collect::<Vec<_>>();
 
-    // TODO import struct {beginning, end} for work hours from felix_computation_api
     find_possible_beginnings::find_possible_beginnings(
-        work_hour_beginnings,
-        work_hour_ends,
-        work_hour_durations,
-        activity_durations,
+        &work_hours_in_minutes,
+        &work_hour_durations,
+        &activity_durations,
         MIN_TIME_DISCRETIZATION_MINUTES.into(),
     )
 }
