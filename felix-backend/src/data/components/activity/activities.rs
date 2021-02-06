@@ -2,16 +2,18 @@ use super::computation::id_computation::{compute_incompatible_ids, generate_next
 use super::{ActivityComputationData, ActivityMetadata};
 use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION};
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
-use felix_computation_api::find_possible_beginnings::ActivityBeginnignsGivenDuration;
+use felix_computation_api::find_possible_beginnings::ActivityBeginningsGivenDurationMinutes;
 
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct Activities {
     activities: HashMap<ActivityID, Activity>,
-    possible_beginnings_given_entity: HashMap<String, ActivityBeginnignsGivenDuration>,
+    possible_beginnings_given_entity:
+        Arc<Mutex<HashMap<String, ActivityBeginningsGivenDurationMinutes>>>,
 }
 
 impl Activities {
@@ -20,7 +22,7 @@ impl Activities {
     pub fn new() -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_given_entity: HashMap::new(),
+            possible_beginnings_given_entity: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -463,3 +465,11 @@ mod tests {
         }
     }
 }
+
+impl PartialEq for Activities {
+    fn eq(&self, other: &Self) -> bool {
+        self.activities == other.activities
+    }
+}
+
+impl Eq for Activities {}

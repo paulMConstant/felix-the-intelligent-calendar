@@ -112,3 +112,10 @@ fn from_n_times_min_discretization() {
         expected
     );
 }
+
+#[test]
+fn from_total_minutes() {
+    let total_minutes = 60 * 4 + 35;
+    let expected = Time::new(4, 35);
+    assert_eq!(Time::from_total_minutes(total_minutes), expected);
+}

@@ -11,7 +11,7 @@ use std::cmp::Ordering;
 /// # use std::mem::size_of;
 /// assert_eq!(size_of::<TimeInterval>(), 4);
 /// ```
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 pub struct TimeInterval {
     beginning: Time,
     end: Time,

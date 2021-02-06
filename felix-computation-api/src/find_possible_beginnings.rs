@@ -15,7 +15,7 @@ use std::collections::{HashMap, HashSet};
 
 /// Each entity has a set of possible insertion times for every activity duration it has.
 /// Times are represented in total minutes.
-pub type ActivityBeginnignsGivenDuration = HashMap<u16, HashSet<u16>>;
+pub type ActivityBeginningsGivenDurationMinutes = HashMap<u16, HashSet<u16>>;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SumAndDurationIndexes {
@@ -58,7 +58,7 @@ pub fn find_possible_beginnings(
     work_hours: &[WorkHourInMinutes],
     activity_durations: &[u16],
     minute_step: usize,
-) -> ActivityBeginnignsGivenDuration {
+) -> ActivityBeginningsGivenDurationMinutes {
     assert!(is_sorted(activity_durations));
 
     let work_hour_durations = work_hours
@@ -68,7 +68,7 @@ pub fn find_possible_beginnings(
     assert!(is_sorted(&work_hour_durations));
 
     // Init result
-    let mut activity_beginnings = ActivityBeginnignsGivenDuration::new();
+    let mut activity_beginnings = ActivityBeginningsGivenDurationMinutes::new();
 
     let n_activity_durations = activity_durations.len();
 

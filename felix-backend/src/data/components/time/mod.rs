@@ -2,6 +2,7 @@ pub mod time_interval;
 pub mod work_hours;
 
 use std::cmp::Ordering;
+use std::convert::TryInto;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
@@ -82,7 +83,26 @@ impl Time {
     /// ```
     #[must_use]
     pub fn from_n_times_min_discretization(n_times_min_discretization: i32) -> Time {
-        let total_minutes = n_times_min_discretization * MIN_TIME_DISCRETIZATION.minutes() as i32;
+        let total_minutes = n_times_min_discretization * MIN_TIME_DISCRETIZATION_MINUTES as i32;
+        Time::from_total_minutes(total_minutes.try_into().expect("Overflow error !"))
+    }
+
+    /// Creates a new time object from a total number of minutes.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the resulting time is invalid, i.e. not in [00:00, 24:00]
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use felix_backend::data::Time;
+    /// let total_minutes = 60 * 3 + 15;
+    /// let expected = Time::new(3, 15);
+    /// assert_eq!(Time::from_total_minutes(total_minutes), expected);
+    /// ```
+    #[must_use]
+    pub fn from_total_minutes(total_minutes: u16) -> Time {
         let hours = (total_minutes / 60) as i8;
         let minutes = (total_minutes % 60) as i8;
         Time::new(hours, minutes)

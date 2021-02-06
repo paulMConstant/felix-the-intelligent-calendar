@@ -1,6 +1,6 @@
 use felix_computation_api::find_possible_beginnings::{
     can_fit_in_schedule, compute_all_sums, find_possible_beginnings,
-    ActivityBeginnignsGivenDuration, SumAndDurationIndexes, WorkHourInMinutes,
+    ActivityBeginningsGivenDurationMinutes, SumAndDurationIndexes, WorkHourInMinutes,
 };
 
 use std::collections::HashSet;
@@ -125,12 +125,12 @@ fn test_find_possible_beginnings() {
 }
 
 /// Given activity durations and possible beginnings for each duration (parallel slices),
-/// create the corresponding ActivityBeginnignsGivenDuration struct.
+/// create the corresponding ActivityBeginningsGivenDurationMinutes struct.
 fn activity_beginnings_given_duration(
     activity_durations: &[u16],
     possible_beginnings: &[&[u16]],
-) -> ActivityBeginnignsGivenDuration {
-    let mut res = ActivityBeginnignsGivenDuration::new();
+) -> ActivityBeginningsGivenDurationMinutes {
+    let mut res = ActivityBeginningsGivenDurationMinutes::new();
     for (index, duration) in activity_durations.iter().enumerate() {
         res.insert(*duration, hashset_from_slice(possible_beginnings[index]));
     }
