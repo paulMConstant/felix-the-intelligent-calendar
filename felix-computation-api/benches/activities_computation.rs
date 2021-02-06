@@ -40,13 +40,13 @@ fn bench_can_fit_in_schedule(c: &mut Criterion) {
     bench_case_can_fit_in_schedule(
         c,
         "Can fit in schedule false",
-        vec![240, 180],
+        &[240, 180],
         &[20, 20, 25, 30, 50, 60, 225],
     );
     bench_case_can_fit_in_schedule(
         c,
         "Can fit in schedule true",
-        vec![240, 180],
+        &[240, 180],
         &[20, 30, 30, 40, 50, 60, 70, 120],
     );
 }
@@ -55,7 +55,7 @@ fn bench_can_fit_in_schedule(c: &mut Criterion) {
 fn bench_case_can_fit_in_schedule(
     c: &mut Criterion,
     bench_name: &str,
-    work_hour_durations: Vec<u16>,
+    work_hour_durations: &[u16],
     activity_durations: &[u16],
 ) {
     let all_activity_sums = compute_all_sums(activity_durations);
@@ -67,7 +67,7 @@ fn bench_case_can_fit_in_schedule(
             can_fit_in_schedule(
                 activity_durations.len(),
                 &all_activity_sums,
-                work_hour_durations.clone(),
+                work_hour_durations,
                 time_which_can_be_wasted,
                 HashSet::new(),
             )

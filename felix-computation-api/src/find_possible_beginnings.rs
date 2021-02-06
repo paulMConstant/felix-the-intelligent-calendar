@@ -10,6 +10,7 @@
 //! 5 - The rest of the activities can be inserted in the remaining slots if their is a combination
 //!   of duration sums which fit in the remaining slots.
 
+use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 /// Each entity has a set of possible insertion times for every activity duration it has.
@@ -81,19 +82,11 @@ pub fn find_possible_beginnings(
     //   rest of the durations can be put in the rest of the work hours.
     //   If it is possible, then the starting time is added to the result.
 
-    let mut activity_durations_checked = HashSet::new();
-
     // It is faster to copy u16 than to use references
-    for (activity_index, activity_duration) in activity_durations.iter().copied().enumerate() {
-        // If the computation has already been done for one duration, skip it
-        // Cannot use filter because of borrow checker
-        if activity_durations_checked.contains(&activity_duration) {
-            continue;
-        }
-        activity_durations_checked.insert(activity_duration);
+    for (activity_index, activity_duration) in
+        activity_durations.iter().unique().copied().enumerate()
+    {
         let mut possible_beginnings = HashSet::new();
-
-        // It is faster to copy u16 than to use references
         // The filter acts as both an early stop and safety
         // (prevents overflow in u16 substraction work_hour_duration - activity_duration)
         for (work_hour_index, work_hour_duration) in work_hour_durations
@@ -127,7 +120,7 @@ pub fn find_possible_beginnings(
                 if can_fit_in_schedule(
                     n_activity_durations,
                     &all_duration_sums,
-                    new_work_hour_durations,
+                    &new_work_hour_durations,
                     time_which_can_be_wasted,
                     [activity_index]
                         .iter()
@@ -182,7 +175,7 @@ pub fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
 pub fn can_fit_in_schedule(
     n_activity_durations: usize,
     all_duration_sums: &[SumAndDurationIndexes],
-    mut work_interval_durations: Vec<u16>,
+    work_interval_durations: &[u16],
     time_which_can_be_wasted: u16,
     used_indexes: HashSet<u16>,
 ) -> bool {
@@ -199,8 +192,8 @@ pub fn can_fit_in_schedule(
     // As we try to fit the biggest possible duration combination into it,
     // no activity will fit in the remaining time.
     // The time which remains is wasted.
-    let work_interval_duration = work_interval_durations
-        .pop()
+    let (&work_interval_duration, next_work_interval_durations) = work_interval_durations
+        .split_last()
         .expect("Popping from empty work interval duration ! This case should be handled before");
 
     // Because the sums are sorted decreasingly, any sum that is shorter than this one will
@@ -233,7 +226,7 @@ pub fn can_fit_in_schedule(
             time_which_can_be_wasted - (work_interval_duration - duration_sum.sum_minutes);
         // Shortcut: we do not want to iterate over all durations if we know that they are greater
         // than the next work hour.
-        let new_duration_sums = if let Some(&duration) = work_interval_durations.last() {
+        let new_duration_sums = if let Some(&duration) = next_work_interval_durations.last() {
             if duration < duration_sum.sum_minutes {
                 // We can start from here
                 &all_duration_sums[index..]
@@ -247,7 +240,7 @@ pub fn can_fit_in_schedule(
         if can_fit_in_schedule(
             n_activity_durations,
             new_duration_sums,
-            work_interval_durations.clone(),
+            next_work_interval_durations,
             new_time_which_can_be_wasted,
             new_used_indexes,
         ) {

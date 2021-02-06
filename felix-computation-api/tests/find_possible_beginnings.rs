@@ -33,15 +33,15 @@ fn test_compute_all_sums() {
 #[test]
 fn test_can_fit_in_schedule() {
     // ARRAYS SORTED ASCENDING
-    test_case_can_fit_in_schedule(vec![30, 50], &[20, 40], true);
-    test_case_can_fit_in_schedule(vec![30, 39], &[20, 40], false);
-    test_case_can_fit_in_schedule(vec![30, 39, 50], &[20, 39, 40], true);
-    test_case_can_fit_in_schedule(vec![30, 39, 50], &[10, 20, 39, 40], true);
-    test_case_can_fit_in_schedule(vec![30, 39, 50], &[11, 20, 39, 40], false);
+    test_case_can_fit_in_schedule(&[30, 50], &[20, 40], true);
+    test_case_can_fit_in_schedule(&[30, 39], &[20, 40], false);
+    test_case_can_fit_in_schedule(&[30, 39, 50], &[20, 39, 40], true);
+    test_case_can_fit_in_schedule(&[30, 39, 50], &[10, 20, 39, 40], true);
+    test_case_can_fit_in_schedule(&[30, 39, 50], &[11, 20, 39, 40], false);
 }
 
 fn test_case_can_fit_in_schedule(
-    work_hour_durations: Vec<u16>,
+    work_hour_durations: &[u16],
     activity_durations: &[u16],
     expected: bool,
 ) {
