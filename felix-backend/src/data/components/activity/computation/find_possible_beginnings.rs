@@ -9,7 +9,7 @@ use felix_computation_api::{
 ///
 /// This is a pre-computation: it takes into account entities separately, without conflicts.
 fn find_possible_beginnings(
-    work_hours: &[TimeInterval],
+    mut work_hours: Vec<TimeInterval>,
     activity_durations: &[Time],
 ) -> ActivityBeginnignsGivenDuration {
     // Turn time structs into minutes
@@ -19,6 +19,7 @@ fn find_possible_beginnings(
         .collect::<Vec<_>>();
     activity_durations.sort();
 
+    work_hours.sort_by(|a, b| a.duration().cmp(&b.duration()));
     let work_hours_in_minutes = work_hours
         .iter()
         .map(|&time_interval| {
@@ -29,14 +30,8 @@ fn find_possible_beginnings(
         })
         .collect::<Vec<_>>();
 
-    let work_hour_durations = work_hours
-        .iter()
-        .map(|&time_interval| time_interval.duration().total_minutes())
-        .collect::<Vec<_>>();
-
     find_possible_beginnings::find_possible_beginnings(
         &work_hours_in_minutes,
-        &work_hour_durations,
         &activity_durations,
         MIN_TIME_DISCRETIZATION_MINUTES.into(),
     )

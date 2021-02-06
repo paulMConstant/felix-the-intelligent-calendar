@@ -7,17 +7,29 @@ use felix_computation_api::find_possible_beginnings::{
 use std::collections::HashSet;
 
 fn bench_find_possible_beginnings(c: &mut Criterion) {
-    c.bench_function("Find possible beginnings", |b| {
+    c.bench_function("Find possible beginnings 10 activities 4 work hours", |b| {
         b.iter(|| {
             find_possible_beginnings(
                 &[
                     WorkHourInMinutes::new(10, 30),
                     WorkHourInMinutes::new(50, 120),
-                    WorkHourInMinutes::new(250, 450),
                     WorkHourInMinutes::new(800, 935),
+                    WorkHourInMinutes::new(250, 450),
                 ],
-                &[20, 70, 200, 135],
                 &[15, 15, 20, 20, 30, 30, 40, 45, 60, 80],
+                5,
+            )
+        })
+    });
+
+    c.bench_function("Find possible beginnings 12 activities 2 work hours", |b| {
+        b.iter(|| {
+            find_possible_beginnings(
+                &[
+                    WorkHourInMinutes::new(250, 550),
+                    WorkHourInMinutes::new(800, 1235),
+                ],
+                &[25, 25, 30, 30, 40, 40, 45, 45, 60, 80, 90, 120],
                 5,
             )
         })

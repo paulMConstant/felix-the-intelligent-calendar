@@ -41,6 +41,10 @@ impl WorkHourInMinutes {
     pub fn new(beginning: u16, end: u16) -> WorkHourInMinutes {
         WorkHourInMinutes { beginning, end }
     }
+
+    pub fn duration(&self) -> u16 {
+        self.end - self.beginning
+    }
 }
 
 /// Given the work hour beginnings, ends and durations, and activity durations,
@@ -48,12 +52,20 @@ impl WorkHourInMinutes {
 /// can be inserted in one schedule.
 ///
 /// Activity durations MUST BE SORTED IN ASCENDING ORDER.
+/// Work hours (beginning, end, durations) MUST BE SORTED IN ASCENDING ORDER.
 pub fn find_possible_beginnings(
     work_hours: &[WorkHourInMinutes],
-    work_hour_durations: &[u16],
     activity_durations: &[u16],
     minute_step: usize,
 ) -> ActivityBeginnignsGivenDuration {
+    assert!(is_sorted(activity_durations));
+
+    let work_hour_durations = work_hours
+        .iter()
+        .map(|work_hour| work_hour.duration())
+        .collect::<Vec<_>>();
+    assert!(is_sorted(&work_hour_durations));
+
     // Init result
     let mut activity_beginnings = ActivityBeginnignsGivenDuration::new();
 
@@ -71,25 +83,35 @@ pub fn find_possible_beginnings(
 
     let mut activity_durations_checked = HashSet::new();
 
-    for duration_index in 0..activity_durations.len() {
+    // It is faster to copy u16 than to use references
+    for (activity_index, activity_duration) in activity_durations.iter().copied().enumerate() {
         // If the computation has already been done for one duration, skip it
-        let activity_duration = activity_durations[duration_index];
+        // Cannot use filter because of borrow checker
         if activity_durations_checked.contains(&activity_duration) {
             continue;
         }
         activity_durations_checked.insert(activity_duration);
         let mut possible_beginnings = HashSet::new();
 
-        for work_hour_index in 0..work_hour_durations.len() {
-            let work_hour_duration = work_hour_durations[work_hour_index];
-
+        // It is faster to copy u16 than to use references
+        // The filter acts as both an early stop and safety
+        // (prevents overflow in u16 substraction work_hour_duration - activity_duration)
+        for (work_hour_index, work_hour_duration) in work_hour_durations
+            .iter()
+            .copied()
+            .enumerate()
+            .filter(|&index_duration_tuple| index_duration_tuple.1 >= activity_duration)
+        {
             // Check only the first half of the work hour because of symmetry
-            let last_time_we_need_to_check = work_hour_duration / 2;
+            let last_time_we_need_to_check = (work_hour_duration - activity_duration) / 2;
 
             // Iterate over each possible starting time in the work hour
-            for mins_from_start in (0..last_time_we_need_to_check).step_by(minute_step) {
+            // Note the inclusive range (a..=b) because we want to take into account the
+            //    last last_time_we_need_to_check
+            for mins_from_start in (0..=last_time_we_need_to_check).step_by(minute_step) {
                 let mut new_work_hour_durations = work_hour_durations.to_vec();
                 // Reduce the duration of the work interval by the duration of the activity
+
                 new_work_hour_durations[work_hour_index] -= activity_duration + mins_from_start;
                 if mins_from_start != 0 {
                     // We have to put back the minutes we took above in a separate duration
@@ -107,7 +129,7 @@ pub fn find_possible_beginnings(
                     &all_duration_sums,
                     new_work_hour_durations,
                     time_which_can_be_wasted,
-                    [duration_index]
+                    [activity_index]
                         .iter()
                         .map(|&i| i as u16)
                         .collect::<HashSet<_>>(),
@@ -117,7 +139,7 @@ pub fn find_possible_beginnings(
                     // This insertion time is valid for the given duration.
                     possible_beginnings.insert(work_hour.beginning + mins_from_start);
                     // Add the symmetry
-                    possible_beginnings.insert(work_hour.end - mins_from_start);
+                    possible_beginnings.insert(work_hour.end - mins_from_start - activity_duration);
                 }
             }
         }
@@ -235,4 +257,12 @@ pub fn can_fit_in_schedule(
     }
     // At this point, we did not fit every duration in the interval.
     false
+}
+
+/// Used to make sure that the input data is sorted.
+fn is_sorted<T>(data: &[T]) -> bool
+where
+    T: Ord,
+{
+    data.windows(2).all(|w| w[0] <= w[1])
 }

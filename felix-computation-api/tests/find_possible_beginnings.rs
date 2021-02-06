@@ -1,5 +1,6 @@
 use felix_computation_api::find_possible_beginnings::{
-    can_fit_in_schedule, compute_all_sums, SumAndDurationIndexes,
+    can_fit_in_schedule, compute_all_sums, find_possible_beginnings,
+    ActivityBeginnignsGivenDuration, SumAndDurationIndexes, WorkHourInMinutes,
 };
 
 use std::collections::HashSet;
@@ -61,5 +62,81 @@ fn test_case_can_fit_in_schedule(
 
 #[test]
 fn test_find_possible_beginnings() {
-    // TODO
+    // Activity fits perfectly in the work hour
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(10, 30)], &[20], 5);
+    let expected = activity_beginnings_given_duration(&[20], &[&[10]]);
+    assert_eq!(res, expected);
+
+    // Two activities with same duration - tests symmetry
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(10, 30)], &[10, 10], 5);
+    let expected = activity_beginnings_given_duration(&[10], &[&[10, 20]]);
+    assert_eq!(res, expected);
+
+    // Activity bigger than a work hour
+    // Work hours are sorted in ascending order.
+    // Note that the sum of activity durations should always be less than that of the work hours.
+    //     This should be tested in felix_backend::data::Data.
+    let res = find_possible_beginnings(
+        &[
+            WorkHourInMinutes::new(200, 220),
+            WorkHourInMinutes::new(300, 400),
+        ],
+        &[100],
+        5,
+    );
+    let expected = activity_beginnings_given_duration(&[100], &[&[300]]);
+    assert_eq!(res, expected);
+
+    // Two different activity durations
+    let res = find_possible_beginnings(
+        &[
+            WorkHourInMinutes::new(1300, 1400),
+            WorkHourInMinutes::new(1000, 1200),
+        ],
+        &[50, 150],
+        5,
+    );
+    let expected = activity_beginnings_given_duration(
+        &[50, 150],
+        &[
+            // Possible beginnings for 50
+            &[
+                1300, 1305, 1310, 1315, 1320, 1325, 1330, 1335, 1340, 1345, 1350, 1000, 1150,
+            ],
+            // Possible beginnings for 150
+            &[
+                1000, 1005, 1010, 1015, 1020, 1025, 1030, 1035, 1040, 1045, 1050,
+            ],
+        ],
+    );
+    assert_eq!(res, expected);
+
+    // Activity can fit nowhere
+    let res = find_possible_beginnings(
+        &[
+            WorkHourInMinutes::new(300, 350),
+            WorkHourInMinutes::new(100, 200),
+        ],
+        &[125],
+        5,
+    );
+    let expected = activity_beginnings_given_duration(&[125], &[&[]]);
+    assert_eq!(res, expected);
+}
+
+/// Given activity durations and possible beginnings for each duration (parallel slices),
+/// create the corresponding ActivityBeginnignsGivenDuration struct.
+fn activity_beginnings_given_duration(
+    activity_durations: &[u16],
+    possible_beginnings: &[&[u16]],
+) -> ActivityBeginnignsGivenDuration {
+    let mut res = ActivityBeginnignsGivenDuration::new();
+    for (index, duration) in activity_durations.iter().enumerate() {
+        res.insert(*duration, hashset_from_slice(possible_beginnings[index]));
+    }
+    res
+}
+
+fn hashset_from_slice(slice: &[u16]) -> HashSet<u16> {
+    slice.iter().map(|&i| i as u16).collect::<HashSet<_>>()
 }
