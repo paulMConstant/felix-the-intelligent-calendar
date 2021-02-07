@@ -17,7 +17,7 @@ type WorkHoursAndActivityDurationsSortedCache =
 /// Keeps track of which activity possible beginnings are out of date
 /// and handles the computation.
 ///
-/// This class is supposed to run on a single thread.
+/// This class is NOT thread-safe, it only runs the computations in a separate thread pool.
 #[derive(Debug)]
 pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityID, bool>,

@@ -253,7 +253,7 @@ impl Activities {
         // TODO update possible insertion times
     }
 
-    /// Returns data ready for computation.
+    /// Returns data ready for auto-insertion of all activities.
     ///
     /// The ids of incompatible activities are turned into indexes.
     #[must_use]
