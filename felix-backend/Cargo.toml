@@ -9,6 +9,8 @@ workspace = "../"
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 paste = "1.0.4"
 felix-computation-api = { path = "../felix-computation-api" }
+num_cpus = "1.0"
+rayon = "1.5"
 
 [dev-dependencies]
 test-utils = { path = "test-utils" }

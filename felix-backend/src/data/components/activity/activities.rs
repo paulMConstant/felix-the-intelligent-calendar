@@ -1,28 +1,34 @@
-use super::computation::id_computation::{compute_incompatible_ids, generate_next_id};
+use super::computation::{
+    id_computation::{compute_incompatible_ids, generate_next_id},
+    possible_beginnings_updater::PossibleBeginningsUpdater,
+};
 use super::{ActivityComputationData, ActivityMetadata};
+
 use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION};
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
+
 use felix_computation_api::find_possible_beginnings::ActivityBeginningsGivenDurationMinutes;
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Activities {
     activities: HashMap<ActivityID, Activity>,
-    possible_beginnings_given_entity:
-        Arc<Mutex<HashMap<String, ActivityBeginningsGivenDurationMinutes>>>,
+    possible_beginnings_given_entity: HashMap<String, ActivityBeginningsGivenDurationMinutes>,
+    possible_beginnings_updater: PossibleBeginningsUpdater,
 }
 
 impl Activities {
     /// Initializes the Activity collection.
     #[must_use]
-    pub fn new() -> Activities {
+    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_given_entity: Arc::new(Mutex::new(HashMap::new())),
+            possible_beginnings_given_entity: HashMap::new(),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(thread_pool),
         }
     }
 
@@ -288,9 +294,13 @@ mod tests {
 
     #[test]
     fn incompatible_ids() {
-        let mut activities = Activities::new();
-        let id_a = activities.add("a".to_owned()).id();
-        let id_b = activities.add("b".to_owned()).id();
+        let mut activity_collection = Activities::new(Rc::new(
+            rayon::ThreadPoolBuilder::new()
+                .build()
+                .expect("Could not build rayon::ThreadPool"),
+        ));
+        let id_a = activity_collection.add("a".to_owned()).id();
+        let id_b = activity_collection.add("b".to_owned()).id();
 
         let mut entities = Entities::new();
         let entity_a = "A".to_owned();
@@ -303,20 +313,20 @@ mod tests {
             .expect("Could not add entity");
 
         // Insert the same entity in both activities
-        activities
+        activity_collection
             .add_entity(id_a, entity_a.clone())
             .expect("Could not add entity to activity");
-        activities
+        activity_collection
             .add_entity(id_b, entity_a.clone())
             .expect("Could not add entity to activity");
 
         // At this point : id_a contains {a}, id_b contains {a}
-        let incompatible_a = activities
+        let incompatible_a = activity_collection
             .get_by_id(id_a)
             .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
-        let incompatible_b = activities
+        let incompatible_b = activity_collection
             .get_by_id(id_b)
             .expect("Could not get activity by id")
             .computation_data
@@ -327,17 +337,17 @@ mod tests {
         assert_eq!(incompatible_b[0], id_a);
 
         // Remove the entity in one activity
-        activities
+        activity_collection
             .remove_entity(id_a, &entity_a)
             .expect("Could not remove entity from activity");
 
         // At this point : id_a contains {}, id_b contains {a}
-        let incompatible_a = activities
+        let incompatible_a = activity_collection
             .get_by_id(id_a)
             .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
-        let incompatible_b = activities
+        let incompatible_b = activity_collection
             .get_by_id(id_b)
             .expect("Could not get activity by id")
             .computation_data
@@ -346,17 +356,17 @@ mod tests {
         assert_eq!(incompatible_b.len(), 0);
 
         // Add non-confictual entity
-        activities
+        activity_collection
             .add_entity(id_a, entity_b.clone())
             .expect("Could not add entity to activity");
 
         // At this point : id_a contains {b}, id_b contains {a}
-        let incompatible_a = activities
+        let incompatible_a = activity_collection
             .get_by_id(id_a)
             .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
-        let incompatible_b = activities
+        let incompatible_b = activity_collection
             .get_by_id(id_b)
             .expect("Could not get activity by id")
             .computation_data
@@ -365,17 +375,17 @@ mod tests {
         assert_eq!(incompatible_b.len(), 0);
 
         // Add conflictual entity again
-        activities
+        activity_collection
             .add_entity(id_b, entity_b)
             .expect("Could not add entity to activity");
 
         // At this point : id_a contains {b}, id_b contains {a, b}
-        let incompatible_a = activities
+        let incompatible_a = activity_collection
             .get_by_id(id_a)
             .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
-        let incompatible_b = activities
+        let incompatible_b = activity_collection
             .get_by_id(id_b)
             .expect("Could not get activity by id")
             .computation_data
@@ -386,23 +396,23 @@ mod tests {
         assert_eq!(incompatible_b[0], id_a);
 
         // Add third activity
-        let id_c = activities.add("c".to_owned()).id();
-        activities
+        let id_c = activity_collection.add("c".to_owned()).id();
+        activity_collection
             .add_entity(id_c, entity_a)
             .expect("Could not add entity to activity");
 
         // At this point : id_a contains {b}, id_b contains {a, b}, id_c contains {a}
-        let incompatible_a = activities
+        let incompatible_a = activity_collection
             .get_by_id(id_a)
             .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
-        let incompatible_b = activities
+        let incompatible_b = activity_collection
             .get_by_id(id_b)
             .expect("Could not get activity by id")
             .computation_data
             .incompatible_activity_ids();
-        let incompatible_c = activities
+        let incompatible_c = activity_collection
             .get_by_id(id_c)
             .expect("Could not get activity by id")
             .computation_data
@@ -420,7 +430,11 @@ mod tests {
 
     #[test]
     fn test_fetch_computation() {
-        let mut activity_collection = Activities::new();
+        let mut activity_collection = Activities::new(Rc::new(
+            rayon::ThreadPoolBuilder::new()
+                .build()
+                .expect("Could not build rayon::ThreadPool"),
+        ));
         activity_collection.add("0".to_owned());
         activity_collection.add("1".to_owned());
         activity_collection.add("2".to_owned());
@@ -466,10 +480,22 @@ mod tests {
     }
 }
 
+impl Clone for Activities {
+    fn clone(&self) -> Self {
+        Activities {
+            activities: self.activities.clone(),
+            possible_beginnings_given_entity: HashMap::new(),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(Rc::new(
+                rayon::ThreadPoolBuilder::new()
+                    .build()
+                    .expect("Could not build rayon::ThreadPool"),
+            )),
+        }
+    }
+}
+
 impl PartialEq for Activities {
     fn eq(&self, other: &Self) -> bool {
         self.activities == other.activities
     }
 }
-
-impl Eq for Activities {}

@@ -2,7 +2,7 @@ use crate::data::{Time, TimeInterval};
 
 use felix_computation_api::find_possible_beginnings::WorkHourInMinutes;
 
-#[derive(Clone, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct WorkHoursAndActivityDurationsSorted {
     work_hours: Vec<TimeInterval>,
     activity_durations: Vec<Time>,

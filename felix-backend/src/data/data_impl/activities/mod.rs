@@ -237,7 +237,6 @@ impl Data {
             .borrow_mut()
             .emit_group_added_to_activity(self, &self.activity(id)?);
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Removes the group with the formatted given name from the activity with the given id.

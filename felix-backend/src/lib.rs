@@ -10,6 +10,8 @@
 //! * Summer camps
 //! * Any organization with resources to manage (rooms, meetings...)
 
+extern crate num_cpus;
+
 /// Backend module which performs calculations to generate schedules and prevent errors.
 pub mod data;
 
