@@ -37,7 +37,6 @@ impl Data {
         self.events().borrow_mut().emit_work_hours_changed(self);
         self.queue_entities_on_global_work_hour_change()?;
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Removes the given time interval from the work hours.

@@ -279,7 +279,6 @@ impl Activities {
         concerned_activity_id: ActivityID,
     ) -> Result<Option<HashSet<Time>>> {
         let concerned_activity = self.get_by_id(concerned_activity_id)?;
-
         if self
             .possible_beginnings_updater
             .activity_beginnings_are_up_to_date(&concerned_activity_id)
@@ -294,6 +293,17 @@ impl Activities {
             let maybe_result = self
                 .possible_beginnings_updater
                 .poll_and_fuse_possible_beginnings(schedules_of_participants, &concerned_activity);
+
+            if maybe_result.is_some() {
+                let result = maybe_result
+                    .clone()
+                    .expect("Maybe result should be some but is not");
+                let concerned_activity = self.get_mut_by_id(concerned_activity_id)?;
+                concerned_activity
+                    .computation_data
+                    .set_possible_insertion_times_if_no_conflict(result);
+            }
+
             Ok(maybe_result)
         }
     }

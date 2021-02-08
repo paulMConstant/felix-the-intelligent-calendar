@@ -12,6 +12,7 @@ impl App {
     pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
         self.set_activity_try_insert_callback();
+        self.set_activity_get_possible_insertions_callback();
 
         self.connect_clean_show_schedule_entry();
     }
@@ -79,7 +80,7 @@ impl App {
             .set_activity_try_insert_callback(Arc::new(Box::new(
                 clone!(@strong data => move
                         |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
-            let data = data.lock().unwrap();
+            let mut data = data.lock().unwrap();
             let activity = data.activity(activity_id)
                 .expect("The activity we are inserting does not exist");
 
@@ -88,16 +89,38 @@ impl App {
                 return;
             }
 
-            // TODO replace with data.possible_insertion_beginnings_of(ActivityID)
-            if activity.possible_insertion_beginnings().contains(&insertion_time) == false {
-                // Inserting activity at wrong time
-                return;
+            let maybe_possible_insertion_times = data
+                .possible_insertion_times_of_activity(activity_id)
+                .expect("Trying to insert activity which does not exist !");
+
+            if let Some(possible_insertion_times) = maybe_possible_insertion_times {
+                println!("Possible insertion times {:?}", possible_insertion_times);
+                if possible_insertion_times.contains(&insertion_time) == false {
+                    // Inserting activity at wrong time
+                    return;
+                }
+                // TODO
+                //data.insert_activity(activity_id, insertion_time)
+                    //.expect("Error while inserting activity, should have been checked for);
+                println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
             }
-            // TODO
-             //data.insert_activity(activity_id, insetion_time)
-                 //.expect("Error while inserting activity, should have been checked for);
-            println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
         }))));
+    }
+
+    fn set_activity_get_possible_insertions_callback(&self) {
+        let data = self.data.clone();
+
+        self.ui
+            .lock()
+            .unwrap()
+            .set_activity_get_possible_insertions_callback(Arc::new(Box::new(
+                        clone!(@strong data => move
+                               |id: ActivityID| {
+            data.lock().unwrap()
+                .possible_insertion_times_of_activity(id)
+                .expect("Trying to get possible insertion times of activity which does not exist !")
+           })
+        )));
     }
 
     fn connect_clean_show_schedule_entry(&self) {

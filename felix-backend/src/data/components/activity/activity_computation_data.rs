@@ -64,6 +64,16 @@ impl ActivityComputationData {
         self.incompatible_activity_ids = incompatible_ids;
     }
 
+    /// Simple setter for possible beginnings if no conflicts.
+    ///
+    /// Does not perform any check, the activities collection does it.
+    pub fn set_possible_insertion_times_if_no_conflict(
+        &mut self,
+        possible_insertion_times_if_no_conflict: HashSet<Time>,
+    ) {
+        self.possible_insertion_times_if_no_conflict = possible_insertion_times_if_no_conflict;
+    }
+
     /// Inserts the activity at given time.
     ///
     /// Does not perform any checks, the activity collection does it.

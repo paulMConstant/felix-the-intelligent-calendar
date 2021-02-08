@@ -1,6 +1,6 @@
 use crate::data::{
     computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
-    ActivityID, Data, Activity,
+    Activity, ActivityID, Data,
 };
 use crate::errors::Result;
 
@@ -12,7 +12,8 @@ impl Data {
     /// hours were modified.
     #[must_use]
     pub(crate) fn queue_entities_on_global_work_hour_change(&mut self) -> Result<()> {
-        let entities_to_queue = self.entities_sorted()
+        let entities_to_queue = self
+            .entities_sorted()
             .iter()
             .filter(|entity| entity.custom_work_hours().is_empty())
             .map(|entity| entity.name())
@@ -22,7 +23,7 @@ impl Data {
 
     /// Starts the computation of the possible beginnings of the given activity.
     #[must_use]
-    pub(crate) fn queue_activity(&mut self, activity: &Activity) -> Result<()> {
+    pub(crate) fn queue_activity_participants(&mut self, activity: &Activity) -> Result<()> {
         self.queue_entities(activity.entities_sorted())
     }
 
@@ -41,7 +42,7 @@ impl Data {
 
     /// Given a vector of entities, outputs their work hours and activity durations.
     #[must_use]
-    fn work_hours_and_activity_durations_from_entities(
+    pub(crate) fn work_hours_and_activity_durations_from_entities(
         &self,
         entities: &[String],
     ) -> Result<Vec<WorkHoursAndActivityDurationsSorted>> {

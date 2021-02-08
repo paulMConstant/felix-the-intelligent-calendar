@@ -34,8 +34,12 @@ impl Ui {
 
     fn connect_drag_begin(&self) {
         fetch_from!(self, activities_tree_view);
+        let get_possible_insertions_callback = &self.get_possible_insertions_callback;
+
         activities_tree_view.connect_drag_begin(
-            clone!(@strong activities_tree_view => move |treeview, drag_context| {
+            clone!(@strong activities_tree_view, @strong get_possible_insertions_callback => move
+                   |treeview, drag_context| {
+            // 1. Initialize drag item
             // Create pixbuf
             let color = gdk_pixbuf::Colorspace::Rgb;
             let pixbuf = gdk_pixbuf::Pixbuf::new(color, false, 8, DRAG_WIDTH, DRAG_HEIGHT)
@@ -71,6 +75,15 @@ impl Ui {
             drag_context.set_hotspot(DRAG_WIDTH / 2, 0); // TODO does not work
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
+            // 2. Draw possible activity beginnings
+            let selected_activity_id = get_selection_from_treeview(&activities_tree_view,
+                                                                   ACTIVITY_ID_COLUMN)
+                .expect("Dragging an activity when no activity is selected")
+                .parse::<ActivityID>()
+                .expect("Error when parsing activity ID from activities model");
+
+            let possible_insertion_times = get_possible_insertions_callback(selected_activity_id);
+            println!("Drag start {:?}", possible_insertion_times);
         }));
     }
 

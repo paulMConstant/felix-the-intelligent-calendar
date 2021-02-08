@@ -5,6 +5,8 @@ use super::helpers::clean_string;
 use crate::data::{Activity, ActivityID, Data, Time};
 use crate::errors::Result;
 
+use std::collections::HashSet;
+
 /// Operations on activities
 impl Data {
     /// Returns the activities, sorted by name.
@@ -36,6 +38,26 @@ impl Data {
             .cloned()
             .filter(|activity| activity.entities_sorted().contains(&entity_name))
             .collect())
+    }
+
+    /// Returns the possible insertion times of an activity.
+    /// If they are not calculated, returns Ok(None).
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity is not found.
+    #[must_use]
+    pub fn possible_insertion_times_of_activity(
+        &mut self,
+        id: ActivityID,
+    ) -> Result<Option<HashSet<Time>>> {
+        let activity = self.activities.get_by_id(id)?;
+        let participants = activity.entities_sorted();
+
+        self.activities.possible_insertion_times_of_activity(
+            self.work_hours_and_activity_durations_from_entities(&participants)?,
+            id,
+        )
     }
 
     /// Adds an activity with the formatted given name.
@@ -195,7 +217,7 @@ impl Data {
         self.queue_entities(vec![entity_name])?;
         // Queue the activity because it is not included in the entities' activities anymore
         let activity = self.activity(id)?;
-        self.queue_activity(&activity)?;
+        self.queue_activity_participants(&activity)?;
 
         self.events()
             .borrow_mut()
@@ -248,7 +270,7 @@ impl Data {
         self.activities.add_group(id, clean_string(group_name)?)?;
 
         let activity = self.activity(id)?;
-        self.queue_activity(&activity)?;
+        self.queue_activity_participants(&activity)?;
 
         self.events()
             .borrow_mut()
@@ -300,7 +322,7 @@ impl Data {
         self.activities.remove_group(id, &group_name)?;
 
         let activity = self.activity(id)?;
-        self.queue_activity(&activity)?;
+        self.queue_activity_participants(&activity)?;
 
         self.events()
             .borrow_mut()
@@ -367,8 +389,7 @@ impl Data {
         self.activities.set_duration(id, new_duration)?;
 
         let activity = self.activity(id)?;
-        self.queue_activity(&activity)?;
-        // TODO for each entity in the activity update schedules
+        self.queue_activity_participants(&activity)?;
         self.events()
             .borrow_mut()
             .emit_activity_duration_changed(self, &activity);

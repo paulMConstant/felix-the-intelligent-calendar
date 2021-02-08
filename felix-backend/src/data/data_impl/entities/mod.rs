@@ -350,12 +350,12 @@ impl Data {
         )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)?;
+        self.queue_entities(vec![entity_name.clone()])?;
 
         self.events()
             .borrow_mut()
             .emit_custom_work_hours_changed(self);
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Removes the given custom work interval for the entity with the formatted given name.
@@ -400,11 +400,12 @@ impl Data {
         )?;
         self.entities
             .remove_custom_work_interval_for(&entity_name, interval)?;
+        self.queue_entities(vec![entity_name.clone()])?;
+
         self.events()
             .borrow_mut()
             .emit_custom_work_hours_changed(self);
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Replaces the given time interval with the new one for the entity with the given formatted
@@ -450,10 +451,12 @@ impl Data {
 
         self.entities
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
+
+        self.queue_entities(vec![entity_name.clone()])?;
+
         self.events()
             .borrow_mut()
             .emit_custom_work_hours_changed(self);
         Ok(())
-        // TODO update possible insertion times
     }
 }
