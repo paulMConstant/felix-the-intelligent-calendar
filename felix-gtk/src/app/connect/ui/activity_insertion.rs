@@ -88,6 +88,7 @@ impl App {
                 return;
             }
 
+            // TODO replace with data.possible_insertion_beginnings_of(ActivityID)
             if activity.possible_insertion_beginnings().contains(&insertion_time) == false {
                 // Inserting activity at wrong time
                 return;

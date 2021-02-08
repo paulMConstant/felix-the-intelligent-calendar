@@ -149,7 +149,6 @@ pub fn find_possible_beginnings(
 /// # Panics
 ///
 /// Panics if the combinatorial is too high.
-/// Panics if the durations are not sorted in ascending order.
 pub fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
     let pow_base: usize = 2;
     if let Some(set_size) = pow_base.checked_pow(durations.len() as u32) {
