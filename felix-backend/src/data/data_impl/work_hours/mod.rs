@@ -35,6 +35,7 @@ impl Data {
     pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.work_hours.add_work_interval(interval)?;
         self.events().borrow_mut().emit_work_hours_changed(self);
+        self.queue_entities_on_global_work_hour_change()?;
         Ok(())
         // TODO update possible insertion times
     }
@@ -66,8 +67,8 @@ impl Data {
         self.check_entity_without_enough_time_to_remove_interval(interval.duration())?;
         self.work_hours.remove_work_interval(interval)?;
         self.events().borrow_mut().emit_work_hours_changed(self);
+        self.queue_entities_on_global_work_hour_change()?;
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Replaces the given time interval with a new one.
@@ -104,7 +105,7 @@ impl Data {
         self.work_hours
             .update_work_interval(old_interval, new_interval)?;
         self.events().borrow_mut().emit_work_hours_changed(self);
+        self.queue_entities_on_global_work_hour_change()?;
         Ok(())
-        // TODO update possible insertion times
     }
 }

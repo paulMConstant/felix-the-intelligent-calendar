@@ -96,13 +96,16 @@ impl Data {
     /// ```
     #[must_use]
     pub fn remove_activity(&mut self, id: ActivityID) -> Result<()> {
-        let position_of_removed_activity = self
-            .activities_sorted()
+        let activities = self.activities_sorted();
+        let position_of_removed_activity = activities
             .into_iter()
             .position(|activity| activity.id() == id);
+
+        let impacted_entities = self.activity(id)?.entities_sorted();
         self.activities.remove(id)?;
 
-        // TODO for each entity in the activity, queue their work hours and invalidate all of their activities
+        self.queue_entities(impacted_entities)?;
+
         let position_of_removed_activity = position_of_removed_activity.expect(
             "If the activity was removed then it existed, therefore position should be valid",
         );
@@ -146,8 +149,9 @@ impl Data {
     {
         let entity_name = clean_string(entity_name)?;
         self.check_has_enough_time_for_activity(id, &entity_name)?;
-        self.activities.add_entity(id, entity_name)?;
-        // TODO queue this entity and invalidate each of its activities
+        self.activities.add_entity(id, entity_name.clone())?;
+        self.queue_entities(vec![entity_name])?;
+
         self.events()
             .borrow_mut()
             .emit_entity_added_to_activity(self, &self.activity(id)?);
@@ -187,10 +191,15 @@ impl Data {
         let entity_name = self.entity(entity_name)?.name();
         // Remove the entity from the activity
         self.activities.remove_entity(id, &entity_name)?;
-        // TODO queue this entity and invalidate each of its activities
+
+        self.queue_entities(vec![entity_name])?;
+        // Queue the activity because it is not included in the entities' activities anymore
+        let activity = self.activity(id)?;
+        self.queue_activity(&activity)?;
+
         self.events()
             .borrow_mut()
-            .emit_entity_removed_from_activity(self, &self.activity(id)?);
+            .emit_entity_removed_from_activity(self, &activity);
         Ok(())
     }
 
@@ -232,17 +241,18 @@ impl Data {
         // Add each entity in the group to the activity.
         // We do not care about the result: if the entity is already in the activity, it is fine.
         for entity_name in entities {
-            // TODO if Err:AlreadyIn don't queue the work hours
             let _ = self.activities.add_entity(id, entity_name);
         }
 
         // Add the group to the activity
         self.activities.add_group(id, clean_string(group_name)?)?;
 
-        // TODO queue added entities and invalidate all of their activities
+        let activity = self.activity(id)?;
+        self.queue_activity(&activity)?;
+
         self.events()
             .borrow_mut()
-            .emit_group_added_to_activity(self, &self.activity(id)?);
+            .emit_group_added_to_activity(self, &activity);
         Ok(())
     }
 
@@ -285,15 +295,16 @@ impl Data {
         for entity_name in &entities_to_remove {
             // The entity may not be in the activity if excluded from group.
             let _ = self.activities.remove_entity(id, entity_name);
-            // TODO if err::NotIn then don't update
         }
 
         self.activities.remove_group(id, &group_name)?;
-        // TODO invalidate activities and queue schedules of entities
+
+        let activity = self.activity(id)?;
+        self.queue_activity(&activity)?;
 
         self.events()
             .borrow_mut()
-            .emit_group_removed_from_activity(self, &self.activity(id)?);
+            .emit_group_removed_from_activity(self, &activity);
         Ok(())
     }
 
@@ -354,10 +365,13 @@ impl Data {
         // If the duration is longer than the previous one, check for conflicts
         self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
         self.activities.set_duration(id, new_duration)?;
+
+        let activity = self.activity(id)?;
+        self.queue_activity(&activity)?;
         // TODO for each entity in the activity update schedules
         self.events()
             .borrow_mut()
-            .emit_activity_duration_changed(self, &self.activity(id)?);
+            .emit_activity_duration_changed(self, &activity);
         Ok(())
     }
 }

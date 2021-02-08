@@ -197,7 +197,11 @@ pub fn can_fit_in_schedule(
 
     // Because the sums are sorted decreasingly, any sum that is shorter than this one will
     // waste too much time to continue.
-    let min_acceptable_duration_sum = work_interval_duration - time_which_can_be_wasted;
+    let min_acceptable_duration_sum = if time_which_can_be_wasted >= work_interval_duration {
+        0
+    } else {
+        work_interval_duration - time_which_can_be_wasted
+    };
 
     for (index, duration_sum) in all_duration_sums
         .iter()

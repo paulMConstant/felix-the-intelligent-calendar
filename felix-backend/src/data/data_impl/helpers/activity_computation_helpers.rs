@@ -1,6 +1,6 @@
 use crate::data::{
     computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
-    ActivityID, Data,
+    ActivityID, Data, Activity,
 };
 use crate::errors::Result;
 
@@ -8,6 +8,24 @@ use std::collections::HashSet;
 
 /// Helper functions to trigger & update activity insertion computation
 impl Data {
+    /// Starts the computation of the possible beginnings of activities of entities whose work
+    /// hours were modified.
+    #[must_use]
+    pub(crate) fn queue_entities_on_global_work_hour_change(&mut self) -> Result<()> {
+        let entities_to_queue = self.entities_sorted()
+            .iter()
+            .filter(|entity| entity.custom_work_hours().is_empty())
+            .map(|entity| entity.name())
+            .collect::<Vec<_>>();
+        self.queue_entities(entities_to_queue)
+    }
+
+    /// Starts the computation of the possible beginnings of the given activity.
+    #[must_use]
+    pub(crate) fn queue_activity(&mut self, activity: &Activity) -> Result<()> {
+        self.queue_entities(activity.entities_sorted())
+    }
+
     /// Starts the computation of the possible beginnings of the activities of the given entities.
     #[must_use]
     pub(crate) fn queue_entities(&mut self, entities: Vec<String>) -> Result<()> {

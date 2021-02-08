@@ -38,6 +38,8 @@ fn test_can_fit_in_schedule() {
     test_case_can_fit_in_schedule(&[30, 39, 50], &[20, 39, 40], true);
     test_case_can_fit_in_schedule(&[30, 39, 50], &[10, 20, 39, 40], true);
     test_case_can_fit_in_schedule(&[30, 39, 50], &[11, 20, 39, 40], false);
+    // Way more time can be wasted than the work hour duration
+    test_case_can_fit_in_schedule(&[240, 30], &[10, 40], true);
 }
 
 fn test_case_can_fit_in_schedule(
