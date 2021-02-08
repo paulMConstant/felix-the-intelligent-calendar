@@ -70,6 +70,7 @@ impl Data {
         self.events()
             .borrow_mut()
             .emit_activity_added(self, &activity);
+        // No update of possible beginnings necessary
         Ok(activity)
     }
 
@@ -100,6 +101,8 @@ impl Data {
             .into_iter()
             .position(|activity| activity.id() == id);
         self.activities.remove(id)?;
+
+        // TODO for each entity in the activity, queue their work hours and invalidate all of their activities
         let position_of_removed_activity = position_of_removed_activity.expect(
             "If the activity was removed then it existed, therefore position should be valid",
         );
@@ -144,6 +147,7 @@ impl Data {
         let entity_name = clean_string(entity_name)?;
         self.check_has_enough_time_for_activity(id, &entity_name)?;
         self.activities.add_entity(id, entity_name)?;
+        // TODO queue this entity and invalidate each of its activities
         self.events()
             .borrow_mut()
             .emit_entity_added_to_activity(self, &self.activity(id)?);
@@ -183,6 +187,7 @@ impl Data {
         let entity_name = self.entity(entity_name)?.name();
         // Remove the entity from the activity
         self.activities.remove_entity(id, &entity_name)?;
+        // TODO queue this entity and invalidate each of its activities
         self.events()
             .borrow_mut()
             .emit_entity_removed_from_activity(self, &self.activity(id)?);
@@ -227,12 +232,14 @@ impl Data {
         // Add each entity in the group to the activity.
         // We do not care about the result: if the entity is already in the activity, it is fine.
         for entity_name in entities {
+            // TODO if Err:AlreadyIn don't queue the work hours
             let _ = self.activities.add_entity(id, entity_name);
         }
 
         // Add the group to the activity
         self.activities.add_group(id, clean_string(group_name)?)?;
 
+        // TODO queue added entities and invalidate all of their activities
         self.events()
             .borrow_mut()
             .emit_group_added_to_activity(self, &self.activity(id)?);
@@ -278,9 +285,11 @@ impl Data {
         for entity_name in &entities_to_remove {
             // The entity may not be in the activity if excluded from group.
             let _ = self.activities.remove_entity(id, entity_name);
+            // TODO if err::NotIn then don't update
         }
 
         self.activities.remove_group(id, &group_name)?;
+        // TODO invalidate activities and queue schedules of entities
 
         self.events()
             .borrow_mut()
@@ -345,6 +354,7 @@ impl Data {
         // If the duration is longer than the previous one, check for conflicts
         self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
         self.activities.set_duration(id, new_duration)?;
+        // TODO for each entity in the activity update schedules
         self.events()
             .borrow_mut()
             .emit_activity_duration_changed(self, &self.activity(id)?);

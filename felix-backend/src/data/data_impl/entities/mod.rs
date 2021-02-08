@@ -392,7 +392,6 @@ impl Data {
         S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
-        // TODO Continue Here First
 
         self.check_entity_has_custom_interval(&entity_name, &interval)?;
         self.check_entity_will_have_enough_time_after_deletion_of_interval(

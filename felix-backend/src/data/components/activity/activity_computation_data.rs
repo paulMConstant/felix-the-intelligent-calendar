@@ -14,7 +14,6 @@ pub struct ActivityComputationData {
 impl ActivityComputationData {
     /// Creates new computation data.
     pub fn new() -> ActivityComputationData {
-        // TODO init insertion beginnings with nothing
         ActivityComputationData {
             duration: MIN_TIME_DISCRETIZATION,
             insertion_interval: None,
@@ -39,8 +38,7 @@ impl ActivityComputationData {
 
     /// Simple getter for possible insertion times.
     #[must_use]
-    pub fn possible_insertion_beginnings(&self) -> &HashSet<Time> {
-        // TODO take conflicts into account
+    pub fn possible_insertion_times_if_no_conflict(&self) -> &HashSet<Time> {
         &self.possible_insertion_times_if_no_conflict
     }
 

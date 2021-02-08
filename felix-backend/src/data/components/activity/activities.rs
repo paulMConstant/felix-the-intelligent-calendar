@@ -1,15 +1,18 @@
-use super::computation::{
-    id_computation::{compute_incompatible_ids, generate_next_id},
-    possible_beginnings_updater::PossibleBeginningsUpdater,
+use super::{
+    computation::{
+        id_computation::{compute_incompatible_ids, generate_next_id},
+        possible_beginnings_updater::PossibleBeginningsUpdater,
+    },
+    ActivityComputationData, ActivityMetadata,
 };
-use super::{ActivityComputationData, ActivityMetadata};
 
-use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION};
+use crate::data::{
+    computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
+    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION,
+};
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
-use felix_computation_api::find_possible_beginnings::ActivityBeginningsGivenDurationMinutes;
-
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
 /// Manages the collection of activities.
@@ -17,7 +20,6 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct Activities {
     activities: HashMap<ActivityID, Activity>,
-    possible_beginnings_given_entity: HashMap<String, ActivityBeginningsGivenDurationMinutes>,
     possible_beginnings_updater: PossibleBeginningsUpdater,
 }
 
@@ -27,7 +29,6 @@ impl Activities {
     pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_given_entity: HashMap::new(),
             possible_beginnings_updater: PossibleBeginningsUpdater::new(thread_pool),
         }
     }
@@ -71,6 +72,8 @@ impl Activities {
         let activity = Activity::new(id, name);
 
         self.activities.insert(id, activity);
+        self.possible_beginnings_updater.notify_new_activity(id);
+
         &self
             .activities
             .get(&id)
@@ -88,7 +91,7 @@ impl Activities {
             None => Err(DoesNotExist::activity_does_not_exist(id)),
             Some(_) => {
                 self.update_incompatible_activities();
-                // TODO update possible insertion times
+                self.possible_beginnings_updater.notify_activity_removed(id);
                 Ok(())
             }
         }
@@ -115,7 +118,6 @@ impl Activities {
         self.get_mut_by_id(id)?.metadata.add_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Adds an entity in every activity which contains the given group.
@@ -170,7 +172,6 @@ impl Activities {
         self.get_mut_by_id(id)?.metadata.remove_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
-        // TODO update possible insertion times
     }
 
     /// Removes the entity with given name from all activities.
@@ -181,7 +182,6 @@ impl Activities {
             let _ = activity.metadata.remove_entity(entity);
         }
         self.update_incompatible_activities();
-        // TODO update possible insertion times
     }
 
     /// Renames the entity with given name in all activities.
@@ -250,7 +250,52 @@ impl Activities {
             .computation_data
             .set_duration(duration);
         Ok(())
-        // TODO update possible insertion times
+    }
+
+    /// Triggers the computation of new possible beginnings for the given activities.
+    pub fn must_update_possible_activity_beginnings(
+        &mut self,
+        schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
+        concerned_activity_ids: HashSet<ActivityID>,
+    ) {
+        self.possible_beginnings_updater
+            .queue_work_hours_and_activity_durations(
+                schedules_of_participants,
+                concerned_activity_ids,
+            );
+    }
+
+    /// Returns the possible beginnings of an activity if it is up to date or if
+    /// the computation results are up.
+    /// If neither is the case, returns None.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity with given id is not found.
+    #[must_use]
+    pub fn possible_insertion_times_of_activity(
+        &mut self,
+        schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
+        concerned_activity_id: ActivityID,
+    ) -> Result<Option<HashSet<Time>>> {
+        let concerned_activity = self.get_by_id(concerned_activity_id)?;
+
+        if self
+            .possible_beginnings_updater
+            .activity_beginnings_are_up_to_date(&concerned_activity_id)
+        {
+            Ok(Some(
+                concerned_activity
+                    .computation_data
+                    .possible_insertion_times_if_no_conflict()
+                    .clone(),
+            ))
+        } else {
+            let maybe_result = self
+                .possible_beginnings_updater
+                .poll_and_fuse_possible_beginnings(schedules_of_participants, &concerned_activity);
+            Ok(maybe_result)
+        }
     }
 
     /// Returns data ready for auto-insertion of all activities.
@@ -484,7 +529,6 @@ impl Clone for Activities {
     fn clone(&self) -> Self {
         Activities {
             activities: self.activities.clone(),
-            possible_beginnings_given_entity: HashMap::new(),
             possible_beginnings_updater: PossibleBeginningsUpdater::new(Rc::new(
                 rayon::ThreadPoolBuilder::new()
                     .build()

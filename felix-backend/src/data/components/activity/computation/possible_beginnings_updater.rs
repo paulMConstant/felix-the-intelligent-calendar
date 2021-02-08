@@ -1,11 +1,13 @@
-use crate::data::{Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION_MINUTES};
+use crate::data::{
+    computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
+    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION_MINUTES,
+};
 
 use felix_computation_api::find_possible_beginnings::find_possible_beginnings;
 
 use super::activity_beginnings_given_duration::{
     new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
 };
-use super::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted;
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -21,7 +23,6 @@ type WorkHoursAndActivityDurationsSortedCache =
 #[derive(Debug)]
 pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityID, bool>,
-    // Cache is mutable hence Cell
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
     thread_pool: Rc<rayon::ThreadPool>,
 }
@@ -37,6 +38,16 @@ impl PossibleBeginningsUpdater {
         }
     }
 
+    /// Informs the updater that a new activity has been added.
+    pub fn notify_new_activity(&mut self, id: ActivityID) {
+        self.possible_beginnings_up_to_date.insert(id, true);
+    }
+
+    /// Informs the updater that an activity has been deleted.
+    pub fn notify_activity_removed(&mut self, id: ActivityID) {
+        self.possible_beginnings_up_to_date.remove(&id);
+    }
+
     /// Returns true if the activity possible beginnings are up to date.
     #[must_use]
     pub fn activity_beginnings_are_up_to_date(&self, id: &ActivityID) -> bool {
@@ -50,35 +61,31 @@ impl PossibleBeginningsUpdater {
     /// Invalidates the concerned activities.
     pub fn queue_work_hours_and_activity_durations(
         &mut self,
-        work_hours_and_activity_durations: WorkHoursAndActivityDurationsSorted,
-        out_of_date_activities: &[ActivityID],
+        work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
+        out_of_date_activities: HashSet<ActivityID>,
     ) {
-        for &id in out_of_date_activities {
+        for id in out_of_date_activities {
             self.possible_beginnings_up_to_date.insert(id, false);
         }
 
-        if self
-            .computation_cache
-            .lock()
-            .unwrap()
-            .contains_key(&work_hours_and_activity_durations)
-            == false
-        {
-            let computation_cache = &self.computation_cache;
+        for key in work_hours_and_activity_durations {
+            if self.computation_cache.lock().unwrap().contains_key(&key) == false {
+                let computation_cache = &self.computation_cache;
 
-            // Launch the computation in a separate thread
-            self.thread_pool.install(|| {
-                let result = new_activity_beginnings_given_duration(find_possible_beginnings(
-                    &work_hours_and_activity_durations.work_hours_in_minutes(),
-                    &work_hours_and_activity_durations.activity_durations_in_minutes(),
-                    MIN_TIME_DISCRETIZATION_MINUTES.into(),
-                ));
+                // Launch the computation in a separate thread
+                self.thread_pool.install(|| {
+                    let result = new_activity_beginnings_given_duration(find_possible_beginnings(
+                        &key.work_hours_in_minutes(),
+                        &key.activity_durations_in_minutes(),
+                        MIN_TIME_DISCRETIZATION_MINUTES.into(),
+                    ));
 
-                computation_cache
-                    .lock()
-                    .unwrap()
-                    .insert(work_hours_and_activity_durations.clone(), result);
-            });
+                    computation_cache
+                        .lock()
+                        .unwrap()
+                        .insert(key.clone(), result);
+                });
+            }
         }
     }
 
@@ -87,7 +94,7 @@ impl PossibleBeginningsUpdater {
     #[must_use]
     pub fn poll_and_fuse_possible_beginnings(
         &mut self,
-        work_hours_and_activity_durations: &[WorkHoursAndActivityDurationsSorted],
+        work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
         activity: &Activity,
     ) -> Option<HashSet<Time>> {
         let computation_cache = self.computation_cache.lock().unwrap();
@@ -120,6 +127,8 @@ impl PossibleBeginningsUpdater {
             let first_set = all_possible_beginnings[0];
             let mut others = (&all_possible_beginnings[1..]).iter();
             let intersection = first_set.iter().filter(|k| others.all(|s| s.contains(k)));
+            self.possible_beginnings_up_to_date
+                .insert(activity.id(), true);
             Some(intersection.copied().collect())
         } else {
             // At least one computation result was missing

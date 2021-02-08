@@ -1,3 +1,5 @@
+pub(crate) mod activity_computation_helpers;
+
 use crate::errors::{empty_name::EmptyName, Result};
 
 /// Removes multiple spaces and fixes caps.

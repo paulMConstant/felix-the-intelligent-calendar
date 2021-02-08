@@ -6,7 +6,6 @@ mod computation;
 use crate::data::{Time, TimeInterval};
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
-use std::collections::HashSet;
 
 pub type ActivityID = usize;
 
@@ -71,11 +70,5 @@ impl Activity {
     #[must_use]
     pub fn insertion_interval(&self) -> Option<TimeInterval> {
         self.computation_data.insertion_interval()
-    }
-
-    /// Simple getter for possible insertion times.
-    #[must_use]
-    pub fn possible_insertion_beginnings(&self) -> &HashSet<Time> {
-        &self.computation_data.possible_insertion_beginnings()
     }
 }
