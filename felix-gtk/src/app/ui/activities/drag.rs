@@ -16,6 +16,7 @@ impl Ui {
         self.drag_source_set();
         self.connect_drag_begin();
         self.connect_drag_data_get();
+        self.connect_drag_end();
     }
 
     fn drag_source_set(&self) {
@@ -106,6 +107,17 @@ impl Ui {
             byteorder::NativeEndian::write_u32(&mut buffer[0..DRAG_DATA_FORMAT],
                                                selected_activity_id as u32);
             selection_data.set(&gdk::Atom::intern(DRAG_TYPE), DRAG_DATA_FORMAT as i32, buffer);
+        }));
+    }
+
+    fn connect_drag_end(&self) {
+        fetch_from!(self, activities_tree_view);
+        let activity_insertion = self.activity_insertion.clone();
+
+        activities_tree_view.connect_drag_end(clone!(@strong activity_insertion => move
+        |_drawing_area, _drag_context| {
+            // Clear possible insertions
+            activity_insertion.show_possible_activity_insertions(None, Vec::new())
         }));
     }
 }

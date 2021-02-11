@@ -12,8 +12,8 @@ use byteorder::ByteOrder;
 impl ActivityInsertionUi {
     pub(super) fn enable_drop(&self) {
         self.drag_dest_set();
-        self.connect_drag_data_received();
         self.connect_drag_motion();
+        self.connect_drag_data_received();
     }
 
     fn drag_dest_set(&self) {

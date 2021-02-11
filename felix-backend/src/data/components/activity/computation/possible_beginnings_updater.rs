@@ -68,7 +68,7 @@ impl PossibleBeginningsUpdater {
             // No activities are concerned - return
             return;
         }
-        
+
         for id in out_of_date_activities {
             self.possible_beginnings_up_to_date.insert(id, false);
         }
