@@ -64,6 +64,11 @@ impl PossibleBeginningsUpdater {
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
         out_of_date_activities: HashSet<ActivityID>,
     ) {
+        if out_of_date_activities.is_empty() {
+            // No activities are concerned - return
+            return;
+        }
+        
         for id in out_of_date_activities {
             self.possible_beginnings_up_to_date.insert(id, false);
         }
