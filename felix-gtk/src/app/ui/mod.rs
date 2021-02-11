@@ -23,8 +23,8 @@ use work_hours::WorkHoursBuilder;
 
 use felix_backend::data::{Activity, ActivityID, Entity, Group, Time};
 
-use std::sync::Arc;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 pub struct Ui {
     builder: gtk::Builder,
@@ -34,8 +34,9 @@ pub struct Ui {
     current_activity: Option<Activity>,
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
-    activity_insertion: ActivityInsertionUi,
-    get_possible_insertions_callback: Arc<dyn Fn(ActivityID) -> Option<HashSet<Time>>>,
+    activity_insertion: Arc<ActivityInsertionUi>,
+    get_possible_insertions_callback:
+        Arc<dyn Fn(ActivityID) -> (Option<HashSet<Time>>, Vec<String>)>,
 }
 
 impl Ui {
@@ -48,9 +49,10 @@ impl Ui {
             current_activity: None,
             work_hours_builder: WorkHoursBuilder::new(),
             custom_work_hours_builder: WorkHoursBuilder::new(),
-            activity_insertion: ActivityInsertionUi::new(),
-            get_possible_insertions_callback: 
-                Arc::new(|_| panic!("Get possible insertions callback was not initialized !")),
+            activity_insertion: Arc::new(ActivityInsertionUi::new()),
+            get_possible_insertions_callback: Arc::new(|_| {
+                panic!("Get possible insertions callback was not initialized !")
+            }),
         }
     }
 

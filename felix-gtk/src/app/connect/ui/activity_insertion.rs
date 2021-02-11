@@ -116,9 +116,14 @@ impl App {
             .set_activity_get_possible_insertions_callback(Arc::new(Box::new(
                         clone!(@strong data => move
                                |id: ActivityID| {
-            data.lock().unwrap()
-                .possible_insertion_times_of_activity(id)
+            let mut data = data.lock().unwrap();
+            let activity_participants = data.activity(id)
                 .expect("Trying to get possible insertion times of activity which does not exist !")
+                .entities_sorted();
+            let maybe_possible_insertion_times = data
+                .possible_insertion_times_of_activity(id)
+                .expect("Trying to get possible insertion times of activity which does not exist !");
+                (maybe_possible_insertion_times, activity_participants)
            })
         )));
     }

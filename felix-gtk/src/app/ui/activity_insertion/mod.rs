@@ -6,8 +6,8 @@ use entity_to_show::EntityToShow;
 
 use felix_backend::data::{Activity, ActivityID, Data, Entity, Time};
 
-use std::sync::Arc;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use gtk::prelude::*;
 
@@ -17,9 +17,10 @@ impl Ui {
         insertion_box.pack_end(&self.activity_insertion.get_insertion_box(), true, true, 0);
     }
 
-    pub fn set_activity_get_possible_insertions_callback(&mut self,
-        callback: Arc<dyn Fn(ActivityID) -> Option<HashSet<Time>>>,
-        ) {
+    pub fn set_activity_get_possible_insertions_callback(
+        &mut self,
+        callback: Arc<dyn Fn(ActivityID) -> (Option<HashSet<Time>>, Vec<String>)>,
+    ) {
         self.get_possible_insertions_callback = callback;
     }
 

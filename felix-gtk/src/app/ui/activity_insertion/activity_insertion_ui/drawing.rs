@@ -155,8 +155,8 @@ fn draw_schedules(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex
     let height = w.get_allocated_height() as f64;
     paint_background_uniform(c, OUTSIDE_WORK_HOURS_RGB);
 
-    draw_inside_work_hours_background(c, height, schedules.clone());
-    // TODO Draw inserted activities
+    draw_inside_work_hours_background(c, height, &schedules);
+    draw_possible_insertions_background(c, height, &schedules);
 
     let schedules = schedules.lock().unwrap();
     draw_hour_lines(c, width, height);
@@ -290,33 +290,74 @@ pub fn get_height_for_one_hour(total_height: f64) -> f64 {
 fn draw_inside_work_hours_background(
     c: &cairo::Context,
     height: f64,
-    schedules: Arc<Mutex<Schedules>>,
+    schedules: &Arc<Mutex<Schedules>>,
 ) {
     let mut schedules = schedules.lock().unwrap();
     schedules.compute_height_for_min_discretization(height);
 
     c.set_source_rgb(IN_WORK_HOURS_RGB, IN_WORK_HOURS_RGB, IN_WORK_HOURS_RGB);
 
-    let mut current_x = 0.0;
-    let work_hours_of_entities = schedules
+    for (index, work_hours) in schedules
         .entities_to_show
         .iter()
-        .map(|entity| entity.work_hours());
-    for work_hours in work_hours_of_entities {
+        .map(|entity| entity.work_hours())
+        .enumerate()
+    {
         for interval in work_hours {
             let height_begin = interval.beginning().n_times_min_discretization() as f64
                 * schedules.height_per_min_discretization;
             let height_to_paint = interval.duration().n_times_min_discretization() as f64
                 * schedules.height_per_min_discretization;
             c.rectangle(
-                current_x,
+                index as f64 * schedules.width_per_schedule,
                 height_begin,
                 schedules.width_per_schedule,
                 height_to_paint,
             );
             c.fill();
         }
-        current_x += schedules.width_per_schedule;
+    }
+}
+
+fn draw_possible_insertions_background(
+    c: &cairo::Context,
+    height: f64,
+    schedules: &Arc<Mutex<Schedules>>,
+) {
+    let mut schedules = schedules.lock().unwrap();
+
+    // This may be called in a function above. It does not matter as the calculation is not heavy.
+    // Calculating again here is safer.
+    schedules.compute_height_for_min_discretization(height);
+    if let Some(possible_insertion_times) = &schedules.possible_activity_insertion_times {
+        // TODO check for insertion scores
+        // Just draw green for now
+        c.set_source_rgb(0.0, 1.0, 0.0);
+
+        for (index, _entity) in
+            schedules
+                .entities_to_show
+                .iter()
+                .enumerate()
+                .filter(|(_index, entity)| {
+                    schedules
+                        .activity_insertion_concerned_entities
+                        .contains(entity.name())
+                })
+        {
+            for insertion_time in possible_insertion_times {
+                let height_begin = insertion_time.n_times_min_discretization() as f64
+                    * schedules.height_per_min_discretization;
+                let heigh_to_paint = schedules.height_per_min_discretization;
+                c.rectangle(
+                    index as f64 * schedules.width_per_schedule,
+                    height_begin,
+                    schedules.width_per_schedule,
+                    heigh_to_paint,
+                );
+                c.fill();
+            }
+        }
     }
 }
 

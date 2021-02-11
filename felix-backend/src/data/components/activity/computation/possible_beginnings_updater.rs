@@ -128,8 +128,10 @@ impl PossibleBeginningsUpdater {
             all_possible_beginnings.sort_by(|a, b| a.len().cmp(&b.len()));
 
             let first_set = all_possible_beginnings[0];
-            let mut others = (&all_possible_beginnings[1..]).iter();
-            let intersection = first_set.iter().filter(|k| others.all(|s| s.contains(k)));
+            let intersection = first_set
+                .iter()
+                .filter(|k| all_possible_beginnings[1..].iter().all(|s| s.contains(k)));
+
             self.possible_beginnings_up_to_date
                 .insert(activity.id(), true);
             Some(intersection.copied().collect())

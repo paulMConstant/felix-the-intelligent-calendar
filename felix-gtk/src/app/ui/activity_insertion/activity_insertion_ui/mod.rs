@@ -11,6 +11,7 @@ use felix_backend::data::{ActivityID, Time};
 use glib::clone;
 use gtk::prelude::*;
 
+use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
 const NUM_HOURS_IN_DAY: i32 = 24;
@@ -50,6 +51,19 @@ impl ActivityInsertionUi {
             .try_insert_activity_callback = callback;
     }
 
+    pub fn show_possible_activity_insertions(
+        &self,
+        possible_insertion_times: Option<HashSet<Time>>,
+        concerned_entities: Vec<String>,
+    ) {
+        let mut schedules = self.schedules_to_show.lock().unwrap();
+        schedules.possible_activity_insertion_times = possible_insertion_times;
+        schedules.activity_insertion_concerned_entities = concerned_entities;
+        drop(schedules);
+
+        self.draw_schedules_sorted();
+    }
+
     #[must_use]
     pub(super) fn get_insertion_box(&self) -> gtk::Box {
         fetch_from!(self, insertion_box);
@@ -67,7 +81,7 @@ impl ActivityInsertionUi {
             .collect()
     }
 
-    pub(super) fn show_entities_schedule(&mut self, entities_to_show: Vec<EntityToShow>) {
+    pub(super) fn show_entities_schedule(&self, entities_to_show: Vec<EntityToShow>) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
         // First push all entities
         for entity_to_show in entities_to_show {
@@ -87,7 +101,7 @@ impl ActivityInsertionUi {
         self.draw_schedules_sorted();
     }
 
-    pub(super) fn remove_entity_schedule(&mut self, name_of_entity_to_remove: &String) {
+    pub(super) fn remove_entity_schedule(&self, name_of_entity_to_remove: &String) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
         if let Some(position) = schedules_to_show
             .entities_to_show
@@ -100,7 +114,7 @@ impl ActivityInsertionUi {
         }
     }
 
-    fn draw_schedules_sorted(&mut self) {
+    fn draw_schedules_sorted(&self) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
 
         schedules_to_show

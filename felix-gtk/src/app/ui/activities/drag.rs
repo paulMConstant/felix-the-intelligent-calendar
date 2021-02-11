@@ -35,6 +35,7 @@ impl Ui {
     fn connect_drag_begin(&self) {
         fetch_from!(self, activities_tree_view);
         let get_possible_insertions_callback = &self.get_possible_insertions_callback;
+        let activity_insertion = self.activity_insertion.clone();
 
         activities_tree_view.connect_drag_begin(
             clone!(@strong activities_tree_view, @strong get_possible_insertions_callback => move
@@ -82,8 +83,11 @@ impl Ui {
                 .parse::<ActivityID>()
                 .expect("Error when parsing activity ID from activities model");
 
-            let possible_insertion_times = get_possible_insertions_callback(selected_activity_id);
-            println!("Drag start {:?}", possible_insertion_times);
+            let (maybe_possible_insertion_times, concerned_entities) =
+                get_possible_insertions_callback(selected_activity_id);
+            activity_insertion
+                .show_possible_activity_insertions(maybe_possible_insertion_times,
+                                                   concerned_entities);
         }));
     }
 

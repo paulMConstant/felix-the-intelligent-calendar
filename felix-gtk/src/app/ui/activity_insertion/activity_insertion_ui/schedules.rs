@@ -3,6 +3,7 @@ use crate::app::ui::EntityToShow;
 
 use felix_backend::data::{ActivityID, Time, MIN_TIME_DISCRETIZATION};
 
+use std::collections::HashSet;
 use std::sync::Arc;
 
 const MIN_SCHEDULE_WIDTH: f64 = 350.0;
@@ -21,6 +22,8 @@ pub struct Schedules {
     pub height_per_min_discretization: f64,
     pub try_insert_activity_callback: Arc<dyn Fn(String, ActivityID, Time)>,
     pub time_tooltip_to_draw: Option<TimeTooltipToDraw>,
+    pub possible_activity_insertion_times: Option<HashSet<Time>>,
+    pub activity_insertion_concerned_entities: Vec<String>,
 }
 
 impl Schedules {
@@ -34,6 +37,8 @@ impl Schedules {
                 panic!("Insert activity callback has not been initialized !")
             })),
             time_tooltip_to_draw: None,
+            possible_activity_insertion_times: None,
+            activity_insertion_concerned_entities: Vec::new(),
         }
     }
 
