@@ -11,8 +11,7 @@ use components::{
 };
 
 pub use components::{
-    activity::Activity,
-    activity::ActivityID,
+    activity::{Activity, ActivityID, Color},
     entity::Entity,
     group::Group,
     time::{

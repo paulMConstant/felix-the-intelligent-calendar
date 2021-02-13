@@ -6,6 +6,7 @@ mod computation;
 use crate::data::{Time, TimeInterval};
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
+pub use activity_metadata::Color;
 
 pub type ActivityID = usize;
 
@@ -70,5 +71,11 @@ impl Activity {
     #[must_use]
     pub fn insertion_interval(&self) -> Option<TimeInterval> {
         self.computation_data.insertion_interval()
+    }
+
+    /// Simple getter for the color.
+    #[must_use]
+    pub fn color(&self) -> Color {
+        self.metadata.color()
     }
 }

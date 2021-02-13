@@ -2,16 +2,26 @@ use crate::data::ActivityID;
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
 
+/// Represents a color. Each field should be kept in [0.0; 1.0].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Color {
+    pub red: f64,
+    pub green: f64,
+    pub blue: f64,
+    pub alpha: f64,
+}
+
 /// Simple structure holding non-computation related data : id, name, entities.
 ///
 /// We directly store incompatible activities in the ActivityComputationData which is why
 /// the entities are not directly computation-related.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ActivityMetadata {
     id: ActivityID,
     name: String,
     entities: HashSet<String>,
     groups: HashSet<String>,
+    display_color: Color,
 }
 
 impl ActivityMetadata {
@@ -23,6 +33,12 @@ impl ActivityMetadata {
             name,
             entities: HashSet::new(),
             groups: HashSet::new(),
+            display_color: Color {
+                red: 0.0,
+                green: 1.0,
+                blue: 1.0,
+                alpha: 1.0,
+            },
         }
     }
 
@@ -57,8 +73,15 @@ impl ActivityMetadata {
     }
 
     /// Getter for the entities, not sorted.
+    #[must_use]
     pub fn entities_as_set(&self) -> &HashSet<String> {
         &self.entities
+    }
+
+    /// Getter for the color.
+    #[must_use]
+    pub fn color(&self) -> Color {
+        self.display_color
     }
 
     // *** Setters ***
@@ -168,6 +191,12 @@ impl ActivityMetadata {
             Err(NotIn::group_not_in_activity(old_name, self.name()))
         }
     }
+
+    /// Sets the color of the activity.
+    pub fn set_color(&mut self, color: Color) {
+        self.display_color = color;
+    }
 }
 
 // No tests, functions are tested in tests directory
+impl Eq for ActivityMetadata {}

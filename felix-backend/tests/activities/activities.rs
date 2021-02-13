@@ -6,9 +6,10 @@
 //! - Deletion of activities
 //! - Edition (name, duration of activities)
 //! - Getter for activity
+//! - Set color
 //! - Activity insertion
 
-use felix_backend::data::{Time, TimeInterval};
+use felix_backend::data::{Color, Time, TimeInterval};
 use test_utils::data_builder::{Activity, DataBuilder};
 
 use std::collections::HashSet;
@@ -257,6 +258,27 @@ fn set_activity_duration_too_short() {
         },
         "The given duration is too short.",
         "Could add activity with duration 0"
+    );
+}
+
+// *** Set activity color ***
+#[test]
+fn basic_set_color() {
+    test_ok!(
+        data,
+        DataBuilder::new().with_activity(Activity::default()),
+        {
+            let id = data.activities_sorted()[0].id();
+            let color = Color {
+                red: 0.8,
+                green: 0.7,
+                blue: 0.5,
+                alpha: 1.0,
+            };
+            data.set_color_of_activity(id, color).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by id!");
+            assert_eq!(activity.color(), color);
+        }
     );
 }
 

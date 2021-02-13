@@ -8,7 +8,7 @@ use super::{
 
 use crate::data::{
     computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
-    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
+    Activity, ActivityID, Color, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
@@ -249,6 +249,17 @@ impl Activities {
         self.get_mut_by_id(id)?
             .computation_data
             .set_duration(duration);
+        Ok(())
+    }
+
+    /// Sets the color of the activity with the given id.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity is not found.
+    #[must_use]
+    pub fn set_color(&mut self, id: ActivityID, color: Color) -> Result<()> {
+        self.get_mut_by_id(id)?.metadata.set_color(color);
         Ok(())
     }
 

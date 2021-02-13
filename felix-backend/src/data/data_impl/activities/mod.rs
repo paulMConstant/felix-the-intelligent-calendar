@@ -2,7 +2,7 @@ mod error_checks;
 mod inner;
 
 use super::helpers::clean_string;
-use crate::data::{Activity, ActivityID, Data, Time};
+use crate::data::{Activity, ActivityID, Color, Data, Time};
 use crate::errors::{invalid_insertion::InvalidInsertion, Result};
 
 use std::collections::HashSet;
@@ -394,6 +394,27 @@ impl Data {
             .borrow_mut()
             .emit_activity_duration_changed(self, &activity);
         Ok(())
+    }
+
+    /// Sets the color of the activity with given id.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity is not found.
+    ///
+    /// # Example
+    /// ```
+    /// use felix_backend::data::{Data, Color};
+    /// let mut data = Data::new();
+    ///
+    /// let activity_id = data.add_activity("Test").unwrap().id();
+    /// let color = Color { red: 1.0, green: 0.5, blue: 0.3, alpha: 1.0 };
+    /// data.set_color_of_activity(activity_id, color).unwrap();
+    /// assert_eq!(color, data.activity(activity_id).unwrap().color());
+    /// ```
+    #[must_use]
+    pub fn set_color_of_activity(&mut self, id: ActivityID, color: Color) -> Result<()> {
+        self.activities.set_color(id, color)
     }
 
     /// Tries to insert the activity with given id with the given beginning.
