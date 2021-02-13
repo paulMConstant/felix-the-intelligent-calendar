@@ -21,18 +21,19 @@ impl App {
         connect_activity_added => |activity| { on_activity_added },
         connect_activity_removed => |position| { on_activity_removed },
         connect_activity_renamed => |activity| { on_activity_renamed },
+        connect_activity_duration_changed => |activity| { on_activity_changed_update_schedules },
+        connect_activity_inserted => |activity| { on_activity_changed_update_schedules },
+        connect_activity_color_changed => |activity| { on_activity_changed_update_schedules },
         connect_entity_added_to_activity => |activity| { on_activity_entities_changed,
-            on_activities_changed_update_schedules },
+            on_activity_changed_update_schedules },
         connect_entity_removed_from_activity => |activity| { on_activity_entities_changed,
-            on_activities_changed_update_schedules },
+            on_activity_changed_update_schedules },
         connect_group_added_to_activity => |activity| { on_activity_groups_changed },
         connect_group_removed_from_activity => |activity| { on_activity_groups_changed},
         connect_work_hours_changed => | | { on_work_hours_changed,
             on_work_hours_changed_update_schedules },
         connect_custom_work_hours_changed => | | { on_custom_work_hours_changed,
-            on_work_hours_changed_update_schedules },
-        connect_activity_duration_changed => |activity| { on_activities_changed_update_schedules },
-        connect_activity_inserted => |activity| { on_activity_inserted_update_schedules }
+            on_work_hours_changed_update_schedules }
         // connect_function_from_data => |arg1, arg2, argN| { handler1_in_ui, handlerN_in_ui }
     );
 }

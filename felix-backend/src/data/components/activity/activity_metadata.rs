@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 /// Represents a color. Each field should be kept in [0.0; 1.0].
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Color {
+pub struct RGBA {
     pub red: f64,
     pub green: f64,
     pub blue: f64,
@@ -21,7 +21,7 @@ pub struct ActivityMetadata {
     name: String,
     entities: HashSet<String>,
     groups: HashSet<String>,
-    display_color: Color,
+    display_color: RGBA,
 }
 
 impl ActivityMetadata {
@@ -33,10 +33,11 @@ impl ActivityMetadata {
             name,
             entities: HashSet::new(),
             groups: HashSet::new(),
-            display_color: Color {
-                red: 0.0,
-                green: 1.0,
-                blue: 1.0,
+            // Default color is blue
+            display_color: RGBA {
+                red: 0.203,
+                green: 0.396,
+                blue: 0.643,
                 alpha: 1.0,
             },
         }
@@ -80,7 +81,7 @@ impl ActivityMetadata {
 
     /// Getter for the color.
     #[must_use]
-    pub fn color(&self) -> Color {
+    pub fn color(&self) -> RGBA {
         self.display_color
     }
 
@@ -193,7 +194,7 @@ impl ActivityMetadata {
     }
 
     /// Sets the color of the activity.
-    pub fn set_color(&mut self, color: Color) {
+    pub fn set_color(&mut self, color: RGBA) {
         self.display_color = color;
     }
 }

@@ -75,7 +75,6 @@ impl PossibleBeginningsUpdater {
 
         for key in work_hours_and_activity_durations {
             if self.computation_cache.lock().unwrap().contains_key(&key) == false {
-                println!("New computation !");
                 let computation_cache = &self.computation_cache;
 
                 // Launch the computation in a separate thread
@@ -91,8 +90,6 @@ impl PossibleBeginningsUpdater {
                         .unwrap()
                         .insert(key.clone(), result);
                 });
-            } else {
-                println!("Value already cached !");
             }
         }
     }

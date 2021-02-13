@@ -22,6 +22,7 @@ create_events!(Events:
     activity_removed { position_of_removed_activity: usize },
     activity_renamed { activity: &Activity},
     activity_duration_changed { activity: &Activity},
+    activity_color_changed { activity: &Activity},
     activity_inserted { activity: &Activity},
     entity_added_to_activity { activity: &Activity},
     entity_removed_from_activity { activity: &Activity},

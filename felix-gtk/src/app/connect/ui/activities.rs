@@ -6,7 +6,7 @@ use crate::app::ui::activities_treeview_config::ACTIVITY_ID_COLUMN;
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::App;
 
-use felix_backend::data::{clean_string, ActivityID, Time};
+use felix_backend::data::{clean_string, ActivityID, Time, RGBA};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
@@ -21,6 +21,7 @@ impl App {
         self.connect_add_to_activity();
         self.connect_remove_group_from_activity();
         self.connect_remove_entity_from_activity();
+        self.connect_set_activity_color();
 
         self.connect_clean_activity_entries();
     }
@@ -329,6 +330,29 @@ impl App {
             }
         }
             })));
+    }
+
+    fn connect_set_activity_color(&self) {
+        fetch_from!(self.ui(), activity_color_button);
+
+        let data = &self.data;
+        let ui = &self.ui;
+
+        app_register_signal!(
+            self,
+            activity_color_button,
+            activity_color_button.connect_color_set(clone!(@strong data, @strong ui =>
+                       move |activity_color_button| {
+            let color = activity_color_button.get_rgba();
+            let current_activity_id = ui.lock().unwrap().current_activity().as_ref()
+                .expect("Current activity should be set before performing any action").id();
+
+            data.lock().unwrap().set_activity_color(current_activity_id,
+                                    RGBA {
+                red: color.red, green: color.green, blue: color.blue, alpha: color.alpha })
+                .expect("Current activity should be set before performing any action");
+                       }))
+        );
     }
 
     fn connect_clean_activity_entries(&self) {

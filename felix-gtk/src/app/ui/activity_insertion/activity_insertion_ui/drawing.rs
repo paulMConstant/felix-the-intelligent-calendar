@@ -354,9 +354,8 @@ fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mut
 
             let width_begin = index as f64 * schedules.width_per_schedule;
 
-            // TODO draw activities with their respective colors
-            // Just draw grey for now
-            c.set_source_rgb(0.3, 0.3, 0.3);
+            let color = activity.color();
+            c.set_source_rgb(color.red, color.green, color.blue);
             c.rectangle(
                 width_begin,
                 height_begin,

@@ -46,11 +46,7 @@ impl Ui {
             .show_entities_schedule(vec![entity_to_show]);
     }
 
-    pub fn on_activities_changed_update_schedules(&mut self, data: &Data, _: &Activity) {
-        self.update_schedules(data);
-    }
-
-    pub fn on_activity_inserted_update_schedules(&mut self, data: &Data, _: &Activity) {
+    pub fn on_activity_changed_update_schedules(&mut self, data: &Data, _: &Activity) {
         self.update_schedules(data);
     }
 

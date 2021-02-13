@@ -6,7 +6,7 @@ mod computation;
 use crate::data::{Time, TimeInterval};
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
-pub use activity_metadata::Color;
+pub use activity_metadata::RGBA;
 
 pub type ActivityID = usize;
 
@@ -75,7 +75,7 @@ impl Activity {
 
     /// Simple getter for the color.
     #[must_use]
-    pub fn color(&self) -> Color {
+    pub fn color(&self) -> RGBA {
         self.metadata.color()
     }
 }

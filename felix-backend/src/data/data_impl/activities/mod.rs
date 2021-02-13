@@ -2,7 +2,7 @@ mod error_checks;
 mod inner;
 
 use super::helpers::clean_string;
-use crate::data::{Activity, ActivityID, Color, Data, Time};
+use crate::data::{Activity, ActivityID, Data, Time, RGBA};
 use crate::errors::{invalid_insertion::InvalidInsertion, Result};
 
 use std::collections::HashSet;
@@ -404,17 +404,22 @@ impl Data {
     ///
     /// # Example
     /// ```
-    /// use felix_backend::data::{Data, Color};
+    /// use felix_backend::data::{Data, RGBA};
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
-    /// let color = Color { red: 1.0, green: 0.5, blue: 0.3, alpha: 1.0 };
-    /// data.set_color_of_activity(activity_id, color).unwrap();
+    /// let color = RGBA { red: 1.0, green: 0.5, blue: 0.3, alpha: 1.0 };
+    /// data.set_activity_color(activity_id, color).unwrap();
     /// assert_eq!(color, data.activity(activity_id).unwrap().color());
     /// ```
     #[must_use]
-    pub fn set_color_of_activity(&mut self, id: ActivityID, color: Color) -> Result<()> {
-        self.activities.set_color(id, color)
+    pub fn set_activity_color(&mut self, id: ActivityID, color: RGBA) -> Result<()> {
+        self.activities.set_color(id, color)?;
+        let activity = self.activity(id)?;
+        self.events()
+            .borrow_mut()
+            .emit_activity_color_changed(self, &activity);
+        Ok(())
     }
 
     /// Tries to insert the activity with given id with the given beginning.

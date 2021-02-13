@@ -99,7 +99,8 @@ impl Ui {
             activity_end_hour_spin,
             activity_end_minute_spin,
             activity_inserted_switch,
-            activity_insertion_time_box
+            activity_insertion_time_box,
+            activity_color_button
         );
 
         activity_specific_box.show();
@@ -117,6 +118,13 @@ impl Ui {
                 let activity_duration = activity.duration();
                 activity_duration_hour_spin.set_value(activity_duration.hours() as f64);
                 activity_duration_minute_spin.set_value(activity_duration.minutes() as f64);
+                let activity_color = activity.color();
+                activity_color_button.set_rgba(&gdk::RGBA {
+                    red: activity_color.red,
+                    green: activity_color.green,
+                    blue: activity_color.blue,
+                    alpha: activity_color.alpha,
+                });
 
                 if let Some(interval) = activity.insertion_interval() {
                     activity_inserted_switch.set_active(true);

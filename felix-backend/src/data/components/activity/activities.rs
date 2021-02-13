@@ -8,7 +8,7 @@ use super::{
 
 use crate::data::{
     computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
-    Activity, ActivityID, Color, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
+    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES, RGBA,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
@@ -258,7 +258,7 @@ impl Activities {
     ///
     /// Returns Err if the activity is not found.
     #[must_use]
-    pub fn set_color(&mut self, id: ActivityID, color: Color) -> Result<()> {
+    pub fn set_color(&mut self, id: ActivityID, color: RGBA) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.set_color(color);
         Ok(())
     }
@@ -363,7 +363,6 @@ impl Activities {
                 let end = incompatible_insertion_interval.end();
 
                 while current_time < end {
-                    println!("{}", current_time);
                     possible_beginnings.remove(&current_time);
                     current_time.add_minutes(MIN_TIME_DISCRETIZATION_MINUTES as i8);
                 }

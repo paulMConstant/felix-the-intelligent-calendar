@@ -1,17 +1,19 @@
-use felix_backend::data::{Activity, Data, Time, TimeInterval};
+use felix_backend::data::{Activity, Data, Time, TimeInterval, RGBA};
 
 /// Simple struct holding an activity's name and insertion interval.
-pub struct ActivityNameAndInsertionTime {
+pub struct ActivityToDisplay {
     name: String,
     insertion_interval: Option<TimeInterval>,
+    color: RGBA,
 }
 
-impl ActivityNameAndInsertionTime {
+impl ActivityToDisplay {
     #[must_use]
-    pub fn new(activity: &Activity) -> ActivityNameAndInsertionTime {
-        ActivityNameAndInsertionTime {
+    pub fn new(activity: &Activity) -> ActivityToDisplay {
+        ActivityToDisplay {
             name: activity.name(),
             insertion_interval: activity.insertion_interval(),
+            color: activity.color(),
         }
     }
 
@@ -24,12 +26,17 @@ impl ActivityNameAndInsertionTime {
     pub fn insertion_interval(&self) -> &Option<TimeInterval> {
         &self.insertion_interval
     }
+
+    #[must_use]
+    pub fn color(&self) -> &RGBA {
+        &self.color
+    }
 }
 
 /// Simple struct holding an entity's name, its activities and work hours.
 pub struct EntityToShow {
     name: String,
-    activities: Vec<ActivityNameAndInsertionTime>,
+    activities: Vec<ActivityToDisplay>,
     work_hours: Vec<TimeInterval>,
     free_time: Time,
 }
@@ -42,7 +49,7 @@ impl EntityToShow {
                 .activities_of(&entity_name)
                 .expect("Every entity to show should exist in Data when created")
                 .iter()
-                .map(|activity| ActivityNameAndInsertionTime::new(activity))
+                .map(|activity| ActivityToDisplay::new(activity))
                 .collect(),
             work_hours: data
                 .work_hours_of(&entity_name)
@@ -60,7 +67,7 @@ impl EntityToShow {
     }
 
     #[must_use]
-    pub fn activities(&self) -> &Vec<ActivityNameAndInsertionTime> {
+    pub fn activities(&self) -> &Vec<ActivityToDisplay> {
         &self.activities
     }
 
