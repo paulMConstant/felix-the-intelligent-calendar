@@ -77,11 +77,11 @@ impl Ui {
         }
     }
 
-    pub fn on_activity_entities_changed(&mut self, data: &Data, activity: &Activity) {
-        self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
-    }
-
-    pub fn on_activity_groups_changed(&mut self, data: &Data, activity: &Activity) {
+    pub fn on_activity_changed_update_current_activity(
+        &mut self,
+        data: &Data,
+        activity: &Activity,
+    ) {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
     }
 
