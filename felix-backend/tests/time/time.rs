@@ -75,6 +75,8 @@ fn add_minutes() {
     assert_eq!(time, Time::new(1, 55));
     time.add_minutes(-25);
     assert_eq!(time, Time::new(1, 30));
+    time.add_minutes(30);
+    assert_eq!(time, Time::new(2, 0));
 
     // Invalid operations
     assert!(catch_unwind(|| { Time::new(1, 0).add_minutes(61) }).is_err());

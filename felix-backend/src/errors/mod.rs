@@ -3,6 +3,7 @@ pub mod does_not_exist;
 pub mod duration_too_short;
 pub mod empty_name;
 pub mod interval_overlaps;
+pub mod invalid_insertion;
 pub mod invalid_interval;
 pub mod name_taken;
 pub mod not_enough_time;

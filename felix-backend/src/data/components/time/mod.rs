@@ -190,7 +190,7 @@ impl Time {
             "If you wish to add more than 60 minutes, use add_hours_and_minutes"
         );
         let mut sum_minutes = self.minutes + minutes;
-        if sum_minutes > 60 {
+        if sum_minutes >= 60 {
             sum_minutes -= 60;
             self.add_hours(1);
         } else if sum_minutes < 0 {

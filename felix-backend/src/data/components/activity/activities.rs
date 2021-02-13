@@ -8,7 +8,7 @@ use super::{
 
 use crate::data::{
     computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
-    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION,
+    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
@@ -279,22 +279,27 @@ impl Activities {
         concerned_activity_id: ActivityID,
     ) -> Result<Option<HashSet<Time>>> {
         let concerned_activity = self.get_by_id(concerned_activity_id)?;
-        if self
+
+        let maybe_result = if self
             .possible_beginnings_updater
             .activity_beginnings_are_up_to_date(&concerned_activity_id)
         {
-            Ok(Some(
+            // Result is up to date, no need to recalculate
+            Some(
                 concerned_activity
                     .computation_data
                     .possible_insertion_times_if_no_conflict()
                     .clone(),
-            ))
+            )
         } else {
             let maybe_result = self
                 .possible_beginnings_updater
                 .poll_and_fuse_possible_beginnings(schedules_of_participants, &concerned_activity);
+            // TODO set_up_to_date as a separate function ??
+            // The 'up to date' and 'result' values are separated. This is not good.
 
             if maybe_result.is_some() {
+                // If the result is valid, store it into the activity computation data.
                 let result = maybe_result
                     .clone()
                     .expect("Maybe result should be some but is not");
@@ -303,14 +308,75 @@ impl Activities {
                     .computation_data
                     .set_possible_insertion_times_if_no_conflict(result);
             }
+            maybe_result
+        };
 
-            Ok(maybe_result)
-        }
+        let incompatible_activity_ids = concerned_activity
+            .computation_data
+            .incompatible_activity_ids();
+
+        Ok(self.filter_insertion_times_for_conflicts(
+            maybe_result,
+            concerned_activity.duration(),
+            incompatible_activity_ids,
+        ))
+    }
+
+    /// Given the possible beginnings of an activity and the ids of incompatible activities,
+    /// checks for conflicts and finally returns the real possible beginnings.
+    #[must_use]
+    fn filter_insertion_times_for_conflicts(
+        &self,
+        possible_beginnings: Option<HashSet<Time>>,
+        activity_duration: Time,
+        incompatible_activity_ids: Vec<ActivityID>,
+    ) -> Option<HashSet<Time>> {
+        // Offset with the duration of the activity
+        // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
+        // at 10:50.
+        let offset_activity_duration = activity_duration - MIN_TIME_DISCRETIZATION;
+
+        possible_beginnings.and_then(|mut possible_beginnings| {
+            for incompatible_insertion_interval in incompatible_activity_ids
+                .iter()
+                .copied()
+                .filter_map(|id| {
+                    self.get_by_id(id)
+                        .expect("Checking for conflict with invalid activity ID !")
+                        .insertion_interval()
+                })
+                .filter(|interval| interval.beginning() > offset_activity_duration)
+            {
+                let mut current_time =
+                    incompatible_insertion_interval.beginning() - offset_activity_duration;
+                let end = incompatible_insertion_interval.end();
+
+                while current_time < end {
+                    println!("{}", current_time);
+                    possible_beginnings.remove(&current_time);
+                    current_time.add_minutes(MIN_TIME_DISCRETIZATION_MINUTES as i8);
+                }
+            }
+            Some(possible_beginnings)
+        })
+    }
+
+    /// Inserts the activity with the given beginning.
+    /// Checks are done by the Data module.
+    ///
+    /// # Errors
+    /// Returns Err if the activity is not found.
+    #[must_use]
+    pub fn insert_activity(&mut self, id: ActivityID, beginning: Time) -> Result<()> {
+        let activity = self.get_mut_by_id(id)?;
+        activity.computation_data.insert(beginning);
+        Ok(())
     }
 
     /// Returns data ready for auto-insertion of all activities.
     ///
     /// The ids of incompatible activities are turned into indexes.
+    ///
     #[must_use]
     fn fetch_computation(&self) -> Vec<ActivityComputationData> {
         let activities = self.activities.values();

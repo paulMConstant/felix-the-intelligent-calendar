@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
@@ -76,7 +76,7 @@ impl ActivityComputationData {
 
     /// Inserts the activity at given time.
     ///
-    /// Does not perform any checks, the activity collection does it.
+    /// Does not perform any checks, data should be sanitized above.
     ///
     /// # Panics
     ///
@@ -90,3 +90,12 @@ impl ActivityComputationData {
 }
 
 // No tests, functions are tested in tests directory
+impl Eq for ActivityComputationData {}
+impl PartialEq for ActivityComputationData {
+    fn eq(&self, other: &Self) -> bool {
+        // Don't check for possible activity insertions because they are asynchronously calculated
+        self.duration == other.duration
+            && self.insertion_interval == other.insertion_interval
+            && self.incompatible_activity_ids == other.incompatible_activity_ids
+    }
+}

@@ -3,7 +3,7 @@ mod inner;
 
 use super::helpers::clean_string;
 use crate::data::{Activity, ActivityID, Data, Time};
-use crate::errors::Result;
+use crate::errors::{invalid_insertion::InvalidInsertion, Result};
 
 use std::collections::HashSet;
 
@@ -394,5 +394,54 @@ impl Data {
             .borrow_mut()
             .emit_activity_duration_changed(self, &activity);
         Ok(())
+    }
+
+    /// Tries to insert the activity with given id with the given beginning.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity is not found or if the insertion time is not available.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use felix_backend::data::{Data, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+    /// let mut data = Data::new();
+    ///
+    /// let activity_id = data.add_activity("Test").unwrap().id();
+    /// let entity = data.add_entity("Paul").unwrap();
+    /// let work_interval = TimeInterval::new(Time::new(8, 0), Time::new(10, 15));
+    /// let work_hours = data.add_work_interval(work_interval).unwrap();
+    /// data.add_entity_to_activity(activity_id, entity).unwrap();
+    ///
+    /// while (data.possible_insertion_times_of_activity(activity_id).unwrap().is_none()) {
+    /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
+    /// }
+    ///
+    /// let insertion_time = Time::new(8, 0);
+    /// assert!(data.insert_activity(activity_id, insertion_time).is_ok());
+    ///
+    /// let activity = data.activity(activity_id).unwrap();
+    /// let end = insertion_time + activity.duration();
+    /// let expected_insertion_interval = TimeInterval::new(insertion_time, end);
+    /// assert_eq!(activity.insertion_interval().unwrap(), expected_insertion_interval);
+    /// ```
+    #[must_use]
+    pub fn insert_activity(&mut self, id: ActivityID, insertion_time: Time) -> Result<()> {
+        let activity_name = self.activity(id)?.name();
+        if let Some(possible_insertion_times) = self.possible_insertion_times_of_activity(id)? {
+            if possible_insertion_times.contains(&insertion_time) {
+                self.activities.insert_activity(id, insertion_time)
+            } else {
+                // The given insertion time is not valid.
+                Err(InvalidInsertion::insertion_not_in_computed_insertions(
+                    activity_name,
+                    insertion_time,
+                ))
+            }
+        } else {
+            // Computation is not finished
+            Err(InvalidInsertion::insertions_not_computed_yet(activity_name))
+        }
     }
 }

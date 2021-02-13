@@ -99,9 +99,8 @@ impl App {
                     // Inserting activity at wrong time
                     return;
                 }
-                // TODO
-                //data.insert_activity(activity_id, insertion_time)
-                    //.expect("Error while inserting activity, should have been checked for);
+                data.insert_activity(activity_id, insertion_time)
+                    .expect("Error while inserting activity, should have been checked for");
                 println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
             }
         }))));

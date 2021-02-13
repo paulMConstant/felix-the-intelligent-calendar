@@ -6,9 +6,12 @@
 //! - Deletion of activities
 //! - Edition (name, duration of activities)
 //! - Getter for activity
+//! - Activity insertion
 
-use felix_backend::data::Time;
+use felix_backend::data::{Time, TimeInterval};
 use test_utils::data_builder::{Activity, DataBuilder};
+
+use std::collections::HashSet;
 
 // *** Add ***
 #[test]
@@ -254,5 +257,164 @@ fn set_activity_duration_too_short() {
         },
         "The given duration is too short.",
         "Could add activity with duration 0"
+    );
+}
+
+// *** Activity insertion ***
+#[test]
+fn basic_insert_activity() {
+    let (name1, name2) = ("Paul", "Antoine");
+    let activity_duration = Time::new(0, 30);
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1, name2])
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activity(Activity {
+                name: "Activity",
+                entities: vec![name1, name2],
+                duration: activity_duration,
+                groups: Vec::new(),
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity(id)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+
+            let beginning = Time::new(10, 0);
+            let expected_insertion_interval =
+                TimeInterval::new(beginning, beginning + activity_duration);
+            assert!(data.insert_activity(id, beginning).is_ok());
+
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            assert_eq!(
+                activity.insertion_interval().unwrap(),
+                expected_insertion_interval
+            );
+        }
+    );
+}
+
+#[test]
+fn basic_insert_activity_invalid_time() {
+    let (name1, name2) = ("Paul", "Antoine");
+    let activity_duration = Time::new(0, 30);
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1, name2])
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activity(Activity {
+                name: "Activity",
+                entities: vec![name1, name2],
+                duration: activity_duration,
+                groups: Vec::new(),
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity(id)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+
+            let beginning = Time::new(14, 0);
+            data.insert_activity(id, beginning)
+        },
+        "The activity 'Activity' cannot be inserted with beginning 14:00.",
+        "Could insert activity in invalid interval"
+    );
+}
+
+#[test]
+fn possible_insertion_times_takes_insertion_conflict_into_account() {
+    let name = "Paul";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(10, 0), Time::new(13, 0)))
+            .with_activities(vec![
+                Activity {
+                    name: "Activity",
+                    entities: vec![name],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                },
+                Activity {
+                    name: "Activity2",
+                    entities: vec![name],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                }
+            ]),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity(id1)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+            data.insert_activity(id1, Time::new(11, 0)).unwrap();
+
+            let id2 = data.activities_sorted()[1].id();
+            while data
+                .possible_insertion_times_of_activity(id2)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+            // The only beginnings left are 10:00 and 12:00
+            // (work hours are [10:00 - 13:00] with [11:00 - 12:00] taken by activity 1)
+            assert_eq!(data.possible_insertion_times_of_activity(id2).unwrap().unwrap(),
+                       [Time::new(10, 0), Time::new(12, 0)].iter().copied().collect::<HashSet<_>>(),
+               "Insertion times with conflicts with inserted activities were not calculated right.");
+        }
+    );
+}
+
+#[test]
+fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_account() {
+    let (name1, name2) = ("Paul", "Jeanne");
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1, name2])
+            .with_custom_work_interval_for(
+                name1,
+                TimeInterval::new(Time::new(9, 0), Time::new(11, 0))
+            )
+            .with_work_interval(TimeInterval::new(Time::new(10, 0), Time::new(13, 0)))
+            .with_activity(Activity {
+                name: "Activity",
+                entities: vec![name1, name2],
+                duration: Time::new(1, 0),
+                groups: Vec::new(),
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity(id)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+            // The only beginnings is 10:00
+            // Activity duration is 01:00 and intersection of work hours is [10:00 - 11:00]
+            assert_eq!(data.possible_insertion_times_of_activity(id).unwrap().unwrap(),
+                       [Time::new(10, 0)].iter().copied().collect::<HashSet<_>>(),
+               "Insertion times with conflicts with inserted activities were not calculated right.");
+        }
     );
 }
