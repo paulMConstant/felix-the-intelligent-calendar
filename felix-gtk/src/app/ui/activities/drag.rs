@@ -87,6 +87,7 @@ impl Ui {
             let (maybe_possible_insertion_times, concerned_entities) =
                 get_possible_insertions_callback(selected_activity_id);
             activity_insertion
+            .lock().unwrap()
                 .show_possible_activity_insertions(maybe_possible_insertion_times,
                                                    concerned_entities);
         }));
@@ -117,7 +118,9 @@ impl Ui {
         activities_tree_view.connect_drag_end(clone!(@strong activity_insertion => move
         |_drawing_area, _drag_context| {
             // Clear possible insertions
-            activity_insertion.show_possible_activity_insertions(None, Vec::new())
+            activity_insertion
+            .lock().unwrap()
+                .show_possible_activity_insertions(None, Vec::new())
         }));
     }
 }

@@ -19,6 +19,7 @@ const NUM_HOURS_IN_DAY: i32 = 24;
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
+    try_insert_activity_callback: Arc<dyn Fn(String, ActivityID, Time)>,
 }
 
 impl ActivityInsertionUi {
@@ -32,23 +33,24 @@ impl ActivityInsertionUi {
         let activity_insertion = ActivityInsertionUi {
             builder,
             schedules_to_show: Arc::new(Mutex::new(Schedules::new())),
+            try_insert_activity_callback: Arc::new(Box::new(|_, _, _| {
+                panic!("Insert activity callback has not been initialized !")
+            })),
         };
 
         activity_insertion.connect_draw();
         activity_insertion.connect_schedule_window_scroll();
-        activity_insertion.enable_drop();
 
         activity_insertion
     }
 
     pub fn set_activity_try_insert_callback(
-        &self,
+        &mut self,
         callback: Arc<dyn Fn(String, ActivityID, Time)>,
     ) {
-        self.schedules_to_show
-            .lock()
-            .unwrap()
-            .try_insert_activity_callback = callback;
+        self.try_insert_activity_callback = callback;
+        // Enable drop only after the callback has been set
+        self.enable_drop();
     }
 
     pub fn show_possible_activity_insertions(
@@ -97,7 +99,7 @@ impl ActivityInsertionUi {
         }
 
         // Then sort and draw
-        drop(schedules_to_show); // Borrow checker
+        drop(schedules_to_show); // Unlock
         self.draw_schedules_sorted();
     }
 

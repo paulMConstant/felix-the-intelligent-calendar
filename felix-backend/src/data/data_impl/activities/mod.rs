@@ -431,7 +431,11 @@ impl Data {
         let activity_name = self.activity(id)?.name();
         if let Some(possible_insertion_times) = self.possible_insertion_times_of_activity(id)? {
             if possible_insertion_times.contains(&insertion_time) {
-                self.activities.insert_activity(id, insertion_time)
+                self.activities.insert_activity(id, insertion_time)?;
+                self.events()
+                    .borrow_mut()
+                    .emit_activity_inserted(self, &self.activity(id)?);
+                Ok(())
             } else {
                 // The given insertion time is not valid.
                 Err(InvalidInsertion::insertion_not_in_computed_insertions(

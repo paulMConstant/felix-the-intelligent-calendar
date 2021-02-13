@@ -24,7 +24,7 @@ use work_hours::WorkHoursBuilder;
 use felix_backend::data::{Activity, ActivityID, Entity, Group, Time};
 
 use std::collections::HashSet;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 pub struct Ui {
     builder: gtk::Builder,
@@ -34,7 +34,7 @@ pub struct Ui {
     current_activity: Option<Activity>,
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
-    activity_insertion: Arc<ActivityInsertionUi>,
+    activity_insertion: Arc<Mutex<ActivityInsertionUi>>,
     get_possible_insertions_callback:
         Arc<dyn Fn(ActivityID) -> (Option<HashSet<Time>>, Vec<String>)>,
 }
@@ -49,7 +49,7 @@ impl Ui {
             current_activity: None,
             work_hours_builder: WorkHoursBuilder::new(),
             custom_work_hours_builder: WorkHoursBuilder::new(),
-            activity_insertion: Arc::new(ActivityInsertionUi::new()),
+            activity_insertion: Arc::new(Mutex::new(ActivityInsertionUi::new())),
             get_possible_insertions_callback: Arc::new(|_| {
                 panic!("Get possible insertions callback was not initialized !")
             }),

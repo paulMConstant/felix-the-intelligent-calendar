@@ -14,7 +14,12 @@ use gtk::prelude::*;
 impl Ui {
     pub(super) fn on_init_activity_insertion(&self) {
         fetch_from!(self, insertion_box);
-        insertion_box.pack_end(&self.activity_insertion.get_insertion_box(), true, true, 0);
+        insertion_box.pack_end(
+            &self.activity_insertion.lock().unwrap().get_insertion_box(),
+            true,
+            true,
+            0,
+        );
     }
 
     pub fn set_activity_get_possible_insertions_callback(
@@ -25,19 +30,27 @@ impl Ui {
     }
 
     pub fn set_activity_try_insert_callback(
-        &self,
+        &mut self,
         callback: Arc<dyn Fn(String, ActivityID, Time)>,
     ) {
         self.activity_insertion
+            .lock()
+            .unwrap()
             .set_activity_try_insert_callback(callback);
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {
         self.activity_insertion
+            .lock()
+            .unwrap()
             .show_entities_schedule(vec![entity_to_show]);
     }
 
     pub fn on_activities_changed_update_schedules(&mut self, data: &Data, _: &Activity) {
+        self.update_schedules(data);
+    }
+
+    pub fn on_activity_inserted_update_schedules(&mut self, data: &Data, _: &Activity) {
         self.update_schedules(data);
     }
 
@@ -46,15 +59,14 @@ impl Ui {
     }
 
     fn update_schedules(&mut self, data: &Data) {
-        let entities_to_show: Vec<_> = self
-            .activity_insertion
+        let activity_insertion = self.activity_insertion.lock().unwrap();
+        let entities_to_show: Vec<_> = activity_insertion
             .shown_entities()
             .iter()
             .map(|entity_name| EntityToShow::new(entity_name.clone(), data))
             .collect();
 
-        self.activity_insertion
-            .show_entities_schedule(entities_to_show);
+        activity_insertion.show_entities_schedule(entities_to_show);
     }
 
     pub fn on_entity_renamed_update_schedules(
@@ -63,11 +75,11 @@ impl Ui {
         entity: &Entity,
         old_name: &String,
     ) {
-        if self.activity_insertion.shown_entities().contains(old_name) {
-            self.activity_insertion.remove_entity_schedule(old_name);
+        let activity_insertion = self.activity_insertion.lock().unwrap();
+        if activity_insertion.shown_entities().contains(old_name) {
+            activity_insertion.remove_entity_schedule(old_name);
             let new_entity = EntityToShow::new(entity.name(), data);
-            self.activity_insertion
-                .show_entities_schedule(vec![new_entity]);
+            activity_insertion.show_entities_schedule(vec![new_entity]);
         }
     }
 
@@ -77,6 +89,9 @@ impl Ui {
         _position: usize,
         old_name: &String,
     ) {
-        self.activity_insertion.remove_entity_schedule(old_name);
+        self.activity_insertion
+            .lock()
+            .unwrap()
+            .remove_entity_schedule(old_name);
     }
 }

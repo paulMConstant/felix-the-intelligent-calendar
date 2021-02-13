@@ -31,7 +31,8 @@ impl App {
             on_work_hours_changed_update_schedules },
         connect_custom_work_hours_changed => | | { on_custom_work_hours_changed,
             on_work_hours_changed_update_schedules },
-        connect_activity_duration_changed => |activity| { on_activities_changed_update_schedules }
+        connect_activity_duration_changed => |activity| { on_activities_changed_update_schedules },
+        connect_activity_inserted => |activity| { on_activity_inserted_update_schedules }
         // connect_function_from_data => |arg1, arg2, argN| { handler1_in_ui, handlerN_in_ui }
     );
 }

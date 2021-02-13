@@ -77,33 +77,30 @@ impl App {
         self.ui
             .lock()
             .unwrap()
-            .set_activity_try_insert_callback(Arc::new(Box::new(
-                clone!(@strong data => move
-                        |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
-            let mut data = data.lock().unwrap();
-            let activity = data.activity(activity_id)
-                .expect("The activity we are inserting does not exist");
+            .set_activity_try_insert_callback(Arc::new(Box::new(clone!(@strong data => move
+                            |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
+                let mut data = data.lock().unwrap();
+                let activity = data.activity(activity_id)
+                    .expect("The activity we are inserting does not exist");
 
-            if activity.entities_sorted().contains(&entity_name) == false {
-                // Inserting activity for wrong entity
-                return;
-            }
-
-            let maybe_possible_insertion_times = data
-                .possible_insertion_times_of_activity(activity_id)
-                .expect("Trying to insert activity which does not exist !");
-
-            if let Some(possible_insertion_times) = maybe_possible_insertion_times {
-                println!("Possible insertion times {:?}", possible_insertion_times);
-                if possible_insertion_times.contains(&insertion_time) == false {
-                    // Inserting activity at wrong time
+                if activity.entities_sorted().contains(&entity_name) == false {
+                    // Inserting activity for wrong entity
                     return;
                 }
-                data.insert_activity(activity_id, insertion_time)
-                    .expect("Error while inserting activity, should have been checked for");
-                println!("Insert activity ID {} at time {} for entity {}", activity_id, insertion_time, entity_name);
-            }
-        }))));
+
+                let maybe_possible_insertion_times = data
+                    .possible_insertion_times_of_activity(activity_id)
+                    .expect("Trying to insert activity which does not exist !");
+
+                if let Some(possible_insertion_times) = maybe_possible_insertion_times {
+                    if possible_insertion_times.contains(&insertion_time) == false {
+                        // Inserting activity at wrong time
+                        return;
+                    }
+                    data.insert_activity(activity_id, insertion_time)
+                        .expect("Error while inserting activity, should have been checked for");
+                }
+            }))));
     }
 
     fn set_activity_get_possible_insertions_callback(&self) {

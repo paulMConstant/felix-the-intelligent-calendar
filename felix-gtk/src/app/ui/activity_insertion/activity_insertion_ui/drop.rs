@@ -44,21 +44,24 @@ impl ActivityInsertionUi {
     fn connect_drag_data_received(&self) {
         fetch_from!(self, schedules_drawing);
         let schedules = &self.schedules_to_show;
+        let try_insert_activity_callback = self.try_insert_activity_callback.clone();
 
         schedules_drawing.connect_drag_data_received(
             clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area,
-                   _drag_context, x, y, selection_data, _info, _timestamp| {
-            if selection_data.get_data_type().name() != DRAG_TYPE {
-                return;
-            }
-            let schedules = schedules.lock().unwrap();
-            if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
-                let activity_id: ActivityID = byteorder::NativeEndian::read_u32(
-                    &selection_data.get_data()) as ActivityID;
-                let insertion_time = get_time_on_y(y, &schedules);
-                (schedules.try_insert_activity_callback)(entity_name, activity_id, insertion_time);
-            }
-        }));
+                       _drag_context, x, y, selection_data, _info, _timestamp| {
+                if selection_data.get_data_type().name() != DRAG_TYPE {
+                    return;
+                }
+                let schedules = schedules.lock().unwrap();
+                if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
+                    let activity_id: ActivityID = byteorder::NativeEndian::read_u32(
+                        &selection_data.get_data()) as ActivityID;
+                    let insertion_time = get_time_on_y(y, &schedules);
+                    drop(schedules); // Unlock
+                    (try_insert_activity_callback)(entity_name, activity_id, insertion_time);
+                }
+            }),
+        );
     }
 }
 

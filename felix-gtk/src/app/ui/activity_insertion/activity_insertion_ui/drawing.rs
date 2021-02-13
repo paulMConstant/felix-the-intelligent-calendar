@@ -156,6 +156,9 @@ fn draw_schedules(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex
     paint_background_uniform(c, OUTSIDE_WORK_HOURS_RGB);
 
     draw_inside_work_hours_background(c, height, &schedules);
+    draw_inserted_activities(c, height, &schedules);
+    // If we see that possible insertions overlap inserted activities, it's a bug.
+    // Hence the order 1. Draw inserted activities 2. draw possible insertions.
     draw_possible_insertions_background(c, height, &schedules);
 
     let schedules = schedules.lock().unwrap();
@@ -313,6 +316,40 @@ fn draw_inside_work_hours_background(
                 height_begin,
                 schedules.width_per_schedule,
                 height_to_paint,
+            );
+            c.fill();
+        }
+    }
+}
+
+fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mutex<Schedules>>) {
+    let mut schedules = schedules.lock().unwrap();
+
+    // This may be called in a function above. It does not matter as the calculation is not heavy.
+    // Calculating again here is safer.
+    schedules.compute_height_for_min_discretization(height);
+    for (index, activities) in schedules
+        .entities_to_show
+        .iter()
+        .enumerate()
+        .map(|(index, entity)| (index, entity.activities()))
+    {
+        // TODO draw activities with their respective colors
+        // Just draw blue for now
+        c.set_source_rgb(0.0, 0.0, 1.0);
+        for insertion_interval in activities
+            .iter()
+            .filter_map(|activity| activity.insertion_interval().as_ref())
+        {
+            let height_begin = insertion_interval.beginning().n_times_min_discretization() as f64
+                * schedules.height_per_min_discretization;
+            let heigh_to_paint = insertion_interval.duration().n_times_min_discretization() as f64
+                * schedules.height_per_min_discretization;
+            c.rectangle(
+                index as f64 * schedules.width_per_schedule,
+                height_begin,
+                schedules.width_per_schedule,
+                heigh_to_paint,
             );
             c.fill();
         }
