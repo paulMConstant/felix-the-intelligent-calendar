@@ -35,6 +35,8 @@ const TIME_TOOLTIP_BACKGROUND_RGB: f64 = 0.9;
 const TIME_TOOLTIP_Y_OFFSET: f64 = 18.0;
 const TIME_TOOLTIP_X_OFFSET: f64 = 30.0;
 
+const ACTIVITY_NAME_FONT_SIZE: f64 = 14.0;
+
 impl ActivityInsertionUi {
     pub(super) fn connect_draw(&self) {
         self.connect_draw_hours();
@@ -334,24 +336,45 @@ fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mut
         .enumerate()
         .map(|(index, entity)| (index, entity.activities()))
     {
-        // TODO draw activities with their respective colors
-        // Just draw blue for now
-        c.set_source_rgb(0.0, 0.0, 1.0);
-        for insertion_interval in activities
-            .iter()
-            .filter_map(|activity| activity.insertion_interval().as_ref())
+        for activity in
+            activities
+                .iter()
+                .filter_map(|activity| match activity.insertion_interval() {
+                    Some(_) => Some(activity),
+                    None => None,
+                })
         {
+            let insertion_interval = activity
+                .insertion_interval()
+                .expect("Invalid insertion interval ! No filtering was done or it did not work.");
             let height_begin = insertion_interval.beginning().n_times_min_discretization() as f64
                 * schedules.height_per_min_discretization;
             let heigh_to_paint = insertion_interval.duration().n_times_min_discretization() as f64
                 * schedules.height_per_min_discretization;
+
+            let width_begin = index as f64 * schedules.width_per_schedule;
+
+            // TODO draw activities with their respective colors
+            // Just draw grey for now
+            c.set_source_rgb(0.3, 0.3, 0.3);
             c.rectangle(
-                index as f64 * schedules.width_per_schedule,
+                width_begin,
                 height_begin,
                 schedules.width_per_schedule,
                 heigh_to_paint,
             );
             c.fill();
+
+            // Compute offset to place text
+            let size_of_text = c.text_extents(activity.name());
+            let x_offset = (schedules.width_per_schedule - size_of_text.width) / 2.0;
+            let y_offset = (heigh_to_paint + size_of_text.height) / 2.0;
+            c.move_to(width_begin + x_offset, height_begin + y_offset);
+
+            c.set_font_size(ACTIVITY_NAME_FONT_SIZE);
+            // TODO font color depending on activity color
+            c.set_source_rgb(0.5, 0.5, 0.5);
+            c.show_text(activity.name());
         }
     }
 }
