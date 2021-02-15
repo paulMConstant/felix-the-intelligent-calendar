@@ -53,7 +53,18 @@ impl ActivityComputationData {
     /// Simple setter for the duration.
     ///
     /// Does not perform any check, the activities collection does it.
+    /// If the duration is shorter than the current one, updates the current insertion time.
+    /// If the duration is greater, we don't know where the activity will fit, so no update of the
+    /// insertion time is done.
     pub fn set_duration(&mut self, duration: Time) {
+        if duration < self.duration {
+            if let Some(insertion_interval) = self.insertion_interval {
+                self.insertion_interval = Some(TimeInterval::new(
+                    insertion_interval.beginning(),
+                    insertion_interval.beginning() + duration,
+                ));
+            }
+        }
         self.duration = duration;
     }
 

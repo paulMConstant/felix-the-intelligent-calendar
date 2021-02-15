@@ -261,6 +261,47 @@ fn set_activity_duration_too_short() {
     );
 }
 
+#[test]
+fn set_activity_duration_check_insertion_interval_changed_when_duration_shorter() {
+    let name = "Déborah";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
+            .with_activity(Activity {
+                duration: Time::new(1, 0),
+                name: "Activity",
+                groups: Vec::new(),
+                entities: vec![name],
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.insert_activity(id, Time::new(8, 00)).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(9, 0));
+            assert_eq!(
+                activity.insertion_interval(),
+                Some(expected_insertion_interval)
+            );
+
+            // Change the duration, check that the insertion interval is still valid
+            data.set_activity_duration(id, Time::new(0, 30)).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(8, 30));
+            assert_eq!(
+                activity.insertion_interval(),
+                Some(expected_insertion_interval)
+            );
+        }
+    );
+}
+
+#[must_use]
+fn set_activity_duration_check_insertion_interval_is_valid() {
+    // TODO
+}
+
 // *** Set activity color ***
 #[test]
 fn basic_set_color() {

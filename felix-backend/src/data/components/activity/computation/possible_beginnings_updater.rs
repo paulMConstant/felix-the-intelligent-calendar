@@ -23,6 +23,7 @@ type WorkHoursAndActivityDurationsSortedCache =
 #[derive(Debug)]
 pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityID, bool>,
+    // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
     thread_pool: Rc<rayon::ThreadPool>,
 }
