@@ -52,10 +52,9 @@ impl ActivityComputationData {
 
     /// Simple setter for the duration.
     ///
-    /// Does not perform any check, the activities collection does it.
     /// If the duration is shorter than the current one, updates the current insertion time.
-    /// If the duration is greater, we don't know where the activity will fit, so no update of the
-    /// insertion time is done.
+    /// If the duration is greater, we don't know where the activity will fit. It is the
+    /// responsibility of higher level collections to deal with it.
     pub fn set_duration(&mut self, duration: Time) {
         if duration < self.duration {
             if let Some(insertion_interval) = self.insertion_interval {
@@ -85,18 +84,23 @@ impl ActivityComputationData {
         self.possible_insertion_times_if_no_conflict = possible_insertion_times_if_no_conflict;
     }
 
-    /// Inserts the activity at given time.
+    /// Inserts the activity at given time. 
+    /// If None is given, the activity is removed from the schedule.
     ///
     /// Does not perform any checks, data should be sanitized above.
     ///
     /// # Panics
     ///
     /// Panics if the insertion time + duration Time is invalid.
-    pub fn insert(&mut self, insertion_time: Time) {
+    pub fn insert(&mut self, insertion_time: Option<Time>) {
+        if let Some(insertion_time) = insertion_time {
         self.insertion_interval = Some(TimeInterval::new(
             insertion_time,
             insertion_time + self.duration,
         ));
+        } else {
+            self.insertion_interval = None;
+        }
     }
 }
 

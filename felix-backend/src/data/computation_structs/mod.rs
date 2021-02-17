@@ -1,5 +1,3 @@
-mod computation_done_notifier;
 mod work_hours_and_activity_durations_sorted;
 
-pub use computation_done_notifier::ComputationDoneNotifier;
 pub(crate) use work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted;

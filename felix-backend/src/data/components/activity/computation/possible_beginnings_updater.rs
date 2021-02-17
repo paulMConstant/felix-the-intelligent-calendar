@@ -1,5 +1,5 @@
 use crate::data::{
-    computation_structs::{ComputationDoneNotifier, WorkHoursAndActivityDurationsSorted},
+    computation_structs::WorkHoursAndActivityDurationsSorted,
     Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
@@ -25,14 +25,12 @@ pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityID, bool>,
     // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
-    computation_done_notifier: Arc<ComputationDoneNotifier>,
     thread_pool: Rc<rayon::ThreadPool>,
 }
 
 impl PossibleBeginningsUpdater {
     pub fn new(
         thread_pool: Rc<rayon::ThreadPool>,
-        computation_done_notifier: Arc<ComputationDoneNotifier>,
     ) -> PossibleBeginningsUpdater {
         PossibleBeginningsUpdater {
             possible_beginnings_up_to_date: HashMap::new(),
@@ -40,7 +38,6 @@ impl PossibleBeginningsUpdater {
                 Mutex::new(WorkHoursAndActivityDurationsSortedCache::new()),
             ),
             thread_pool,
-            computation_done_notifier,
         }
     }
 
@@ -82,7 +79,6 @@ impl PossibleBeginningsUpdater {
         for key in work_hours_and_activity_durations {
             if self.computation_cache.lock().unwrap().contains_key(&key) == false {
                 let computation_cache = &self.computation_cache;
-                let computation_done_notifier = self.computation_done_notifier.clone();
 
                 // Launch the computation in a separate thread
                 self.thread_pool.install(|| {
@@ -97,13 +93,8 @@ impl PossibleBeginningsUpdater {
                         .unwrap()
                         .insert(key.clone(), result);
 
-                    // Notify when the computation is done
-                    computation_done_notifier.notify_computation_result();
                 });
-            } else {
-                // Notify that the computation is available right now
-                self.computation_done_notifier.notify_computation_result();
-            }
+            } 
         }
     }
 

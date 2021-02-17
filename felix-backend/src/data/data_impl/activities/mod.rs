@@ -385,7 +385,13 @@ impl Data {
     #[must_use]
     pub fn set_activity_duration(&mut self, id: ActivityID, new_duration: Time) -> Result<()> {
         // If the duration is longer than the previous one, check for conflicts
-        self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
+        let activity = self.activity(id)?;
+        if new_duration > activity.duration() {
+            self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
+            if activity.insertion_interval().is_some() {
+                self.insert_activity(id, None)?;
+            }
+        }
         self.activities.set_duration(id, new_duration)?;
 
         let activity = self.activity(id)?;
@@ -423,6 +429,7 @@ impl Data {
     }
 
     /// Tries to insert the activity with given id with the given beginning.
+    /// If None is given, the activity is removed from the schedule.
     ///
     /// # Errors
     ///
@@ -444,7 +451,7 @@ impl Data {
     /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
     /// }
     ///
-    /// let insertion_time = Time::new(8, 0);
+    /// let insertion_time = Some(Time::new(8, 0));
     /// assert!(data.insert_activity(activity_id, insertion_time).is_ok());
     ///
     /// let activity = data.activity(activity_id).unwrap();
@@ -453,25 +460,34 @@ impl Data {
     /// assert_eq!(activity.insertion_interval().unwrap(), expected_insertion_interval);
     /// ```
     #[must_use]
-    pub fn insert_activity(&mut self, id: ActivityID, insertion_time: Time) -> Result<()> {
-        let activity_name = self.activity(id)?.name();
-        if let Some(possible_insertion_times) = self.possible_insertion_times_of_activity(id)? {
-            if possible_insertion_times.contains(&insertion_time) {
-                self.activities.insert_activity(id, insertion_time)?;
-                self.events()
-                    .borrow_mut()
-                    .emit_activity_inserted(self, &self.activity(id)?);
-                Ok(())
+    pub fn insert_activity(&mut self, id: ActivityID, insertion_time: Option<Time>) -> Result<()> {
+        if let Some(insertion_time) = insertion_time {
+            // We want to insert the activity
+            if let Some(possible_insertion_times) = self.possible_insertion_times_of_activity(id)? {
+                if possible_insertion_times.contains(&insertion_time) {
+                    self.activities.insert_activity(id, Some(insertion_time))?;
+                    self.events()
+                        .borrow_mut()
+                        .emit_activity_inserted(self, &self.activity(id)?);
+                    Ok(())
+                } else {
+                    // The given insertion time is not valid.
+                    Err(InvalidInsertion::insertion_not_in_computed_insertions(
+                        self.activity(id)?.name(),
+                        insertion_time,
+                    ))
+                }
             } else {
-                // The given insertion time is not valid.
-                Err(InvalidInsertion::insertion_not_in_computed_insertions(
-                    activity_name,
-                    insertion_time,
-                ))
+                // Computation is not finished
+                Err(InvalidInsertion::insertions_not_computed_yet(self.activity(id)?.name()))
             }
         } else {
-            // Computation is not finished
-            Err(InvalidInsertion::insertions_not_computed_yet(activity_name))
+            // Remove activity from schedule
+            self.activities.insert_activity(id, None)?;
+            self.events()
+                .borrow_mut()
+                .emit_activity_inserted(self, &self.activity(id)?);
+            Ok(())
         }
     }
 }

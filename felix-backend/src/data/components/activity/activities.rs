@@ -7,14 +7,13 @@ use super::{
 };
 
 use crate::data::{
-    computation_structs::{ComputationDoneNotifier, WorkHoursAndActivityDurationsSorted},
+    computation_structs::WorkHoursAndActivityDurationsSorted,
     Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES, RGBA,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
-use std::sync::Arc;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
@@ -29,13 +28,11 @@ impl Activities {
     #[must_use]
     pub fn new(
         thread_pool: Rc<rayon::ThreadPool>,
-        computation_done_notifier: Arc<ComputationDoneNotifier>,
     ) -> Activities {
         Activities {
             activities: HashMap::new(),
             possible_beginnings_updater: PossibleBeginningsUpdater::new(
                 thread_pool,
-                computation_done_notifier,
             ),
         }
     }
@@ -379,12 +376,13 @@ impl Activities {
     }
 
     /// Inserts the activity with the given beginning.
+    /// If None is given, the activity is removed from the schedule.
     /// Checks are done by the Data module.
     ///
     /// # Errors
     /// Returns Err if the activity is not found.
     #[must_use]
-    pub fn insert_activity(&mut self, id: ActivityID, beginning: Time) -> Result<()> {
+    pub fn insert_activity(&mut self, id: ActivityID, beginning: Option<Time>) -> Result<()> {
         let activity = self.get_mut_by_id(id)?;
         activity.computation_data.insert(beginning);
         Ok(())
@@ -628,7 +626,6 @@ impl Clone for Activities {
                         .build()
                         .expect("Could not build rayon::ThreadPool"),
                 ),
-                Arc::new(ComputationDoneNotifier::new()),
             ),
         }
     }
