@@ -7,13 +7,14 @@ use super::{
 };
 
 use crate::data::{
-    computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
+    computation_structs::{ComputationDoneNotifier, WorkHoursAndActivityDurationsSorted},
     Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES, RGBA,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
+use std::sync::Arc;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
@@ -26,10 +27,16 @@ pub struct Activities {
 impl Activities {
     /// Initializes the Activity collection.
     #[must_use]
-    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> Activities {
+    pub fn new(
+        thread_pool: Rc<rayon::ThreadPool>,
+        computation_done_notifier: Arc<ComputationDoneNotifier>,
+    ) -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(thread_pool),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(
+                thread_pool,
+                computation_done_notifier,
+            ),
         }
     }
 
@@ -615,11 +622,14 @@ impl Clone for Activities {
     fn clone(&self) -> Self {
         Activities {
             activities: self.activities.clone(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(Rc::new(
-                rayon::ThreadPoolBuilder::new()
-                    .build()
-                    .expect("Could not build rayon::ThreadPool"),
-            )),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(
+                Rc::new(
+                    rayon::ThreadPoolBuilder::new()
+                        .build()
+                        .expect("Could not build rayon::ThreadPool"),
+                ),
+                Arc::new(ComputationDoneNotifier::new()),
+            ),
         }
     }
 }

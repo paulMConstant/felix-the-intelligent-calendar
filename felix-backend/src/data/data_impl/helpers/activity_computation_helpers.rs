@@ -1,6 +1,5 @@
 use crate::data::{
-    computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
-    Activity, ActivityID, Data,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityID, Data,
 };
 use crate::errors::Result;
 

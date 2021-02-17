@@ -1,5 +1,5 @@
 use crate::data::{
-    computation_structs::work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted,
+    computation_structs::{ComputationDoneNotifier, WorkHoursAndActivityDurationsSorted},
     Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
@@ -25,17 +25,22 @@ pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityID, bool>,
     // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
+    computation_done_notifier: Arc<ComputationDoneNotifier>,
     thread_pool: Rc<rayon::ThreadPool>,
 }
 
 impl PossibleBeginningsUpdater {
-    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> PossibleBeginningsUpdater {
+    pub fn new(
+        thread_pool: Rc<rayon::ThreadPool>,
+        computation_done_notifier: Arc<ComputationDoneNotifier>,
+    ) -> PossibleBeginningsUpdater {
         PossibleBeginningsUpdater {
             possible_beginnings_up_to_date: HashMap::new(),
             computation_cache: Arc::new(
                 Mutex::new(WorkHoursAndActivityDurationsSortedCache::new()),
             ),
             thread_pool,
+            computation_done_notifier,
         }
     }
 
@@ -77,6 +82,7 @@ impl PossibleBeginningsUpdater {
         for key in work_hours_and_activity_durations {
             if self.computation_cache.lock().unwrap().contains_key(&key) == false {
                 let computation_cache = &self.computation_cache;
+                let computation_done_notifier = self.computation_done_notifier.clone();
 
                 // Launch the computation in a separate thread
                 self.thread_pool.install(|| {
@@ -90,6 +96,8 @@ impl PossibleBeginningsUpdater {
                         .lock()
                         .unwrap()
                         .insert(key.clone(), result);
+
+                    computation_done_notifier.notify_computation_result();
                 });
             }
         }

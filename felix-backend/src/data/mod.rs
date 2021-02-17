@@ -3,12 +3,15 @@ pub(crate) mod computation_structs;
 mod data_impl;
 mod events;
 
-pub use events::Events;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
 
 use components::{
     activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
     time::work_hours::WorkHours,
 };
+use computation_structs::ComputationDoneNotifier;
 
 pub use components::{
     activity::{Activity, ActivityID, RGBA},
@@ -18,11 +21,9 @@ pub use components::{
         time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
     },
 };
+pub use events::Events;
 
 pub use data_impl::helpers::clean_string;
-
-use std::cell::RefCell;
-use std::rc::Rc;
 
 /// Stores, calculates and maintains coherency between entities, work hours and activities.
 ///
@@ -112,7 +113,31 @@ pub struct Data {
 
 impl Data {
     /// Creates a new data object.
+    /// Use this if you don't care about waiting for computation results.
     pub fn new() -> Data {
+        let thread_pool = Rc::new(
+            rayon::ThreadPoolBuilder::new()
+                .num_threads((num_cpus::get() - 1).max(1))
+                .build()
+                .expect("Could not initialize rayon ThreadPool"),
+        );
+
+        // Keep computation notifier inside
+        let computation_done_notifier = Arc::new(ComputationDoneNotifier::new());
+        Data {
+            work_hours: WorkHours::new(),
+            entities: Entities::new(),
+            groups: Groups::new(),
+            activities: Activities::new(thread_pool.clone(), computation_done_notifier),
+            events: Rc::new(RefCell::new(Events::new())),
+            thread_pool,
+        }
+    }
+
+    /// Creates a new data object with injected handle to wait for computation results.
+    pub fn with_computation_done_notifier(
+        computation_done_notifier: Arc<ComputationDoneNotifier>,
+    ) -> Data {
         let thread_pool = Rc::new(
             rayon::ThreadPoolBuilder::new()
                 .num_threads((num_cpus::get() - 1).max(1))
@@ -124,7 +149,7 @@ impl Data {
             work_hours: WorkHours::new(),
             entities: Entities::new(),
             groups: Groups::new(),
-            activities: Activities::new(thread_pool.clone()),
+            activities: Activities::new(thread_pool.clone(), computation_done_notifier),
             events: Rc::new(RefCell::new(Events::new())),
             thread_pool,
         }
