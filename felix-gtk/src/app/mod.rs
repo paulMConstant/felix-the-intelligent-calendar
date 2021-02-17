@@ -22,8 +22,8 @@ pub struct App {
 impl App {
     /// Loads UI files in UI builder, binds mainwindow to application and sets title.
     pub fn new(application: &gtk::Application) -> App {
-        let data = init_data();
         let ui = init_ui(&application);
+        let data = init_data();
         App { data, ui }
     }
 
@@ -43,7 +43,9 @@ fn init_data() -> Arc<Mutex<Data>> {
         computation_done_notifier.clone(),
     )));
 
-    // Launch computation watcher thread
+    // Launch computation watcher thread. This thread is sleeping most of the time.
+    // When a computation result is available, an event is fed into gtk's main loop to 
+    // compute activity conflicts and refresh the UI.
     thread::spawn(move || loop {
         computation_done_notifier.wait_for_computation_result();
         println!("Got computation result !");

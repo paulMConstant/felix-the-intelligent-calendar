@@ -97,8 +97,12 @@ impl PossibleBeginningsUpdater {
                         .unwrap()
                         .insert(key.clone(), result);
 
+                    // Notify when the computation is done
                     computation_done_notifier.notify_computation_result();
                 });
+            } else {
+                // Notify that the computation is available right now
+                self.computation_done_notifier.notify_computation_result();
             }
         }
     }
