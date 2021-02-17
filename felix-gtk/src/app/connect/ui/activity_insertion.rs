@@ -97,7 +97,7 @@ impl App {
                         // Inserting activity at wrong time
                         return;
                     }
-                    data.insert_activity(activity_id, insertion_time)
+                    data.insert_activity(activity_id, Some(insertion_time))
                         .expect("Error while inserting activity, should have been checked for");
                 }
             }))));
