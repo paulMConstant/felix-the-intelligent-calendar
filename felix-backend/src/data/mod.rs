@@ -4,7 +4,8 @@ mod data_impl;
 mod events;
 
 use std::sync::Arc;
-use std::rc::{Rc, RefCell};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use components::{
     activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
@@ -115,7 +116,7 @@ impl Data {
     pub fn new() -> Data {
         // Keep computation notifier inside
         let computation_done_notifier = Arc::new(ComputationDoneNotifier::new());
-        new_data(computation_done_notifier);
+        new_data(computation_done_notifier)
     }
 
     /// Creates a new data object with injected handle to wait for computation results.
