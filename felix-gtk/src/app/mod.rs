@@ -7,12 +7,11 @@ pub mod notify;
 pub mod ui;
 
 use gtk::prelude::*;
-use glib::clone;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::thread;
 
 use crate::config::APP_NAME;
-use felix_backend::data::{Data, ComputationDoneNotifier};
+use felix_backend::data::{ComputationDoneNotifier, Data};
 use ui::Ui;
 
 pub struct App {
@@ -40,17 +39,15 @@ impl App {
 fn init_data() -> Arc<Mutex<Data>> {
     let computation_done_notifier = Arc::new(ComputationDoneNotifier::new());
 
-    let data = Arc::new(Mutex::new(
-            Data::with_computation_done_notifier(computation_done_notifier.clone())));
+    let data = Arc::new(Mutex::new(Data::with_computation_done_notifier(
+        computation_done_notifier.clone(),
+    )));
 
     // Launch computation watcher thread
-    thread::spawn(clone!(@strong data => move || {
-        loop {
-            computation_done_notifier.wait_for_computation_result();
-            println!("Got computation result !");
-            data.lock().unwrap().activity(0);
-        }
-    }));
+    thread::spawn(move || loop {
+        computation_done_notifier.wait_for_computation_result();
+        println!("Got computation result !");
+    });
     data
 }
 

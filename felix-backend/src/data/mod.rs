@@ -3,9 +3,9 @@ pub(crate) mod computation_structs;
 mod data_impl;
 mod events;
 
-use std::sync::Arc;
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
 
 use components::{
     activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
@@ -127,7 +127,7 @@ impl Data {
     }
 }
 
-fn new_data(computation_done_notifier: Arc<ComputationDoneNotifier>) -> Data  {
+fn new_data(computation_done_notifier: Arc<ComputationDoneNotifier>) -> Data {
     let thread_pool = Rc::new(
         rayon::ThreadPoolBuilder::new()
             .num_threads((num_cpus::get() - 1).max(1))
