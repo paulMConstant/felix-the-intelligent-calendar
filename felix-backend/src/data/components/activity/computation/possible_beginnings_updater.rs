@@ -1,6 +1,6 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted,
-    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION_MINUTES,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityID, Time,
+    MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
 use felix_computation_api::find_possible_beginnings::find_possible_beginnings;
@@ -29,9 +29,7 @@ pub struct PossibleBeginningsUpdater {
 }
 
 impl PossibleBeginningsUpdater {
-    pub fn new(
-        thread_pool: Rc<rayon::ThreadPool>,
-    ) -> PossibleBeginningsUpdater {
+    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> PossibleBeginningsUpdater {
         PossibleBeginningsUpdater {
             possible_beginnings_up_to_date: HashMap::new(),
             computation_cache: Arc::new(
@@ -92,14 +90,14 @@ impl PossibleBeginningsUpdater {
                         .lock()
                         .unwrap()
                         .insert(key.clone(), result);
-
                 });
-            } 
+            }
         }
     }
 
     /// Fuses the possible beginnings given every work\_hour\_and\_activity\_duration key.
     /// If the data is not yet available, returns None.
+    /// If the data is available, sets 'possible_beginnings_up_to_date' to true.
     #[must_use]
     pub fn poll_and_fuse_possible_beginnings(
         &mut self,

@@ -84,7 +84,7 @@ impl ActivityComputationData {
         self.possible_insertion_times_if_no_conflict = possible_insertion_times_if_no_conflict;
     }
 
-    /// Inserts the activity at given time. 
+    /// Inserts the activity at given time.
     /// If None is given, the activity is removed from the schedule.
     ///
     /// Does not perform any checks, data should be sanitized above.
@@ -94,10 +94,10 @@ impl ActivityComputationData {
     /// Panics if the insertion time + duration Time is invalid.
     pub fn insert(&mut self, insertion_time: Option<Time>) {
         if let Some(insertion_time) = insertion_time {
-        self.insertion_interval = Some(TimeInterval::new(
-            insertion_time,
-            insertion_time + self.duration,
-        ));
+            self.insertion_interval = Some(TimeInterval::new(
+                insertion_time,
+                insertion_time + self.duration,
+            ));
         } else {
             self.insertion_interval = None;
         }

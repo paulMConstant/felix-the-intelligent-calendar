@@ -21,8 +21,8 @@ pub const MIN_TIME_DISCRETIZATION_MINUTES: u16 = 5;
 ///
 /// Made to be small and copyable, 2-bytes long :
 /// ```
-/// # use felix_backend::data::Time;
-/// # use std::mem::size_of;
+/// use felix_backend::data::Time;
+/// use std::mem::size_of;
 /// assert_eq!(size_of::<Time>(), 2);
 /// ```
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
@@ -42,7 +42,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// let time_earliest = Time::new(0, 0);
     /// let time_latest = Time::new(24, 0);
     ///
@@ -75,7 +75,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// let n_times_min_discretization = 30;
     /// // Assuming MIN_TIME_DISCRETIZATION = 5 minutes
     /// let expected = Time::new(2, 30);
@@ -96,7 +96,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// let total_minutes = 60 * 3 + 15;
     /// let expected = Time::new(3, 15);
     /// assert_eq!(Time::from_total_minutes(total_minutes), expected);
@@ -131,7 +131,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// // Assuming MIN_TIME_DISCRETIZATION = 5
     /// let time = Time::new(2, 30);
     /// let expected = 2 * 60 / 5 + 30 / 5;
@@ -154,7 +154,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// let mut time = Time::new(1, 0);
     /// time.add_hours(2);
     /// assert_eq!(time, Time::new(3, 0));
@@ -179,7 +179,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// let mut time = Time::new(1, 50);
     /// time.add_minutes(20);
     /// assert_eq!(time, Time::new(2, 10));
@@ -210,7 +210,7 @@ impl Time {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
+    /// use felix_backend::data::Time;
     /// let mut time = Time::new(1, 50);
     /// time.add_hours_and_minutes(1, 20);
     /// assert_eq!(time, Time::new(3, 10));

@@ -22,7 +22,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let interval = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
@@ -49,7 +49,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
@@ -80,7 +80,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));

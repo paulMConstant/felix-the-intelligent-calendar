@@ -22,7 +22,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// // name = "Group" because of formatting
@@ -50,7 +50,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// data.add_group("New group").unwrap();
@@ -83,7 +83,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let group_name = data.add_group("New group").unwrap();
@@ -122,7 +122,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let group_name = data.add_group("New group").unwrap();
@@ -173,7 +173,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let group_name = data.add_group("Group").unwrap();

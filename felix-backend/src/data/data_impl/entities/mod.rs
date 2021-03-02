@@ -22,7 +22,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// // name = "Jeanne" because of formatting
@@ -51,7 +51,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -85,7 +85,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -130,7 +130,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -181,7 +181,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -209,7 +209,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -240,7 +240,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12,0));
@@ -283,7 +283,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -320,7 +320,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -367,7 +367,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();
@@ -420,7 +420,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let name = data.add_entity("Jeanne").unwrap();

@@ -7,8 +7,8 @@ use std::cmp::Ordering;
 ///
 /// Made to be small and copyable, 4-bytes long :
 /// ```
-/// # use felix_backend::data::TimeInterval;
-/// # use std::mem::size_of;
+/// use felix_backend::data::TimeInterval;
+/// use std::mem::size_of;
 /// assert_eq!(size_of::<TimeInterval>(), 4);
 /// ```
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
@@ -28,8 +28,8 @@ impl TimeInterval {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Time, TimeInterval};
-    /// # use std::panic::catch_unwind;
+    /// use felix_backend::data::{Time, TimeInterval};
+    /// use std::panic::catch_unwind;
     /// let (eight, nine) = (Time::new(8, 0), Time::new(9, 0));
     /// let time = TimeInterval::new(eight, nine);
     ///
@@ -64,8 +64,8 @@ impl TimeInterval {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
-    /// # use felix_backend::data::TimeInterval;
+    /// use felix_backend::data::Time;
+    /// use felix_backend::data::TimeInterval;
     /// let time_interval = TimeInterval::new(Time::new(8, 0), Time::new(9, 30));
     /// let expected_duration = Time::new(1, 30);
     /// assert_eq!(time_interval.duration(), expected_duration);
@@ -80,8 +80,8 @@ impl TimeInterval {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Time;
-    /// # use felix_backend::data::TimeInterval;
+    /// use felix_backend::data::Time;
+    /// use felix_backend::data::TimeInterval;
     /// let eight_nine = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
     /// let eight_ten = TimeInterval::new(Time::new(8, 0), Time::new(10, 0));
     /// let ten_eleven = TimeInterval::new(Time::new(10, 0), Time::new(11, 0));

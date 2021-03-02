@@ -262,7 +262,7 @@ fn set_activity_duration_too_short() {
 }
 
 #[test]
-fn set_activity_duration_check_insertion_interval_changed_when_duration_shorter() {
+fn decrease_activity_duration_check_insertion_interval_updated() {
     let name = "Déborah";
     test_ok!(
         data,
@@ -277,7 +277,7 @@ fn set_activity_duration_check_insertion_interval_changed_when_duration_shorter(
             }),
         {
             let id = data.activities_sorted()[0].id();
-            data.insert_activity(id, Time::new(8, 00)).unwrap();
+            data.insert_activity(id, Some(Time::new(8, 00))).unwrap();
             let activity = data.activity(id).expect("Could not get activity by ID");
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(9, 0));
             assert_eq!(
@@ -285,7 +285,7 @@ fn set_activity_duration_check_insertion_interval_changed_when_duration_shorter(
                 Some(expected_insertion_interval)
             );
 
-            // Change the duration, check that the insertion interval is still valid
+            // Decrease the duration, check that the insertion interval is still valid
             data.set_activity_duration(id, Time::new(0, 30)).unwrap();
             let activity = data.activity(id).expect("Could not get activity by ID");
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(8, 30));
@@ -297,9 +297,89 @@ fn set_activity_duration_check_insertion_interval_changed_when_duration_shorter(
     );
 }
 
-#[must_use]
-fn set_activity_duration_check_insertion_interval_is_valid() {
-    // TODO
+#[test]
+fn increase_activity_duration_check_insertion_interval_removed() {
+    let name = "Déborah";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
+            .with_activity(Activity {
+                duration: Time::new(0, 30),
+                name: "Activity",
+                groups: Vec::new(),
+                entities: vec![name],
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.insert_activity(id, Some(Time::new(8, 00))).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(8, 30));
+            assert_eq!(
+                activity.insertion_interval(),
+                Some(expected_insertion_interval)
+            );
+
+            // Change the duration, check that the insertion interval is removed
+            data.set_activity_duration(id, Time::new(1, 0)).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            let expected_insertion_interval = None;
+            assert_eq!(activity.insertion_interval(), expected_insertion_interval);
+        }
+    );
+}
+
+#[test]
+fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot() {
+    let name = "Déborah";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
+            .with_activity(Activity {
+                duration: Time::new(0, 30),
+                name: "Activity",
+                groups: Vec::new(),
+                entities: vec![name],
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.insert_activity(id, Some(Time::new(8, 30))).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            let expected_insertion_interval = TimeInterval::new(Time::new(8, 30), Time::new(9, 00));
+            assert_eq!(
+                activity.insertion_interval(),
+                Some(expected_insertion_interval)
+            );
+
+            // Change the duration, check that the insertion interval is removed
+            data.set_activity_duration(id, Time::new(1, 0)).unwrap();
+            let activity = data.activity(id).expect("Could not get activity by ID");
+            let expected_insertion_interval = None;
+            assert_eq!(activity.insertion_interval(), expected_insertion_interval);
+
+            // Wait for computation result
+            while data
+                .possible_insertion_times_of_activity(id)
+                .unwrap()
+                .is_none()
+            {
+                // For the purpose of this test, wait for asynchronous computation of possible beginnings.
+            }
+
+            // Ask data to find the closest spot for the activity
+            data.insert_activities_removed_because_duration_increased_in_closest_spot();
+            let insertion_beginning = data
+                .activity(id)
+                .expect("Could not get activity by ID")
+                .insertion_interval()
+                .expect("Activity was not reinserted in the schedule")
+                .beginning();
+            assert_eq!(insertion_beginning, Time::new(8, 0));
+        }
+    );
 }
 
 // *** Set activity color ***
@@ -352,7 +432,7 @@ fn basic_insert_activity() {
             let beginning = Time::new(10, 0);
             let expected_insertion_interval =
                 TimeInterval::new(beginning, beginning + activity_duration);
-            assert!(data.insert_activity(id, beginning).is_ok());
+            assert!(data.insert_activity(id, Some(beginning)).is_ok());
 
             let activity = data.activity(id).expect("Could not get activity by ID");
             assert_eq!(
@@ -389,7 +469,7 @@ fn basic_insert_activity_invalid_time() {
             }
 
             let beginning = Time::new(14, 0);
-            data.insert_activity(id, beginning)
+            data.insert_activity(id, Some(beginning))
         },
         "The activity 'Activity' cannot be inserted with beginning 14:00.",
         "Could insert activity in invalid interval"
@@ -427,7 +507,7 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
             {
                 // Wait for possible insertion times to be asynchronously calculated
             }
-            data.insert_activity(id1, Time::new(11, 0)).unwrap();
+            data.insert_activity(id1, Some(Time::new(11, 0))).unwrap();
 
             let id2 = data.activities_sorted()[1].id();
             while data
@@ -476,8 +556,8 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
             // The only beginnings is 10:00
             // Activity duration is 01:00 and intersection of work hours is [10:00 - 11:00]
             assert_eq!(data.possible_insertion_times_of_activity(id).unwrap().unwrap(),
-                       [Time::new(10, 0)].iter().copied().collect::<HashSet<_>>(),
-               "Insertion times with conflicts with inserted activities were not calculated right.");
+                      [Time::new(10, 0)].iter().copied().collect::<HashSet<_>>(),
+              "Insertion times with conflicts with inserted activities were not calculated right.");
         }
     );
 }

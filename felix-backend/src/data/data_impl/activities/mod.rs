@@ -72,7 +72,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let activity_name = "Activity";
@@ -105,7 +105,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
@@ -148,7 +148,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
@@ -190,7 +190,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval};
+    /// use felix_backend::data::{Data, Time, TimeInterval};
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
@@ -237,7 +237,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let id = data.add_activity("Activity").unwrap().id();
@@ -292,7 +292,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let id = data.add_activity("Activity").unwrap().id();
@@ -341,7 +341,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::Data;
+    /// use felix_backend::data::Data;
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
@@ -373,7 +373,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, MIN_TIME_DISCRETIZATION};
+    /// use felix_backend::data::{Data, Time, MIN_TIME_DISCRETIZATION};
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
@@ -389,6 +389,7 @@ impl Data {
         if new_duration > activity.duration() {
             self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
             if activity.insertion_interval().is_some() {
+                self.activities.store_activity_was_inserted(id)?;
                 self.insert_activity(id, None)?;
             }
         }
@@ -438,7 +439,7 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// # use felix_backend::data::{Data, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+    /// use felix_backend::data::{Data, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
@@ -447,12 +448,12 @@ impl Data {
     /// let work_hours = data.add_work_interval(work_interval).unwrap();
     /// data.add_entity_to_activity(activity_id, entity).unwrap();
     ///
-    /// while (data.possible_insertion_times_of_activity(activity_id).unwrap().is_none()) {
+    /// while data.possible_insertion_times_of_activity(activity_id).unwrap().is_none() {
     /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
     /// }
     ///
-    /// let insertion_time = Some(Time::new(8, 0));
-    /// assert!(data.insert_activity(activity_id, insertion_time).is_ok());
+    /// let insertion_time = Time::new(8, 0);
+    /// assert!(data.insert_activity(activity_id, Some(insertion_time)).is_ok());
     ///
     /// let activity = data.activity(activity_id).unwrap();
     /// let end = insertion_time + activity.duration();
@@ -479,7 +480,9 @@ impl Data {
                 }
             } else {
                 // Computation is not finished
-                Err(InvalidInsertion::insertions_not_computed_yet(self.activity(id)?.name()))
+                Err(InvalidInsertion::insertions_not_computed_yet(
+                    self.activity(id)?.name(),
+                ))
             }
         } else {
             // Remove activity from schedule
@@ -488,6 +491,76 @@ impl Data {
                 .borrow_mut()
                 .emit_activity_inserted(self, &self.activity(id)?);
             Ok(())
+        }
+    }
+
+    /// If activities were removed from the schedule because their duration was increased, insert
+    /// them back into the schedule in the closest spot we find.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use felix_backend::data::{Data, Time, TimeInterval};
+    /// let mut data = Data::new();
+    ///
+    /// let work_interval = TimeInterval::new(Time::new(8, 0), Time::new(10, 0));
+    /// data.add_work_interval(work_interval).unwrap();
+    ///
+    /// let id_will_move = data.add_activity("Will Move").unwrap().id();
+    /// let id_static = data.add_activity("Static").unwrap().id();
+    /// let entity = data.add_entity("Jean").unwrap();
+    ///
+    /// data.add_entity_to_activity(id_static, &entity);
+    /// data.add_entity_to_activity(id_will_move, &entity);
+    ///
+    /// data.set_activity_duration(id_static, Time::new(1, 0));
+    /// data.insert_activity(id_static, Some(Time::new(9, 0)));
+    ///
+    /// data.set_activity_duration(id_will_move, Time::new(0, 30));
+    /// data.insert_activity(id_will_move, Some(Time::new(8, 30)));
+    /// assert!(data.activity(id_will_move).unwrap().insertion_interval().is_some());
+    ///
+    /// data.set_activity_duration(id_will_move, Time::new(0, 45));
+    /// // We increased the duration of an inserted activity.
+    /// // As we have to compute first to check if the activity can still be inserted,
+    /// // it is removed from the schedule.
+    /// assert_eq!(data.activity(id_will_move).unwrap().insertion_interval(), None);
+    ///
+    /// // Wait for computation result...
+    /// while data.possible_insertion_times_of_activity(id_will_move).unwrap().is_none() {
+    /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
+    /// }
+    ///
+    /// // Try to insert the activity again
+    /// data.insert_activities_removed_because_duration_increased_in_closest_spot();
+    /// let new_beginning =
+    /// data.activity(id_will_move).unwrap().insertion_interval()
+    ///     .expect("Activity was not inserted !").beginning();
+    /// assert_eq!(new_beginning, Time::new(8, 15));
+    /// ```
+    pub fn insert_activities_removed_because_duration_increased_in_closest_spot(&mut self) {
+        let activity_ids_and_old_beginnings = self
+            .activities
+            .get_activities_removed_because_duration_increased();
+
+        for (id, old_beginning) in activity_ids_and_old_beginnings {
+            if let Some(possible_insertion_times) = self
+                .possible_insertion_times_of_activity(id)
+                .expect("Asking for possible times of activity which does not exist")
+            {
+                if self
+                    .activities
+                    .insert_activity_in_spot_closest_to(id, old_beginning, possible_insertion_times)
+                    .is_some()
+                {
+                    self.events().borrow_mut().emit_activity_inserted(
+                        self,
+                        &self
+                            .activity(id)
+                            .expect("The given activity does not exist"),
+                    );
+                }
+            }
         }
     }
 }

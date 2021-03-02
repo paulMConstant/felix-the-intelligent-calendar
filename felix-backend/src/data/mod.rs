@@ -31,7 +31,7 @@ pub use events::Events;
 /// Add, remove and modify work intervals :
 ///
 /// ```
-/// # use felix_backend::data::{Data, Time, TimeInterval};
+/// use felix_backend::data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
 /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
@@ -56,7 +56,7 @@ pub use events::Events;
 /// Add, remove and modify entities :
 ///
 /// ```
-/// # use felix_backend::data::{Data, Time, TimeInterval};
+/// use felix_backend::data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
 /// let entity_name = data.add_entity("Bernard").unwrap();
@@ -86,7 +86,7 @@ pub use events::Events;
 /// Add, remove and modify activities :
 ///
 /// ```
-/// # use felix_backend::data::{Data, Time, TimeInterval};
+/// use felix_backend::data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
 /// let activity_id = data.add_activity("My Activity").unwrap().id();
@@ -113,20 +113,20 @@ impl Data {
     /// Use this if you don't care about waiting for computation results.
     pub fn new() -> Data {
         // Keep computation notifier inside
-    let thread_pool = Rc::new(
-        rayon::ThreadPoolBuilder::new()
-            .num_threads((num_cpus::get() - 1).max(1))
-            .build()
-            .expect("Could not initialize rayon ThreadPool"),
-    );
-    Data {
-        work_hours: WorkHours::new(),
-        entities: Entities::new(),
-        groups: Groups::new(),
-        activities: Activities::new(thread_pool.clone()),
-        events: Rc::new(RefCell::new(Events::new())),
-        thread_pool,
-    }
+        let thread_pool = Rc::new(
+            rayon::ThreadPoolBuilder::new()
+                .num_threads((num_cpus::get() - 1).max(1))
+                .build()
+                .expect("Could not initialize rayon ThreadPool"),
+        );
+        Data {
+            work_hours: WorkHours::new(),
+            entities: Entities::new(),
+            groups: Groups::new(),
+            activities: Activities::new(thread_pool.clone()),
+            events: Rc::new(RefCell::new(Events::new())),
+            thread_pool,
+        }
     }
 }
 

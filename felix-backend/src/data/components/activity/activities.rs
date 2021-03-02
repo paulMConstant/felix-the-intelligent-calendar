@@ -7,13 +7,15 @@ use super::{
 };
 
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted,
-    Activity, ActivityID, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES, RGBA,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityID, Time,
+    MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES, RGBA,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
+
+pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityID, Time>;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
@@ -21,18 +23,17 @@ use std::rc::Rc;
 pub struct Activities {
     activities: HashMap<ActivityID, Activity>,
     possible_beginnings_updater: PossibleBeginningsUpdater,
+    activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings,
 }
 
 impl Activities {
     /// Initializes the Activity collection.
     #[must_use]
-    pub fn new(
-        thread_pool: Rc<rayon::ThreadPool>,
-    ) -> Activities {
+    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(
-                thread_pool,
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(thread_pool),
+            activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
         }
     }
@@ -61,6 +62,14 @@ impl Activities {
             Some(activity) => Ok(activity),
             None => Err(DoesNotExist::activity_does_not_exist(id)),
         }
+    }
+
+    /// Crate-local getter for activities which were removed from the schedule because their
+    /// duration increased.
+    pub(crate) fn get_activities_removed_because_duration_increased(
+        &self,
+    ) -> ActivitiesAndOldInsertionBeginnings {
+        self.activities_removed_because_duration_increased.clone()
     }
 
     /// Adds an activity with the given name to the collection.
@@ -310,8 +319,6 @@ impl Activities {
             let maybe_result = self
                 .possible_beginnings_updater
                 .poll_and_fuse_possible_beginnings(schedules_of_participants, &concerned_activity);
-            // TODO set_up_to_date as a separate function ??
-            // The 'up to date' and 'result' values are separated. This is not good.
 
             if maybe_result.is_some() {
                 // If the result is valid, store it into the activity computation data.
@@ -388,10 +395,64 @@ impl Activities {
         Ok(())
     }
 
+    /// Keeps the insertion time of an activity which was removed due to an increase of its
+    /// duration. The activity will then be inserted in the closest spot if possible.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity is not found.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity is not inserted anywhere (this should never happen - logic error).
+    pub(crate) fn store_activity_was_inserted(&mut self, id: ActivityID) -> Result<()> {
+        let activity = self.get_by_id(id)?;
+        let insertion_beginning = activity
+            .insertion_interval()
+            .expect("Storing insertion time of activity which is not inserted anywhere")
+            .beginning();
+        self.activities_removed_because_duration_increased
+            .insert(id, insertion_beginning);
+        Ok(())
+    }
+
+    /// Tries to insert the given activity in the spot which is the closest to the given beginning.
+    /// If the activity is inserted succesfuly, returns Some(()).
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity is not found. This should never happen as this function is
+    /// crate-local.
+    pub(crate) fn insert_activity_in_spot_closest_to(
+        &mut self,
+        id: ActivityID,
+        ideal_beginning: Time,
+        possible_beginnings: HashSet<Time>,
+    ) -> Option<()> {
+        if let Some(closest_spot) = possible_beginnings
+            .into_iter()
+            // Map into (time_distance, beginning) tuples
+            .map(|beginning| {
+                if beginning > ideal_beginning {
+                    (beginning - ideal_beginning, beginning)
+                } else {
+                    (ideal_beginning - beginning, beginning)
+                }
+            })
+            // Tuples implement Ord. (2, 3) > (1, 5) and (2, 2) < (2, 3)
+            .min()
+        {
+            self.insert_activity(id, Some(closest_spot.1))
+                .expect("The given activity does not exist !");
+            Some(())
+        } else {
+            None
+        }
+    }
+
     /// Returns data ready for auto-insertion of all activities.
     ///
     /// The ids of incompatible activities are turned into indexes.
-    ///
     #[must_use]
     fn fetch_computation(&self) -> Vec<ActivityComputationData> {
         let activities = self.activities.values();
@@ -620,12 +681,12 @@ impl Clone for Activities {
     fn clone(&self) -> Self {
         Activities {
             activities: self.activities.clone(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(
-                Rc::new(
-                    rayon::ThreadPoolBuilder::new()
-                        .build()
-                        .expect("Could not build rayon::ThreadPool"),
-                ),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(Rc::new(
+                rayon::ThreadPoolBuilder::new()
+                    .build()
+                    .expect("Could not build rayon::ThreadPool"),
+            )),
+            activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
         }
     }
