@@ -65,7 +65,7 @@ fn add_computation_result_done_callback(data: Arc<Mutex<Data>>) {
     const TIMEOUT_CHECK_COMPUTATION_RESULT_DONE: u32 = 50;
 
     glib::timeout_add_local(TIMEOUT_CHECK_COMPUTATION_RESULT_DONE, move || {
-        //data.lock().unwrap().move_activities_if_duration_conflict();
+        data.lock().unwrap().insert_activities_removed_because_duration_increased_in_closest_spot();
         glib::Continue(true)
     });
 }
