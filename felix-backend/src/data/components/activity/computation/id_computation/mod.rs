@@ -1,5 +1,8 @@
 //! Contains helper functions specific to impl Activities.
 
+#[cfg(test)]
+mod tests;
+
 use super::super::activity_metadata::ActivityMetadata;
 use crate::data::ActivityID;
 use std::convert::TryFrom;
@@ -54,26 +57,4 @@ pub fn compute_incompatible_ids(
         })
         .map(|other_metadata| other_metadata.id())
         .collect()
-}
-
-/// Given activities, turns
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_generate_next_id() {
-        let used_ids: Vec<&ActivityID> = vec![&1, &3, &2, &4, &6, &0];
-        let expected_next_id = 5;
-        assert_eq!(generate_next_id(used_ids), expected_next_id);
-
-        let used_ids: Vec<&ActivityID> = vec![&1, &3, &2, &4, &6];
-        let expected_next_id = 0;
-        assert_eq!(generate_next_id(used_ids), expected_next_id);
-
-        let used_ids: Vec<&ActivityID> = vec![&1, &3, &0, &4, &6];
-        let expected_next_id = 2;
-        assert_eq!(generate_next_id(used_ids), expected_next_id);
-    }
-    // compute_incompatible_ids is tested in super::activities.rs
 }
