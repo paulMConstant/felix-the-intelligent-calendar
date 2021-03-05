@@ -434,7 +434,8 @@ impl Activities {
     ) -> Option<()> {
         // We insert the activity (or at least we try. If we fail, we will fail again).
         // Therefore, remove this activity from the list of activities to insert back
-        self.activities_removed_because_duration_increased.remove(&id);
+        self.activities_removed_because_duration_increased
+            .remove(&id);
 
         if let Some(closest_spot) = possible_beginnings
             .into_iter()

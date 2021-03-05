@@ -1,5 +1,5 @@
-use super::*;
 use super::super::super::super::Entities;
+use super::*;
 
 #[test]
 fn incompatible_ids() {
@@ -172,8 +172,7 @@ fn test_fetch_computation() {
     let activities: Vec<Activity> = activity_collection.activities.values().cloned().collect();
     // Assuming activities.values() returns the same order twice
     // (activities.values() called in fetch_computation)
-    let computation_data: Vec<ActivityComputationData> =
-        activity_collection.fetch_computation();
+    let computation_data: Vec<ActivityComputationData> = activity_collection.fetch_computation();
 
     for (activity, computation) in activities.iter().zip(computation_data) {
         let mut ids = activity.computation_data.incompatible_activity_ids();
