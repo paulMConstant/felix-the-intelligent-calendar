@@ -396,7 +396,6 @@ impl Data {
         self.activities.set_duration(id, new_duration)?;
 
         let activity = self.activity(id)?;
-        println!("{}", activity.duration());
         self.queue_activity_participants(&activity)?;
         self.events()
             .borrow_mut()

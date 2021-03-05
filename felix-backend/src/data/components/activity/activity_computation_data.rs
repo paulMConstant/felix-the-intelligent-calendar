@@ -64,7 +64,6 @@ impl ActivityComputationData {
                 ));
             }
         }
-        println!("Set duration {} to {}", self.duration, duration);
         self.duration = duration;
     }
 

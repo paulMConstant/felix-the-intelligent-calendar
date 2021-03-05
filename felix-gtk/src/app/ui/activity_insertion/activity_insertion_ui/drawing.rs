@@ -330,6 +330,7 @@ fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mut
     // This may be called in a function above. It does not matter as the calculation is not heavy.
     // Calculating again here is safer.
     schedules.compute_height_for_min_discretization(height);
+
     for (index, activities) in schedules
         .entities_to_show
         .iter()
@@ -356,11 +357,13 @@ fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mut
 
             let color = activity.color();
             c.set_source_rgb(color.red, color.green, color.blue);
+
+            const SPACE_BELOW_ACTIVITY: f64 = 1.5;
             c.rectangle(
                 width_begin,
                 height_begin,
                 schedules.width_per_schedule,
-                heigh_to_paint,
+                heigh_to_paint - SPACE_BELOW_ACTIVITY,
             );
             c.fill();
 
