@@ -2,3 +2,4 @@
 Cargo.lock
 *.gresource*
 *.ui~
+taskell.md
