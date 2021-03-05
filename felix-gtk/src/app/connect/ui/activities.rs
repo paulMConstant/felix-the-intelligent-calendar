@@ -140,6 +140,7 @@ impl App {
         macro_rules! set_duration_closure {
             ($data:ident, $ui:ident, $minutes_spin:ident, $hours_spin:ident) => {
                 safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
+                let mut hours = hours; // Make original immutable variable mutable
 
                 let id = $ui
                     .lock()
@@ -148,15 +149,33 @@ impl App {
                     .expect("Current activity should be set before setting duration")
                     .id();
                 let mut data = $data.lock().unwrap();
-                if let Err(e) = data.set_activity_duration(id, Time::new(hours, minutes)) {
-                    let duration = data
-                        .activity(id)
-                        .expect("If current activity is set then id is valid")
-                        .duration();
-                    $minutes_spin.set_value(duration.minutes() as f64);
-                    $hours_spin.set_value(duration.hours() as f64);
+                let activity_duration = data
+                    .activity(id)
+                    .expect("Setting duration of activity which does not exist")
+                    .duration();
+
+                // Wrap if the duration goes from 0:55 to 0 or from 0 to 0:55
+                if activity_duration.minutes() == 55 && minutes == 0 {
+                    // Duration goes up from 0:55 to 1:00
+                    hours += 1;
+                } else if activity_duration.minutes() == 0 && minutes == 55 {
+                    // Duration goes down from 1:00 to 0:55
+                    if hours > 0 {
+                        hours -= 1;
+                    }
+                }
+
+                let new_duration = Time::new(hours, minutes);
+                if let Err(e) = data.set_activity_duration(id, new_duration) {
                     notify_err(e);
                 }
+
+                let activity_duration = data
+                    .activity(id)
+                    .expect("Setting duration of activity which does not exist")
+                    .duration();
+                $minutes_spin.set_value(activity_duration.minutes() as f64);
+                $hours_spin.set_value(activity_duration.hours() as f64);
             };
         }
 
