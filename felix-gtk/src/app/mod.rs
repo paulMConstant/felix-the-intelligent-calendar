@@ -62,7 +62,7 @@ fn init_ui(application: &gtk::Application) -> Arc<Mutex<Ui>> {
 }
 
 fn add_computation_result_done_callback(data: Arc<Mutex<Data>>) {
-    const TIMEOUT_CHECK_COMPUTATION_RESULT_DONE: u32 = 50;
+    const TIMEOUT_CHECK_COMPUTATION_RESULT_DONE: u32 = 10;
 
     glib::timeout_add_local(TIMEOUT_CHECK_COMPUTATION_RESULT_DONE, move || {
         data.lock()
