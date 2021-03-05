@@ -156,8 +156,11 @@ impl App {
 
                 // Wrap if the duration goes from 0:55 to 0 or from 0 to 0:55
                 if activity_duration.minutes() == 55 && minutes == 0 {
-                    // Duration goes up from 0:55 to 1:00
-                    hours += 1;
+                    // Safe guard
+                    if hours < 23 {
+                        // Duration goes up from 0:55 to 1:00
+                        hours += 1;
+                    }
                 } else if activity_duration.minutes() == 0 && minutes == 55 {
                     // Duration goes down from 1:00 to 0:55
                     if hours > 0 {
