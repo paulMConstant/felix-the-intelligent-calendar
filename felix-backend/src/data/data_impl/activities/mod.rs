@@ -563,4 +563,12 @@ impl Data {
             }
         }
     }
+
+    /// Clears the list of activities which were removed because their duration increased.
+    /// This means that we give up on reinserting them automatically (for instance, it's been too
+    /// long since the activity was removed).
+    pub fn clear_list_activities_removed_because_duration_increased(&mut self) {
+        self.activities
+            .clear_activities_removed_because_duration_increased();
+    }
 }

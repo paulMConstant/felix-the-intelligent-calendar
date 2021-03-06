@@ -7,6 +7,8 @@ pub mod notify;
 pub mod ui;
 
 use gtk::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use crate::config::APP_NAME;
@@ -16,6 +18,7 @@ use ui::Ui;
 pub struct App {
     data: Arc<Mutex<Data>>,
     ui: Arc<Mutex<Ui>>,
+    data_check_result_available_timeout_counter: Rc<RefCell<u32>>,
 }
 
 impl App {
@@ -23,10 +26,13 @@ impl App {
     pub fn new(application: &gtk::Application) -> App {
         let data = init_data();
         let ui = init_ui(&application);
+        let data_check_result_available_timeout_counter = Rc::new(RefCell::new(0));
 
-        add_computation_result_done_callback(data.clone());
-
-        App { data, ui }
+        App {
+            data,
+            ui,
+            data_check_result_available_timeout_counter,
+        }
     }
 
     pub fn ui(&self) -> MutexGuard<Ui> {
@@ -59,15 +65,4 @@ fn init_ui(application: &gtk::Application) -> Arc<Mutex<Ui>> {
     main_window.set_application(Some(application));
     main_window.set_title(APP_NAME);
     ui
-}
-
-fn add_computation_result_done_callback(data: Arc<Mutex<Data>>) {
-    const TIMEOUT_CHECK_COMPUTATION_RESULT_DONE: u32 = 10;
-
-    glib::timeout_add_local(TIMEOUT_CHECK_COMPUTATION_RESULT_DONE, move || {
-        data.lock()
-            .unwrap()
-            .insert_activities_removed_because_duration_increased_in_closest_spot();
-        glib::Continue(true)
-    });
 }

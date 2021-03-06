@@ -75,6 +75,11 @@ impl Activities {
         self.activities_removed_because_duration_increased.clone()
     }
 
+    /// Empties the list of activities which were removed because their duration increased.
+    pub(crate) fn clear_activities_removed_because_duration_increased(&mut self) {
+        self.activities_removed_because_duration_increased.clear();
+    }
+
     /// Adds an activity with the given name to the collection.
     /// Automatically assigns a unique id.
     /// Returns an immutable reference to the newly created activity.
