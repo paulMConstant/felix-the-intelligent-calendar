@@ -1,9 +1,11 @@
 mod drawing;
 mod drop;
 mod fetch_activity_insertion_ui;
+mod fetch_data_from_cursor_position;
 mod schedules;
 
 use crate::app::ui::EntityToShow;
+use fetch_data_from_cursor_position::get_id_of_activity_under_cursor;
 use schedules::Schedules;
 
 use felix_backend::data::{ActivityID, Time};
@@ -11,15 +13,24 @@ use felix_backend::data::{ActivityID, Time};
 use glib::clone;
 use gtk::prelude::*;
 
+use std::cell::RefCell;
 use std::collections::HashSet;
+use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
 const NUM_HOURS_IN_DAY: i32 = 24;
+
+#[derive(Debug, Clone)]
+struct MousePosition {
+    pub x: i32,
+    pub y: i32,
+}
 
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
     try_insert_activity_callback: Arc<dyn Fn(String, ActivityID, Time)>,
+    mouse_position: Rc<RefCell<Option<MousePosition>>>,
 }
 
 impl ActivityInsertionUi {
@@ -36,10 +47,12 @@ impl ActivityInsertionUi {
             try_insert_activity_callback: Arc::new(Box::new(|_, _, _| {
                 panic!("Insert activity callback has not been initialized !")
             })),
+            mouse_position: Rc::new(RefCell::new(None)),
         };
 
         activity_insertion.connect_draw();
         activity_insertion.connect_schedule_window_scroll();
+        activity_insertion.connect_mouse_position_events();
 
         activity_insertion
     }
@@ -67,9 +80,17 @@ impl ActivityInsertionUi {
     }
 
     #[must_use]
-    pub(super) fn get_insertion_box(&self) -> gtk::Box {
-        fetch_from!(self, insertion_box);
-        insertion_box
+    pub(super) fn get_activity_insertion_box(&self) -> gtk::Box {
+        fetch_from!(self, activity_insertion_box);
+        activity_insertion_box
+    }
+
+    #[must_use]
+    pub(super) fn get_id_of_activity_under_cursor(&self) -> Option<ActivityID> {
+        let cursor_position = (*self.mouse_position.borrow()).clone();
+        cursor_position.and_then(|pos| {
+            get_id_of_activity_under_cursor(pos.x, pos.y, &self.schedules_to_show.lock().unwrap())
+        })
     }
 
     #[must_use]
@@ -158,5 +179,30 @@ impl ActivityInsertionUi {
             .unwrap()
             .connect_value_changed(clone!(@weak hours_scrolled_window => move |vadjustment|
              hours_scrolled_window.get_vadjustment().unwrap().set_value(vadjustment.get_value())));
+    }
+
+    fn connect_mouse_position_events(&self) {
+        fetch_from!(self, schedule_scrolled_window);
+        let mouse_position = self.mouse_position.clone();
+        schedule_scrolled_window.connect_leave_notify_event(move |_window, _event| {
+            *mouse_position.borrow_mut() = None;
+            glib::signal::Inhibit(false)
+        });
+
+        let mouse_position = self.mouse_position.clone();
+        schedule_scrolled_window.connect_motion_notify_event(move |scrolled_window, event| {
+            let (x_event, y_event) = event.get_position();
+            let (x_scrollbar_offset, y_scrollbar_offset) = (
+                scrolled_window.get_hadjustment().unwrap().get_value(),
+                scrolled_window.get_vadjustment().unwrap().get_value(),
+            );
+            let (x, y) = (x_event + x_scrollbar_offset, y_event + y_scrollbar_offset);
+
+            *mouse_position.borrow_mut() = Some(MousePosition {
+                x: x as i32,
+                y: y as i32,
+            });
+            glib::signal::Inhibit(false)
+        });
     }
 }

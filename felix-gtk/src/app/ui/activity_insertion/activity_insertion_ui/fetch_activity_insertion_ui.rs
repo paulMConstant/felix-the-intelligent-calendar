@@ -4,7 +4,7 @@ use super::ActivityInsertionUi;
 
 impl ActivityInsertionUi {
     #[must_use]
-    pub fn insertion_box(&self) -> gtk::Box {
+    pub fn activity_insertion_box(&self) -> gtk::Box {
         fetch_ui_from_builder!(self, "ActivityInsertionBox")
     }
 

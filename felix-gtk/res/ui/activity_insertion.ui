@@ -97,17 +97,10 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkEventBox" id="ScheduleEventBox">
+                  <object class="GtkDrawingArea" id="SchedulesDrawing">
+                    <property name="height-request">1850</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="visible-window">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="SchedulesDrawing">
-                        <property name="height-request">1850</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

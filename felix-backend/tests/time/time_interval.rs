@@ -30,6 +30,15 @@ fn overlap() {
 }
 
 #[test]
+fn contains() {
+    let interval = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
+    assert_eq!(interval.contains(Time::new(7, 0)), false);
+    assert!(interval.contains(Time::new(8, 0)));
+    assert!(interval.contains(Time::new(8, 30)));
+    assert_eq!(interval.contains(Time::new(9, 0)), false);
+}
+
+#[test]
 fn invalid_new() {
     catch_unwind(|| TimeInterval::new(Time::new(10, 0), Time::new(9, 0)))
         .expect_err("Created TimeInterval with beginning > end");

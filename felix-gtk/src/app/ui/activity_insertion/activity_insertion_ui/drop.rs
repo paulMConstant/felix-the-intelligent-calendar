@@ -1,8 +1,12 @@
-use super::{schedules::TimeTooltipToDraw, ActivityInsertionUi, Schedules};
+use super::{
+    fetch_data_from_cursor_position::{get_name_of_entity_from_x, get_time_on_y},
+    schedules::TimeTooltipToDraw,
+    ActivityInsertionUi,
+};
 
 use crate::app::ui::drag_config::*;
 
-use felix_backend::data::{ActivityID, Time};
+use felix_backend::data::ActivityID;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -63,21 +67,4 @@ impl ActivityInsertionUi {
             }),
         );
     }
-}
-
-#[must_use]
-fn get_name_of_entity_from_x(x: i32, schedules: &Schedules) -> Option<String> {
-    let index_of_entity = (x / schedules.width_per_schedule as i32) as usize;
-
-    if index_of_entity < schedules.entities_to_show.len() {
-        Some(schedules.entities_to_show[index_of_entity].name().clone())
-    } else {
-        None
-    }
-}
-
-#[must_use]
-fn get_time_on_y(y: i32, schedules: &Schedules) -> Time {
-    let n_times_min_discretization = (y as f64 / schedules.height_per_min_discretization) as i32;
-    Time::from_n_times_min_discretization(n_times_min_discretization)
 }

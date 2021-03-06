@@ -14,8 +14,13 @@ use gtk::prelude::*;
 impl Ui {
     pub(super) fn on_init_activity_insertion(&self) {
         fetch_from!(self, insertion_box);
+        // Put the activity insertion widget inside of the box
         insertion_box.pack_end(
-            &self.activity_insertion.lock().unwrap().get_insertion_box(),
+            &self
+                .activity_insertion
+                .lock()
+                .unwrap()
+                .get_activity_insertion_box(),
             true,
             true,
             0,
@@ -93,5 +98,27 @@ impl Ui {
             .lock()
             .unwrap()
             .remove_entity_schedule(old_name);
+    }
+
+    pub fn on_left_click(&mut self, data: &Data) {
+        let maybe_id = self
+            .activity_insertion
+            .lock()
+            .unwrap()
+            .get_id_of_activity_under_cursor();
+        if let Some(id) = maybe_id {
+            let activity = data
+                .activity(id)
+                .expect("User clicked on activity which does not exist");
+            self.update_current_activity(&data.groups_sorted(), Some(activity));
+        }
+    }
+
+    pub fn on_right_click(&mut self, data: &Data) {
+        //println!("Got right click {:?}", self.activity_insertion
+        //.lock()
+        //.unwrap()
+        //.get_id_of_activity_under_cursor());
+        // TODO Lock activity in place
     }
 }

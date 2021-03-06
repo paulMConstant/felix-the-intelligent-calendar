@@ -27,11 +27,7 @@ impl Ui {
     }
 
     /// Updates the state of AppData and Activity-specific UI.
-    pub(super) fn update_current_activity(
-        &mut self,
-        groups: &Vec<&Group>,
-        activity: Option<Activity>,
-    ) {
+    pub fn update_current_activity(&mut self, groups: &Vec<&Group>, activity: Option<Activity>) {
         self.update_current_activity_name_only(activity);
 
         if self.current_activity.is_some() {

@@ -11,6 +11,8 @@ use gtk::prelude::*;
 impl App {
     pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
+        self.connect_activity_clicked();
+
         self.set_activity_try_insert_callback();
         self.set_activity_get_possible_insertions_callback();
 
@@ -69,6 +71,26 @@ impl App {
                 show_schedule_entry
             ))
         );
+    }
+
+    fn connect_activity_clicked(&self) {
+        fetch_from!(self.ui(), main_window);
+
+        let ui = self.ui.clone();
+        let data = self.data.clone();
+
+        main_window.connect_button_press_event(move |_window, event| {
+            const RIGHT_CLICK: u32 = 3;
+            const LEFT_CLICK: u32 = 1;
+
+            match event.get_button() {
+                RIGHT_CLICK => ui.lock().unwrap().on_right_click(&(data.lock().unwrap())),
+                LEFT_CLICK => ui.lock().unwrap().on_left_click(&(data.lock().unwrap())),
+                _ => { // Do nothing
+                }
+            }
+            glib::signal::Inhibit(true)
+        });
     }
 
     fn set_activity_try_insert_callback(&self) {

@@ -80,8 +80,8 @@ impl TimeInterval {
     /// # Example
     ///
     /// ```
-    /// use felix_backend::data::Time;
-    /// use felix_backend::data::TimeInterval;
+    /// use felix_backend::data::{Time, TimeInterval};
+    ///
     /// let eight_nine = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
     /// let eight_ten = TimeInterval::new(Time::new(8, 0), Time::new(10, 0));
     /// let ten_eleven = TimeInterval::new(Time::new(10, 0), Time::new(11, 0));
@@ -92,6 +92,25 @@ impl TimeInterval {
     #[must_use]
     pub fn overlaps_with(&self, other: &TimeInterval) -> bool {
         self.beginning < other.end && self.end > other.beginning
+    }
+
+    /// Returns true if the time interval contains the given time.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use felix_backend::data::{Time, TimeInterval};
+    ///
+    /// let interval = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
+    ///
+    /// assert_eq!(interval.contains(Time::new(7, 0)), false);
+    /// assert!(interval.contains(Time::new(8, 0)));
+    /// assert!(interval.contains(Time::new(8, 30)));
+    /// assert_eq!(interval.contains(Time::new(9, 0)), false);
+    /// ```
+    #[must_use]
+    pub fn contains(&self, time: Time) -> bool {
+        self.beginning <= time && self.end > time
     }
 }
 
