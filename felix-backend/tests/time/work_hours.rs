@@ -1,5 +1,5 @@
 use felix_backend::data::{Time, TimeInterval};
-use test_utils::data_builder::{Activity, DataBuilder};
+use test_utils::{Activity, DataBuilder};
 
 #[test]
 fn simple_add_interval() {

@@ -1,79 +1,6 @@
-use felix_backend::data::{Data, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use felix_backend::data::{Data, Time, TimeInterval};
 
-/// # Parameters
-///
-/// $data: ident, $builder: expr, $test\_block: expr, $expected\_error: literal, $failure\_message:
-/// literal
-#[macro_export]
-macro_rules! test_err {
-    ($data: ident, $builder: expr, $test_block: expr, $expected_error: literal, $failure_message: literal) => {
-        #[allow(unused_mut)]
-        let mut $data = $builder.into_data();
-        assert_not_modified!(
-            $data,
-            assert_eq!(
-                format!(
-                    "{}",
-                    $test_block.expect_err("This block should have returned an error, got:")
-                ),
-                $expected_error,
-                $failure_message
-            )
-        );
-    };
-}
-
-/// # Parameters
-///
-/// $data: ident, $builder: expr, $test\_block: expr
-#[macro_export]
-macro_rules! test_ok {
-    ($data: ident, $builder: expr, $test_block: expr) => {
-        #[allow(unused_mut)]
-        let mut $data = $builder.into_data();
-        $test_block;
-    };
-}
-
-#[derive(Default)]
-pub struct Group {
-    pub name: &'static str,
-    pub entities: Vec<&'static str>,
-}
-
-impl Group {
-    #[must_use]
-    pub fn default(name: &'static str) -> Group {
-        Group {
-            name,
-            ..Default::default()
-        }
-    }
-}
-
-pub struct Activity {
-    pub name: &'static str,
-    pub duration: Time,
-    pub entities: Vec<&'static str>,
-    pub groups: Vec<&'static str>,
-}
-
-impl Default for Activity {
-    fn default() -> Activity {
-        Activity {
-            name: "Activity",
-            duration: MIN_TIME_DISCRETIZATION,
-            entities: Vec::new(),
-            groups: Vec::new(),
-        }
-    }
-}
-impl Activity {
-    #[must_use]
-    pub fn default() -> Activity {
-        Default::default()
-    }
-}
+use crate::{Activity, Group};
 
 pub struct DataBuilder {
     data: Data,
@@ -200,6 +127,17 @@ impl DataBuilder {
             .set_activity_duration(id, activity.duration)
             .expect("Could not set activity duration");
 
+        while self
+            .data
+            .possible_insertion_times_of_activity(id)
+            .expect("Could not get activity by ID")
+            .is_none()
+        {
+            // Wait for possible insertion times to be asynchronously calculated
+        }
+        self.data
+            .insert_activity(id, activity.insertion_time)
+            .expect("Could not insert activity");
         self
     }
 

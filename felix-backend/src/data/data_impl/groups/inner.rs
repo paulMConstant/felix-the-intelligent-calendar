@@ -1,7 +1,7 @@
 use crate::data::{ActivityID, Data};
 
 impl Data {
-    pub(in super::super::groups) fn ids_of_activities_in_which_entity_is_participating_only_through_this_group(
+    pub(super) fn ids_of_activities_in_which_entity_is_participating_only_through_this_group(
         &self,
         entity_name: &String,
         group_name: &String,

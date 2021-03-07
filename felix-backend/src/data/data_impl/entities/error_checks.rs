@@ -10,10 +10,7 @@ impl Data {
     ///
     /// Returns Err if the group exists.
     #[must_use]
-    pub(in super::super::entities) fn check_name_taken_by_group(
-        &self,
-        name: &String,
-    ) -> Result<()> {
+    pub(super) fn check_name_taken_by_group(&self, name: &String) -> Result<()> {
         if let Some(group_name) = self
             .groups_sorted()
             .iter()
@@ -33,7 +30,7 @@ impl Data {
     ///
     /// Returns Err if the entity does not exist or if it will not have enough time.
     #[must_use]
-    pub(in super::super::entities) fn check_entity_will_have_enough_time_with_custom_interval(
+    pub(super) fn check_entity_will_have_enough_time_with_custom_interval(
         &self,
         entity_name: &String,
         interval_duration: Time,
@@ -58,7 +55,7 @@ impl Data {
     /// Returns Err if the entity does not have a custom work interval corresponding to the given
     /// one.
     #[must_use]
-    pub(in super::super::entities) fn check_entity_has_custom_interval(
+    pub(super) fn check_entity_has_custom_interval(
         &self,
         entity_name: &String,
         interval: &TimeInterval,
@@ -87,7 +84,7 @@ impl Data {
     ///
     /// Panics if interval\_duration is greater than the custom work hours's total duration.
     #[must_use]
-    pub(in super::super::entities) fn check_entity_will_have_enough_time_after_deletion_of_interval(
+    pub(super) fn check_entity_will_have_enough_time_after_deletion_of_interval(
         &self,
         entity_name: &String,
         interval_duration: Time,
@@ -123,7 +120,7 @@ impl Data {
     /// Returns Err if the entity name is empty, the entity is not found
     /// or the entity will not have enough time after update.
     #[must_use]
-    pub(in super::super::entities) fn check_entity_will_have_enough_time_after_update(
+    pub(super) fn check_entity_will_have_enough_time_after_update(
         &self,
         entity_name: &String,
         old_duration: Time,

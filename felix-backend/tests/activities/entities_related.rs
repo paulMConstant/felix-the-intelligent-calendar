@@ -6,8 +6,8 @@
 //! - Deletion of entities from the activity
 //! - Changing the duration of the activity (makes sure all entities have enough time)
 
-use felix_backend::data::Time;
-use test_utils::data_builder::{Activity, DataBuilder};
+use felix_backend::data::{Time, TimeInterval};
+use test_utils::{Activity, DataBuilder};
 
 // *** Add entities ***
 #[test]
@@ -79,14 +79,19 @@ fn add_entity_not_enough_time() {
 #[test]
 fn add_entity_already_participating() {
     let (entity_name, activity_name) = ("Entity", "Activity");
+    // Add an insertion time to make sure that the activity is not detected as overlapping
+    let beginning = Time::new(8, 0);
+    let end = Time::new(10, 0);
+    let time_interval = TimeInterval::new(beginning, end);
     test_err!(
         data,
         DataBuilder::new()
-            .with_work_interval_of_duration(4)
+            .with_work_interval(time_interval)
             .with_entity(entity_name)
             .with_activity(Activity {
                 name: activity_name,
                 entities: vec![entity_name],
+                insertion_time: Some(beginning),
                 ..Default::default()
             }),
         {
@@ -126,6 +131,46 @@ fn add_entity_does_not_exist() {
         },
         "Does Not Exist does not exist.",
         "Could add nonexistent entity to activity"
+    );
+}
+
+#[test]
+fn add_entity_to_inserted_activity_spot_taken() {
+    let (entity1, entity2) = ("Entity1", "Entity2");
+    let (activity1, activity2) = ("Activity1", "Activity2");
+    let beginning = Time::new(9, 0);
+    let end = Time::new(13, 0);
+    let time_interval = TimeInterval::new(beginning, end);
+
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_work_interval(time_interval)
+            .with_entities(vec![entity1, entity2])
+            .with_activities(vec![
+                Activity {
+                    name: activity1,
+                    entities: vec![entity1],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                    insertion_time: Some(beginning),
+                },
+                Activity {
+                    name: activity2,
+                    entities: vec![entity2],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                    insertion_time: Some(beginning),
+                }
+            ]),
+        {
+            let id1 = data.activities_sorted()[0].id();
+
+            // Try to add entity2 to activity1 which is inserted in the same spot as activity2
+            data.add_entity_to_activity(id1, entity2)
+        },
+        "Entity2 cannot be added to 'Activity1' because it would overlap with 'Activity2'.",
+        "Could add entity to activity which is inserted in an unavailable spot"
     );
 }
 

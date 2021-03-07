@@ -30,6 +30,7 @@ mod time {
 }
 
 mod errors {
+    mod add_entity_to_inserted_activity_spot_taken;
     mod already_in;
     mod does_not_exist;
     mod duration_too_short;

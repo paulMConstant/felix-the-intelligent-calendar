@@ -105,7 +105,7 @@ macro_rules! create_events_impl {
 ///
 /// /// Structure holding all events.
 /// impl Events {
-///     pub(in super::super) fn new() -> Events {
+///     pub fn new() -> Events {
 ///         Events {
 ///             renamed: Vec::new(),
 ///             something_changed: Vec::new(),
@@ -122,16 +122,16 @@ macro_rules! create_events_impl {
 ///         self.something_changed.extend(callbacks);
 ///     }
 ///
-///     pub(in super::super) fn emit_renamed(&mut self,
-///                                          data: &Data,
-///                                          old_name: &String,
-///                                          new_name: &String) {
+///     pub fn emit_renamed(&mut self,
+///                         data: &Data,
+///                         old_name: &String,
+///                         new_name: &String) {
 ///         for callback in &mut self.renamed {
 ///             callback(data, old_name, new_name);
 ///         }
 ///     }
 ///
-///     pub(in super::super) fn emit_something_changed(&mut self, data: &Data) {
+///     pub fn emit_something_changed(&mut self, data: &Data) {
 ///         for callback in &mut self.something_changed {
 ///             callback(data);
 ///         }

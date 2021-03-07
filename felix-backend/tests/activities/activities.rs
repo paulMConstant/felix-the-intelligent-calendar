@@ -10,7 +10,7 @@
 //! - Activity insertion
 
 use felix_backend::data::{Time, TimeInterval, RGBA};
-use test_utils::data_builder::{Activity, DataBuilder};
+use test_utils::{Activity, DataBuilder};
 
 use std::collections::HashSet;
 
@@ -274,10 +274,11 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
                 name: "Activity",
                 groups: Vec::new(),
                 entities: vec![name],
+                insertion_time: Some(Time::new(8, 00)),
+                ..Default::default()
             }),
         {
             let id = data.activities_sorted()[0].id();
-            data.insert_activity(id, Some(Time::new(8, 00))).unwrap();
             let activity = data.activity(id).expect("Could not get activity by ID");
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(9, 0));
             assert_eq!(
@@ -310,10 +311,11 @@ fn increase_activity_duration_check_insertion_interval_removed() {
                 name: "Activity",
                 groups: Vec::new(),
                 entities: vec![name],
+                insertion_time: Some(Time::new(8, 00)),
+                ..Default::default()
             }),
         {
             let id = data.activities_sorted()[0].id();
-            data.insert_activity(id, Some(Time::new(8, 00))).unwrap();
             let activity = data.activity(id).expect("Could not get activity by ID");
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(8, 30));
             assert_eq!(
@@ -343,10 +345,11 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
                 name: "Activity",
                 groups: Vec::new(),
                 entities: vec![name],
+                insertion_time: Some(Time::new(8, 30)),
+                ..Default::default()
             }),
         {
             let id = data.activities_sorted()[0].id();
-            data.insert_activity(id, Some(Time::new(8, 30))).unwrap();
             let activity = data.activity(id).expect("Could not get activity by ID");
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 30), Time::new(9, 00));
             assert_eq!(
@@ -418,6 +421,7 @@ fn basic_insert_activity() {
                 entities: vec![name1, name2],
                 duration: activity_duration,
                 groups: Vec::new(),
+                ..Default::default()
             }),
         {
             let id = data.activities_sorted()[0].id();
@@ -457,6 +461,7 @@ fn basic_insert_activity_invalid_time() {
                 entities: vec![name1, name2],
                 duration: activity_duration,
                 groups: Vec::new(),
+                ..Default::default()
             }),
         {
             let id = data.activities_sorted()[0].id();
@@ -490,25 +495,18 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
                     entities: vec![name],
                     duration: Time::new(1, 0),
                     groups: Vec::new(),
+                    insertion_time: Some(Time::new(11, 0)),
+                    ..Default::default()
                 },
                 Activity {
                     name: "Activity2",
                     entities: vec![name],
                     duration: Time::new(1, 0),
                     groups: Vec::new(),
+                    ..Default::default()
                 }
             ]),
         {
-            let id1 = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity(id1)
-                .expect("Could not get activity by ID")
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
-            data.insert_activity(id1, Some(Time::new(11, 0))).unwrap();
-
             let id2 = data.activities_sorted()[1].id();
             while data
                 .possible_insertion_times_of_activity(id2)
@@ -543,6 +541,7 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
                 entities: vec![name1, name2],
                 duration: Time::new(1, 0),
                 groups: Vec::new(),
+                ..Default::default()
             }),
         {
             let id = data.activities_sorted()[0].id();

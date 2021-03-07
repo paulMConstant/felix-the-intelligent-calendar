@@ -13,7 +13,7 @@ impl Data {
     ///
     /// Returns Err if the given activity id is not valid or the group does not exist.
     #[must_use]
-    pub(in super::super::activities) fn entities_participating_through_this_group_only(
+    pub(super) fn entities_participating_through_this_group_only(
         &self,
         activity_id: ActivityID,
         group_name: &String,

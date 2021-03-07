@@ -2,7 +2,7 @@
 extern crate test_utils;
 
 use felix_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
-use test_utils::data_builder::{Activity, DataBuilder, Group};
+use test_utils::{Activity, DataBuilder, Group};
 
 #[test]
 fn add_entity() {
@@ -199,20 +199,24 @@ fn add_work_intervals() {
 #[test]
 fn add_activity() {
     let activity_name = "Activity Name";
+    let beginning = Time::new(0, 0);
+    let end = Time::new(6, 0);
+    let work_interval = TimeInterval::new(beginning, end);
     let duration = Time::new(5, 30);
     let (entity1, entity2) = ("Entity1", "Entity2");
     let (group1, group2) = ("Group1", "Group2");
     test_ok!(
         data,
         DataBuilder::new()
-            .with_work_interval_of_duration(6)
+            .with_work_interval(work_interval)
             .with_entities(vec![entity1, entity2])
             .with_groups(vec![Group::default(group1), Group::default(group2)])
             .with_activity(Activity {
                 name: activity_name,
                 duration,
                 entities: vec![entity2, entity1],
-                groups: vec![group2, group1]
+                groups: vec![group2, group1],
+                insertion_time: Some(beginning),
             }),
         {
             let activities = data.activities_sorted();
@@ -229,6 +233,11 @@ fn add_activity() {
                 activity.groups_sorted(),
                 vec![group1, group2],
                 "Activity groups is wrong"
+            );
+            assert_eq!(
+                activity.insertion_interval(),
+                Some(TimeInterval::new(beginning, beginning + duration)),
+                "Activity was not inserted"
             );
         }
     );
@@ -259,6 +268,10 @@ fn add_default_activity() {
                 activity.groups_sorted().is_empty(),
                 "Default activity groups is wrong"
             );
+            assert!(
+                activity.insertion_interval().is_none(),
+                "Default activity insertion interval is wrong"
+            );
         }
     );
 }
@@ -276,25 +289,31 @@ fn add_activities() {
             let expected_duration = default_activity.duration;
             let expected_entities = default_activity.entities;
             let expected_groups = default_activity.groups;
+            let expected_insertion_interval = None;
 
-            for i in 0..1 {
+            for activity in activities {
                 assert_eq!(
-                    activities[i].name(),
+                    activity.name(),
                     expected_name,
                     "Activities were not added right"
                 );
                 assert_eq!(
-                    activities[i].duration(),
+                    activity.duration(),
                     expected_duration,
                     "Activities were not added right"
                 );
                 assert_eq!(
-                    activities[i].entities_sorted(),
+                    activity.entities_sorted(),
                     expected_entities,
                     "Activities were not added right"
                 );
                 assert_eq!(
-                    activities[i].groups_sorted(),
+                    activity.groups_sorted(),
+                    expected_groups,
+                    "Activities were not added right"
+                );
+                assert_eq!(
+                    activity.insertion_interval(),
                     expected_groups,
                     "Activities were not added right"
                 );

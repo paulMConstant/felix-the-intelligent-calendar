@@ -1,3 +1,4 @@
+pub mod add_entity_to_inserted_activity_spot_taken;
 pub mod already_in;
 pub mod does_not_exist;
 pub mod duration_too_short;

@@ -8,10 +8,7 @@ impl Data {
     ///
     /// If the entity does not exist, returns Time(0, 0).
     #[must_use]
-    pub(in super::super::entities) fn time_taken_by_activities(
-        &self,
-        entity_name: &String,
-    ) -> Time {
+    pub(super) fn time_taken_by_activities(&self, entity_name: &String) -> Time {
         self.activities_sorted()
             .iter()
             .filter_map(|activity| {
@@ -30,10 +27,7 @@ impl Data {
     ///
     /// Returns Err if the entity does not exist.
     #[must_use]
-    pub(in super::super::entities) fn total_available_time(
-        &self,
-        entity_name: &String,
-    ) -> Result<Time> {
+    pub(super) fn total_available_time(&self, entity_name: &String) -> Result<Time> {
         Ok(self
             .work_hours_of(entity_name)?
             .iter()

@@ -4,7 +4,7 @@
 //! - Renaming
 //! - Deletion
 
-use test_utils::data_builder::{DataBuilder, Group};
+use test_utils::{DataBuilder, Group};
 
 #[test]
 fn add_entity_group_has_same_name() {
