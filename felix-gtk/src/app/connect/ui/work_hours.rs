@@ -1,7 +1,6 @@
 use crate::app::notify::notify_err;
 use crate::app::App;
 
-use glib::clone;
 use gtk::prelude::*;
 
 use std::convert::TryFrom;
@@ -47,48 +46,49 @@ impl App {
         app_register_signal!(
             self,
             work_hour_add_button,
-            work_hour_add_button.connect_clicked(clone!(@strong data, @strong ui => move |_| {
+            work_hour_add_button.connect_clicked(move |_| {
                 let current_work_hours = data.lock().unwrap().work_hours();
                 ui.lock().unwrap().on_add_work_hour(current_work_hours);
-            }))
+            })
         );
     }
 
     fn set_work_hour_editing_done_callback(&self) {
-        let data = &self.data;
-        let work_hour_editing_done_callback = Arc::new(
-            clone!(@strong data => move |position, builder: gtk::Builder| {
-                let mut data = data.lock().unwrap();
-                let work_hours = data.work_hours();
+        let data = self.data.clone();
+        let work_hour_editing_done_callback = Arc::new(move |position, builder: gtk::Builder| {
+            let mut data = data.lock().unwrap();
+            let work_hours = data.work_hours();
 
-                fetch_from_builder!(builder,
-                                interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
-                                interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
-                                interval_end_hours=gtk::SpinButton:"IntervalEndHourSpin",
-                                interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
-                               );
+            fetch_from_builder!(builder,
+             interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
+             interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
+             interval_end_hours=gtk::SpinButton:"IntervalEndHourSpin",
+             interval_end_minutes=gtk::SpinButton:"IntervalEndMinuteSpin"
+            );
 
-                safe_spinbutton_to_i8!(interval_begin_hours => begin_hours,
+            safe_spinbutton_to_i8!(interval_begin_hours => begin_hours,
                                        interval_begin_minutes => begin_minutes,
                                        interval_end_hours => end_hours,
                                        interval_end_minutes => end_minutes);
 
-                let beginning = Time::new(begin_hours, begin_minutes);
-                let end = Time::new(end_hours, end_minutes);
-                if beginning > end || end - beginning < MIN_TIME_DISCRETIZATION {
-                    let error: Result<()> = Err(InvalidInterval::new());
-                    reset_work_hours_if_err!(data, error);
-                }
+            let beginning = Time::new(begin_hours, begin_minutes);
+            let end = Time::new(end_hours, end_minutes);
+            if beginning > end || end - beginning < MIN_TIME_DISCRETIZATION {
+                let error: Result<()> = Err(InvalidInterval::new());
+                reset_work_hours_if_err!(data, error);
+            }
 
-                let interval = TimeInterval::new(beginning, end);
+            let interval = TimeInterval::new(beginning, end);
 
-                if position < work_hours.len() {
-                    reset_work_hours_if_err!(data, data.update_work_interval(work_hours[position], interval));
-                } else {
-                    reset_work_hours_if_err!(data, data.add_work_interval(interval));
-                }
-            }),
-        );
+            if position < work_hours.len() {
+                reset_work_hours_if_err!(
+                    data,
+                    data.update_work_interval(work_hours[position], interval)
+                );
+            } else {
+                reset_work_hours_if_err!(data, data.add_work_interval(interval));
+            }
+        });
 
         self.ui
             .lock()
@@ -98,8 +98,8 @@ impl App {
     }
 
     fn set_work_hour_remove_callback(&self) {
-        let data = &self.data;
-        let work_hour_editing_done_callback = Arc::new(clone!(@strong data => move |position| {
+        let data = self.data.clone();
+        let work_hour_editing_done_callback = Arc::new(move |position| {
             let mut data = data.lock().unwrap();
             let work_hours = data.work_hours();
 
@@ -108,7 +108,7 @@ impl App {
             } else {
                 data.events().borrow_mut().emit_work_hours_changed(&data);
             }
-        }));
+        });
 
         self.ui
             .lock()

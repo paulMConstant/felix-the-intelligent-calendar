@@ -1,13 +1,14 @@
 use crate::app::App;
 
-use crate::app::ui::helpers::{format::cleaned_input, tree::get_selection_from_treeview};
+use crate::app::ui::{
+    groups_treeview_config::*,
+    helpers::{format::cleaned_input, tree::get_selection_from_treeview},
+};
 
 use felix_backend::data::clean_string;
 
 use glib::clone;
 use gtk::prelude::*;
-
-const GROUP_NAME_COLUMN: i32 = 0;
 
 impl App {
     pub fn connect_groups_tab(&self) {
@@ -26,6 +27,7 @@ impl App {
 
         let data = self.data.clone();
         let ui = self.ui.clone();
+
         app_register_signal!(
             self,
             group_add_button,
@@ -38,16 +40,20 @@ impl App {
             }))
         );
 
+        let data = self.data.clone();
+        let ui = self.ui.clone();
+
         app_register_signal!(
             self,
             group_add_entry,
-            group_add_entry.connect_activate(clone!(@strong ui, @strong data, @weak group_add_entry => move |_| {
-        let group_to_add = group_add_entry.get_text();
-        with_blocked_signals!(ui.lock().unwrap(), group_add_entry.set_text(""), group_add_entry);
+            group_add_entry.connect_activate(move |entry| {
+                let group_to_add = entry.get_text();
+                let entry = entry.clone();
+                with_blocked_signals!(ui.lock().unwrap(), entry.set_text(""), entry);
 
-        no_notify_assign_or_return!(group_to_add, clean_string(group_to_add));
-        return_if_err!(data.lock().unwrap().add_group(group_to_add));
-            }))
+                no_notify_assign_or_return!(group_to_add, clean_string(group_to_add));
+                return_if_err!(data.lock().unwrap().add_group(group_to_add));
+            })
         );
     }
 
@@ -59,15 +65,13 @@ impl App {
         app_register_signal!(
             self,
             groups_tree_view,
-            groups_tree_view.connect_cursor_changed(
-                clone!(@strong ui, @strong data, @weak groups_tree_view => move |_| {
-                let selected_group = get_selection_from_treeview(&groups_tree_view,
-                                                                 GROUP_NAME_COLUMN);
+            groups_tree_view.connect_cursor_changed(move |tree_view| {
+                let selected_group = get_selection_from_treeview(&tree_view, GROUP_NAME_COLUMN);
                 if let Some(group_name) = selected_group {
                     assign_or_return!(group, data.lock().unwrap().group(group_name));
                     ui.lock().unwrap().on_group_selected(group);
-                }})
-            )
+                }
+            })
         );
     }
 
@@ -79,13 +83,18 @@ impl App {
         app_register_signal!(
             self,
             group_remove_button,
-            group_remove_button.connect_clicked(clone!(@strong data => move |_| {
-            let group_to_remove =
-                ui.lock().unwrap().current_group().as_ref().expect(
-                    "Current group should be selected before accessing any group-related filed",
-                ).name();
-               return_if_err!(data.lock().unwrap().remove_group(group_to_remove));
-            }))
+            group_remove_button.connect_clicked(move |_| {
+                let group_to_remove = ui
+                    .lock()
+                    .unwrap()
+                    .current_group()
+                    .as_ref()
+                    .expect(
+                        "Current group should be selected before accessing any group-related filed",
+                    )
+                    .name();
+                return_if_err!(data.lock().unwrap().remove_group(group_to_remove));
+            })
         );
     }
 
@@ -97,21 +106,26 @@ impl App {
         app_register_signal!(
             self,
             group_name_entry,
-            group_name_entry.connect_changed(
-                clone!(@strong ui, @strong data, @weak group_name_entry => move |_| {
-                let group_to_rename = ui.lock().unwrap().current_group().as_ref().expect(
+            group_name_entry.connect_changed(move |entry| {
+                let group_to_rename = ui
+                    .lock()
+                    .unwrap()
+                    .current_group()
+                    .as_ref()
+                    .expect(
                         "Current group should be selected before accessing any group-related field",
-                    ).name();
-                let new_name = group_name_entry.get_text();
+                    )
+                    .name();
+                let new_name = entry.get_text();
                 no_notify_assign_or_return!(new_name, clean_string(new_name));
                 if cleaned_input(&new_name) == group_to_rename {
                     return;
                 }
-                return_if_err!(
-                    data.lock().unwrap().set_group_name(group_to_rename, new_name)
-                );
-                    })
-            )
+                return_if_err!(data
+                    .lock()
+                    .unwrap()
+                    .set_group_name(group_to_rename, new_name));
+            })
         );
     }
 
@@ -153,25 +167,20 @@ impl App {
         fetch_from!(
             self.ui(),
             entity_into_group_name_entry,
+            add_to_group_button,
             create_entity_before_adding_to_group_switch
         );
 
+        let entity_into_group_name_entry_cloned = entity_into_group_name_entry.clone();
         app_register_signal!(
             self,
-            entity_into_group_name_entry,
+            entity_into_group_name_entry_cloned,
             entity_into_group_name_entry.connect_activate(add_entity_to_group_closure!(
                 data,
                 ui,
                 entity_into_group_name_entry,
                 create_entity_before_adding_to_group_switch
             ))
-        );
-
-        fetch_from!(
-            self.ui(),
-            entity_into_group_name_entry,
-            add_to_group_button,
-            create_entity_before_adding_to_group_switch
         );
 
         app_register_signal!(
@@ -194,9 +203,9 @@ impl App {
         app_register_signal!(
             self,
             group_members_tree_view,
-            group_members_tree_view.connect_row_activated(clone!(@strong ui, @strong data, @weak group_members_tree_view => move |_self, treepath, treeview_column| {
-        let delete_column = group_members_tree_view
-            .get_column(1)
+            group_members_tree_view.connect_row_activated(move |tree_view, treepath, treeview_column| {
+        let delete_column = tree_view
+            .get_column(GROUP_DELETE_COLUMN)
             .expect("Group Members tree view should have at least 2 columns");
         if &delete_column == treeview_column {
             let iter = group_members_list_store
@@ -212,7 +221,7 @@ impl App {
             return_if_err!(data.lock().unwrap()
                 .remove_entity_from_group(current_group_name, entity_to_remove));
         }
-            })));
+            }));
     }
 
     fn connect_clean_group_entries(&self) {

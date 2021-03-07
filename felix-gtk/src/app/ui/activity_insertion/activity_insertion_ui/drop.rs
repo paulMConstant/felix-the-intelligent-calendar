@@ -8,7 +8,6 @@ use crate::app::ui::drag_config::*;
 
 use felix_backend::data::ActivityID;
 
-use glib::clone;
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
@@ -32,39 +31,43 @@ impl ActivityInsertionUi {
 
     fn connect_drag_motion(&self) {
         fetch_from!(self, schedules_drawing);
-        let schedules = &self.schedules_to_show;
+        let schedules = self.schedules_to_show.clone();
 
         schedules_drawing.connect_drag_motion(
-            clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area, _drag_context, x, y, _timestamp| {
+            move |drawing_area, _drag_context, x, y, _timestamp| {
                 let mut schedules = schedules.lock().unwrap();
                 let time = get_time_on_y(y, &schedules);
-                let tooltip = TimeTooltipToDraw { x_cursor: x as f64, y_cursor: y as f64, time };
+                let tooltip = TimeTooltipToDraw {
+                    x_cursor: x as f64,
+                    y_cursor: y as f64,
+                    time,
+                };
                 schedules.time_tooltip_to_draw = Some(tooltip);
-                schedules_drawing.queue_draw();
+                drawing_area.queue_draw();
                 glib::signal::Inhibit(false)
-        }));
+            },
+        );
     }
 
     fn connect_drag_data_received(&self) {
         fetch_from!(self, schedules_drawing);
-        let schedules = &self.schedules_to_show;
+        let schedules = self.schedules_to_show.clone();
         let try_insert_activity_callback = self.try_insert_activity_callback.clone();
 
         schedules_drawing.connect_drag_data_received(
-            clone!(@strong schedules, @strong schedules_drawing => move |_drawing_area,
-                       _drag_context, x, y, selection_data, _info, _timestamp| {
+            move |_drawing_area, _drag_context, x, y, selection_data, _info, _timestamp| {
                 if selection_data.get_data_type().name() != DRAG_TYPE {
                     return;
                 }
                 let schedules = schedules.lock().unwrap();
                 if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
-                    let activity_id: ActivityID = byteorder::NativeEndian::read_u32(
-                        &selection_data.get_data()) as ActivityID;
+                    let activity_id: ActivityID =
+                        byteorder::NativeEndian::read_u32(&selection_data.get_data()) as ActivityID;
                     let insertion_time = get_time_on_y(y, &schedules);
                     drop(schedules); // Unlock
                     (try_insert_activity_callback)(entity_name, activity_id, insertion_time);
                 }
-            }),
+            },
         );
     }
 }

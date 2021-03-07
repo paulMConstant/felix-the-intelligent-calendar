@@ -2,7 +2,6 @@
 mod macros;
 
 use crate::app::App;
-use glib::clone;
 
 impl App {
     generate_connect_data_function!(connect_data_events:

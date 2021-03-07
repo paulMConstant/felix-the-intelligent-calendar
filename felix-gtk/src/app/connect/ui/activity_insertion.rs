@@ -12,6 +12,7 @@ impl App {
     pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
         self.connect_activity_clicked();
+        self.connect_insert_activity_switch();
 
         self.set_activity_try_insert_callback();
         self.set_activity_get_possible_insertions_callback();
@@ -49,8 +50,8 @@ impl App {
 
         fetch_from!(self.ui(), show_schedule_entry, show_schedule_button);
 
-        let ui = self.ui.clone();
-        let data = self.data.clone();
+        let ui = &self.ui;
+        let data = &self.data;
 
         app_register_signal!(
             self,
@@ -93,36 +94,64 @@ impl App {
         });
     }
 
+    fn connect_insert_activity_switch(&self) {
+        fetch_from!(self.ui(), activity_inserted_switch);
+
+        let data = self.data.clone();
+        let ui = self.ui.clone();
+
+        app_register_signal!(
+            self,
+            activity_inserted_switch,
+            activity_inserted_switch.connect_property_active_notify(move |switch| {
+                let insert_activity = switch.get_active();
+                let id = ui
+                    .lock()
+                    .unwrap()
+                    .current_activity()
+                    .expect("Current activity does not exist")
+                    .id();
+                if insert_activity {
+                    // TODO data.insert_activity_in_best_spot(id) ;
+                } else {
+                    return_if_err!(data.lock().unwrap().insert_activity(id, None));
+                }
+            })
+        );
+    }
+
     fn set_activity_try_insert_callback(&self) {
         let data = self.data.clone();
 
         self.ui
             .lock()
             .unwrap()
-            .set_activity_try_insert_callback(Arc::new(Box::new(clone!(@strong data => move
-                            |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
-                let mut data = data.lock().unwrap();
-                let activity = data.activity(activity_id)
-                    .expect("The activity we are inserting does not exist");
+            .set_activity_try_insert_callback(Arc::new(Box::new(
+                move |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
+                    let mut data = data.lock().unwrap();
+                    let activity = data
+                        .activity(activity_id)
+                        .expect("The activity we are inserting does not exist");
 
-                if activity.entities_sorted().contains(&entity_name) == false {
-                    // Inserting activity for wrong entity
-                    return;
-                }
-
-                let maybe_possible_insertion_times = data
-                    .possible_insertion_times_of_activity(activity_id)
-                    .expect("Trying to insert activity which does not exist !");
-
-                if let Some(possible_insertion_times) = maybe_possible_insertion_times {
-                    if possible_insertion_times.contains(&insertion_time) == false {
-                        // Inserting activity at wrong time
+                    if activity.entities_sorted().contains(&entity_name) == false {
+                        // Inserting activity for wrong entity
                         return;
                     }
-                    data.insert_activity(activity_id, Some(insertion_time))
-                        .expect("Error while inserting activity, should have been checked for");
-                }
-            }))));
+
+                    let maybe_possible_insertion_times = data
+                        .possible_insertion_times_of_activity(activity_id)
+                        .expect("Trying to insert activity which does not exist !");
+
+                    if let Some(possible_insertion_times) = maybe_possible_insertion_times {
+                        if possible_insertion_times.contains(&insertion_time) == false {
+                            // Inserting activity at wrong time
+                            return;
+                        }
+                        data.insert_activity(activity_id, Some(insertion_time))
+                            .expect("Error while inserting activity, should have been checked for");
+                    }
+                },
+            )));
     }
 
     fn set_activity_get_possible_insertions_callback(&self) {
@@ -132,8 +161,7 @@ impl App {
             .lock()
             .unwrap()
             .set_activity_get_possible_insertions_callback(Arc::new(Box::new(
-                        clone!(@strong data => move
-                               |id: ActivityID| {
+                        move |id: ActivityID| {
             let mut data = data.lock().unwrap();
             let activity_participants = data.activity(id)
                 .expect("Trying to get possible insertion times of activity which does not exist !")
@@ -143,7 +171,7 @@ impl App {
                 .expect("Trying to get possible insertion times of activity which does not exist !");
                 (maybe_possible_insertion_times, activity_participants)
            })
-        )));
+        ));
     }
 
     fn connect_clean_show_schedule_entry(&self) {

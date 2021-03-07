@@ -4,8 +4,11 @@ mod drag;
 mod update;
 mod update_entities_list_store;
 
-use crate::app::ui::helpers::{collections::get_next_element, format::format_time_spin_button};
-use crate::app::ui::Ui;
+use crate::app::ui::{
+    activities::activities_treeview_config::*,
+    helpers::{collections::get_next_element, format::format_time_spin_button},
+    Ui,
+};
 
 use felix_backend::data::{Activity, Data, Entity, Group};
 
@@ -23,7 +26,7 @@ impl Ui {
     fn expand_activity_groups_tree_view_name_col(&self) {
         fetch_from!(self, activity_groups_tree_view);
         activity_groups_tree_view
-            .get_column(0)
+            .get_column(ACTIVITY_GROUPS_NAME_COLUMN)
             .unwrap()
             .set_expand(true);
     }
@@ -31,7 +34,7 @@ impl Ui {
     fn expand_activity_entities_tree_view_name_col(&self) {
         fetch_from!(self, activity_entities_tree_view);
         activity_entities_tree_view
-            .get_column(0)
+            .get_column(ACTIVITY_ENTITIES_NAME_COLUMN)
             .unwrap()
             .set_expand(true);
     }

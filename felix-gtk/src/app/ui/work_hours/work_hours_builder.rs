@@ -20,7 +20,7 @@ macro_rules! start_editing_callback {
                     make_spinbuttons_sensitive(&builder, true);
 
                     let editing_done_callback = $editing_done_callback.clone();
-                    edit_button.connect_clicked(clone!(@weak builder => move |_|
+                    edit_button.connect_clicked(clone!(@strong builder => move |_|
                        editing_done_callback($position_of_interval, builder.clone())));
                 } else {
                     // All other buttons are not to be touched until editing is done
@@ -199,7 +199,8 @@ impl WorkHoursBuilder {
         set_editing_done_icon_for_button(&edit_button);
 
         let editing_done_callback = self.work_interval_editing_done_callback.clone();
-        edit_button.connect_clicked(clone!(@weak builder => move |_| editing_done_callback(position_of_interval, builder.clone())));
+        edit_button.connect_clicked(clone!(@strong builder => move |_|
+            editing_done_callback(position_of_interval, builder.clone())));
 
         init_spinbuttons_to_default_value(&builder);
         self.init_delete_button_callback(&delete_button, position_of_interval);

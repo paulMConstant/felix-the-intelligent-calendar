@@ -2,7 +2,7 @@ use glib::clone;
 use gtk::prelude::*;
 
 use crate::app::notify::notify_err;
-use crate::app::ui::activities_treeview_config::ACTIVITY_ID_COLUMN;
+use crate::app::ui::activities_treeview_config::*;
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::App;
 
@@ -41,8 +41,8 @@ impl App {
 
         fetch_from!(self.ui(), activity_add_button, activity_add_entry);
 
-        let data = self.data.clone();
-        let ui = self.ui.clone();
+        let data = &self.data;
+        let ui = &self.ui;
 
         app_register_signal!(
             self,
@@ -73,9 +73,9 @@ impl App {
         app_register_signal!(
             self,
             activities_tree_view,
-            activities_tree_view.connect_cursor_changed(
-                clone!(@strong ui, @strong data, @weak activities_tree_view => move |_| {
-                let selected_activity_id = get_selection_from_treeview(&activities_tree_view, ACTIVITY_ID_COLUMN);
+            activities_tree_view.connect_cursor_changed(move |tree_view| {
+                let selected_activity_id =
+                    get_selection_from_treeview(&tree_view, ACTIVITY_ID_COLUMN);
                 if let Some(activity_id_str) = selected_activity_id {
                     let activity_id = activity_id_str
                         .parse::<ActivityID>()
@@ -83,10 +83,11 @@ impl App {
 
                     let data = data.lock().unwrap();
                     assign_or_return!(activity, data.activity(activity_id));
-                    ui.lock().unwrap().on_activity_selected(&data, activity.clone());
+                    ui.lock()
+                        .unwrap()
+                        .on_activity_selected(&data, activity.clone());
                 }
-                })
-            )
+            })
         );
     }
 
@@ -98,12 +99,12 @@ impl App {
         app_register_signal!(
             self,
             activity_remove_button,
-            activity_remove_button.connect_clicked(clone!(@strong data, @strong ui => move |_| {
+            activity_remove_button.connect_clicked(move |_| {
                 let id = ui.lock().unwrap().current_activity().expect(
                     "Current activity should be selected before accessing the remove activity button",
                 ).id();
                 return_if_err!(data.lock().unwrap().remove_activity(id));
-            }))
+            })
         );
     }
 
@@ -115,15 +116,15 @@ impl App {
         app_register_signal!(
             self,
             activity_name_entry,
-            activity_name_entry.connect_changed(clone!(@strong ui, @strong data, @weak activity_name_entry => move |_| {
+            activity_name_entry.connect_changed(move |entry| {
             let activity_to_rename_id = ui.lock().unwrap()
                 .current_activity()
                 .expect("Current activity should be selected before accessing the activity name entry")
                 .id();
-            let new_name = activity_name_entry.get_text();
+            let new_name = entry.get_text();
             no_notify_assign_or_return!(new_name, clean_string(new_name));
             return_if_err!(data.lock().unwrap().set_activity_name(activity_to_rename_id, new_name));
-            }))
+            })
         );
     }
 
@@ -234,29 +235,31 @@ impl App {
             };
         }
 
+        let minute_spin = activity_duration_minute_spin.clone();
         app_register_signal!(
             self,
-            activity_duration_minute_spin,
-            activity_duration_minute_spin.connect_changed(clone!(@strong data, @strong ui,
-                                                                 @strong counter,
-                                                                 @weak activity_duration_minute_spin, @weak activity_duration_hour_spin=> move |_| {
-                set_duration_closure!(data, ui, counter, activity_duration_minute_spin, activity_duration_hour_spin);
+            minute_spin,
+            minute_spin.connect_changed(clone!(@strong data,
+                       @strong ui,
+                       @strong counter,
+                       @weak activity_duration_hour_spin
+                       => move |activity_duration_minute_spin| {
+                set_duration_closure!(data,
+                                      ui,
+                                      counter,
+                                      activity_duration_minute_spin,
+                                      activity_duration_hour_spin);
             }))
-        );
-
-        fetch_from!(
-            self.ui(),
-            activity_duration_minute_spin,
-            activity_duration_hour_spin
         );
 
         app_register_signal!(
             self,
             activity_duration_hour_spin,
-            activity_duration_hour_spin.connect_changed(clone!(@strong data, @strong ui,
-                   @strong counter,
-                   @weak activity_duration_minute_spin,
-                       @weak activity_duration_hour_spin=> move |_| {
+            activity_duration_hour_spin.connect_changed(clone!(@strong data,
+                       @strong ui,
+                       @strong counter,
+                       @weak activity_duration_minute_spin
+                       => move |activity_duration_hour_spin| {
                 set_duration_closure!(data,
                                       ui,
                                       counter,
@@ -269,8 +272,8 @@ impl App {
     fn connect_add_to_activity(&self) {
         fetch_from!(self.ui(), activity_add_to_entry);
 
-        let data = self.data.clone();
-        let ui = self.ui.clone();
+        let data = &self.data;
+        let ui = &self.ui;
 
         macro_rules! add_to_activity_closure {
             ($data: ident, $ui: ident, $entry: ident) => {
@@ -340,10 +343,9 @@ impl App {
             self,
             activity_groups_tree_view,
             activity_groups_tree_view.connect_row_activated(
-                clone!(@strong ui, @strong data, @weak activity_groups_tree_view
-                       => move |_self, treepath, treeview_column| {
-        let delete_column = activity_groups_tree_view
-            .get_column(1)
+               move |tree_view, treepath, treeview_column| {
+        let delete_column = tree_view
+            .get_column(ACTIVITY_GROUPS_DELETE_COLUMN)
             .expect("Activity Groups tree view should have at least 2 columns");
         if &delete_column == treeview_column {
             let iter = activity_groups_list_store
@@ -360,7 +362,7 @@ impl App {
             return_if_err!(data.lock().unwrap()
                 .remove_group_from_activity(current_activity_id, group_to_remove));
         }
-            })));
+            }));
     }
 
     fn connect_remove_entity_from_activity(&self) {
@@ -376,10 +378,9 @@ impl App {
             self,
             activity_entities_tree_view,
             activity_entities_tree_view.connect_row_activated(
-                clone!(@strong ui, @strong data, @weak activity_entities_tree_view =>
-                       move |_self, treepath, treeview_column| {
-        let delete_column = activity_entities_tree_view
-            .get_column(1)
+               move |tree_view, treepath, treeview_column| {
+        let delete_column = tree_view
+            .get_column(ACTIVITY_ENTITIES_DELETE_COLUMN)
             .expect("Activity Entities tree view should have at least 2 columns");
         if &delete_column == treeview_column {
             let iter = activity_entities_list_store
@@ -405,29 +406,41 @@ impl App {
                 return_if_err!(data.add_entity_to_activity(current_activity_id, entity_to_remove));
             }
         }
-            })));
+            }));
     }
 
     fn connect_set_activity_color(&self) {
         fetch_from!(self.ui(), activity_color_button);
 
-        let data = &self.data;
-        let ui = &self.ui;
+        let data = self.data.clone();
+        let ui = self.ui.clone();
 
         app_register_signal!(
             self,
             activity_color_button,
-            activity_color_button.connect_color_set(clone!(@strong data, @strong ui =>
-                       move |activity_color_button| {
-            let color = activity_color_button.get_rgba();
-            let current_activity_id = ui.lock().unwrap().current_activity().as_ref()
-                .expect("Current activity should be set before performing any action").id();
+            activity_color_button.connect_color_set(move |activity_color_button| {
+                let color = activity_color_button.get_rgba();
+                let current_activity_id = ui
+                    .lock()
+                    .unwrap()
+                    .current_activity()
+                    .as_ref()
+                    .expect("Current activity should be set before performing any action")
+                    .id();
 
-            data.lock().unwrap().set_activity_color(current_activity_id,
-                                    RGBA {
-                red: color.red, green: color.green, blue: color.blue, alpha: color.alpha })
-                .expect("Current activity should be set before performing any action");
-                       }))
+                data.lock()
+                    .unwrap()
+                    .set_activity_color(
+                        current_activity_id,
+                        RGBA {
+                            red: color.red,
+                            green: color.green,
+                            blue: color.blue,
+                            alpha: color.alpha,
+                        },
+                    )
+                    .expect("Current activity should be set before performing any action");
+            })
         );
     }
 

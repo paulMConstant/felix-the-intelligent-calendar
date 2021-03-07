@@ -4,7 +4,6 @@ use crate::app::ui::{activities_treeview_config::*, drag_config::*, Ui};
 use felix_backend::data::ActivityID;
 
 use gdk::prelude::GdkContextExt;
-use glib::clone;
 use gtk::prelude::*;
 
 use cairo;
@@ -35,12 +34,10 @@ impl Ui {
 
     fn connect_drag_begin(&self) {
         fetch_from!(self, activities_tree_view);
-        let get_possible_insertions_callback = &self.get_possible_insertions_callback;
+        let get_possible_insertions_callback = self.get_possible_insertions_callback.clone();
         let activity_insertion = self.activity_insertion.clone();
 
-        activities_tree_view.connect_drag_begin(
-            clone!(@strong activities_tree_view, @strong get_possible_insertions_callback => move
-                   |treeview, drag_context| {
+        activities_tree_view.connect_drag_begin(move |treeview, drag_context| {
             // 1. Initialize drag item
             // Create pixbuf
             let color = gdk_pixbuf::Colorspace::Rgb;
@@ -48,17 +45,22 @@ impl Ui {
                 .expect("Not enough memory to create pixbuf");
 
             // Fill pixbuf with cairo
-            let surface = cairo::ImageSurface::create(cairo::Format::ARgb32, DRAG_WIDTH, DRAG_HEIGHT)
-                .expect("Could not create surface");
+            let surface =
+                cairo::ImageSurface::create(cairo::Format::ARgb32, DRAG_WIDTH, DRAG_HEIGHT)
+                    .expect("Could not create surface");
             let context = cairo::Context::new(&surface);
             context.set_source_pixbuf(&pixbuf, DRAG_WIDTH as f64, DRAG_HEIGHT as f64);
-            context.set_source_rgb(DRAG_BACKGROUND_RGB, DRAG_BACKGROUND_RGB, DRAG_BACKGROUND_RGB);
+            context.set_source_rgb(
+                DRAG_BACKGROUND_RGB,
+                DRAG_BACKGROUND_RGB,
+                DRAG_BACKGROUND_RGB,
+            );
             context.paint();
 
             // Get the name of the activity
-            let selected_activity_name = get_selection_from_treeview(&activities_tree_view,
-                                                                     ACTIVITY_NAME_COLUMN)
-                .expect("Dragging an activity when no activity is selected");
+            let selected_activity_name =
+                get_selection_from_treeview(treeview, ACTIVITY_NAME_COLUMN)
+                    .expect("Dragging an activity when no activity is selected");
 
             // Draw activity name with cairo
             // Center the text
@@ -78,8 +80,7 @@ impl Ui {
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
             // 2. Draw possible activity beginnings
-            let selected_activity_id = get_selection_from_treeview(&activities_tree_view,
-                                                                   ACTIVITY_ID_COLUMN)
+            let selected_activity_id = get_selection_from_treeview(&treeview, ACTIVITY_ID_COLUMN)
                 .expect("Dragging an activity when no activity is selected")
                 .parse::<ActivityID>()
                 .expect("Error when parsing activity ID from activities model");
@@ -87,40 +88,50 @@ impl Ui {
             let (maybe_possible_insertion_times, concerned_entities) =
                 get_possible_insertions_callback(selected_activity_id);
             activity_insertion
-            .lock().unwrap()
-                .show_possible_activity_insertions(maybe_possible_insertion_times,
-                                                   concerned_entities);
-        }));
+                .lock()
+                .unwrap()
+                .show_possible_activity_insertions(
+                    maybe_possible_insertion_times,
+                    concerned_entities,
+                );
+        });
     }
 
     fn connect_drag_data_get(&self) {
         fetch_from!(self, activities_tree_view);
         activities_tree_view.connect_drag_data_get(
-            clone!(@strong activities_tree_view => move |_treeview, _drag_context, selection_data, _info, _timestamp| {
-            // Fetch the selected activity ID and send it.
-            let selected_activity_id = get_selection_from_treeview(&activities_tree_view,
-                                                                   ACTIVITY_ID_COLUMN)
-                .expect("Dragging an activity when no activity is selected")
-                .parse::<ActivityID>()
-                .expect("Error when parsing activity ID from activities model");
+            move |treeview, _drag_context, selection_data, _info, _timestamp| {
+                // Fetch the selected activity ID and send it.
+                let selected_activity_id =
+                    get_selection_from_treeview(treeview, ACTIVITY_ID_COLUMN)
+                        .expect("Dragging an activity when no activity is selected")
+                        .parse::<ActivityID>()
+                        .expect("Error when parsing activity ID from activities model");
 
-            let buffer: &mut [u8; DRAG_DATA_FORMAT] = &mut [0; DRAG_DATA_FORMAT];
-            byteorder::NativeEndian::write_u32(&mut buffer[0..DRAG_DATA_FORMAT],
-                                               selected_activity_id as u32);
-            selection_data.set(&gdk::Atom::intern(DRAG_TYPE), DRAG_DATA_FORMAT as i32, buffer);
-        }));
+                let buffer: &mut [u8; DRAG_DATA_FORMAT] = &mut [0; DRAG_DATA_FORMAT];
+                byteorder::NativeEndian::write_u32(
+                    &mut buffer[0..DRAG_DATA_FORMAT],
+                    selected_activity_id as u32,
+                );
+                selection_data.set(
+                    &gdk::Atom::intern(DRAG_TYPE),
+                    DRAG_DATA_FORMAT as i32,
+                    buffer,
+                );
+            },
+        );
     }
 
     fn connect_drag_end(&self) {
         fetch_from!(self, activities_tree_view);
         let activity_insertion = self.activity_insertion.clone();
 
-        activities_tree_view.connect_drag_end(clone!(@strong activity_insertion => move
-        |_drawing_area, _drag_context| {
+        activities_tree_view.connect_drag_end(move |_drawing_area, _drag_context| {
             // Clear possible insertions
             activity_insertion
-            .lock().unwrap()
+                .lock()
+                .unwrap()
                 .show_possible_activity_insertions(None, Vec::new())
-        }));
+        });
     }
 }

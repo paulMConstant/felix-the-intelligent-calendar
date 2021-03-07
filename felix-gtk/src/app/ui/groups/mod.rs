@@ -1,7 +1,7 @@
-pub mod update;
+pub mod groups_treeview_config;
+mod update;
 
-use crate::app::ui::helpers::collections::get_next_element;
-use crate::app::ui::Ui;
+use crate::app::ui::{groups_treeview_config::*, helpers::collections::get_next_element, Ui};
 
 use felix_backend::data::{Data, Entity, Group};
 
@@ -16,7 +16,7 @@ impl Ui {
     fn expand_group_members_tree_view_name_col(&self) {
         fetch_from!(self, group_members_tree_view);
         group_members_tree_view
-            .get_column(0)
+            .get_column(GROUP_NAME_COLUMN)
             .unwrap()
             .set_expand(true);
     }

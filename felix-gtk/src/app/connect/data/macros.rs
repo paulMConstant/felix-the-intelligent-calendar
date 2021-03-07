@@ -16,10 +16,10 @@ macro_rules! generate_private_connect_function {
             let ui = self.ui.clone();
 
             events.borrow_mut().$event(Box::new(
-                    clone!(@strong ui => move |data| {
+                    move |data| {
                            call_ui_events!(ui.lock().unwrap(), $($callback),* : data);
                     }
-                )));
+                ));
         }
     };
 
@@ -29,10 +29,10 @@ macro_rules! generate_private_connect_function {
             let ui = self.ui.clone();
 
             events.borrow_mut().$event(Box::new(
-                    clone!(@strong ui => move |data, $($arg),*| {
+                    move |data, $($arg),*| {
                         call_ui_events!(ui.lock().unwrap(), $($callback),* : data, $($arg),*);
                     }
-                )));
+                ));
         }
     };
 
