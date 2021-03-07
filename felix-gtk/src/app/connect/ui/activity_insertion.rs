@@ -1,11 +1,12 @@
-use crate::app::{notify::notify_err, ui::EntityToShow, App,
-    connect::ui::wrap_duration::wrap_duration};
+use crate::app::{
+    connect::ui::wrap_duration::wrap_duration, notify::notify_err, ui::EntityToShow, App,
+};
 
 use felix_backend::data::{clean_string, ActivityID, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
-use std::sync::Arc;
 use std::convert::TryFrom;
+use std::sync::Arc;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -84,7 +85,7 @@ impl App {
         let data = self.data.clone();
 
         app_register_signal!(
-            self, 
+            self,
             main_window,
             main_window.connect_button_press_event(move |_window, event| {
                 const RIGHT_CLICK: u32 = 3;
@@ -128,7 +129,11 @@ impl App {
     }
 
     fn connect_change_duration_of_inserted_activity(&self) {
-        fetch_from!(self.ui(), activity_beginning_hour_spin, activity_beginning_minute_spin);
+        fetch_from!(
+            self.ui(),
+            activity_beginning_hour_spin,
+            activity_beginning_minute_spin
+        );
 
         let data = &self.data;
         let ui = &self.ui;
@@ -169,30 +174,30 @@ impl App {
         app_register_signal!(
             self,
             minute_spin,
-            minute_spin.connect_changed(
-                clone!(@strong data,
-                       @strong ui,
-                       @weak activity_beginning_hour_spin
-                       => move |activity_beginning_minute_spin| {
-                set_beginning_closure!(data,
-                                       ui,
-                                       activity_beginning_minute_spin,
-                                       activity_beginning_hour_spin);
-           })));
+            minute_spin.connect_changed(clone!(@strong data,
+                        @strong ui,
+                        @weak activity_beginning_hour_spin
+                        => move |activity_beginning_minute_spin| {
+                 set_beginning_closure!(data,
+                                        ui,
+                                        activity_beginning_minute_spin,
+                                        activity_beginning_hour_spin);
+            }))
+        );
 
         app_register_signal!(
             self,
             activity_beginning_hour_spin,
-            activity_beginning_hour_spin.connect_changed(
-                clone!(@strong data,
-                       @strong ui,
-                       @weak activity_beginning_minute_spin
-                       => move |activity_beginning_hour_spin| {
-                set_beginning_closure!(data,
-                                       ui,
-                                       activity_beginning_minute_spin,
-                                       activity_beginning_hour_spin);
-               })));
+            activity_beginning_hour_spin.connect_changed(clone!(@strong data,
+                    @strong ui,
+                    @weak activity_beginning_minute_spin
+                    => move |activity_beginning_hour_spin| {
+             set_beginning_closure!(data,
+                                    ui,
+                                    activity_beginning_minute_spin,
+                                    activity_beginning_hour_spin);
+            }))
+        );
     }
 
     fn set_activity_try_insert_callback(&self) {

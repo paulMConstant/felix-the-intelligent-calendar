@@ -6,7 +6,7 @@ use felix_backend::data::Time;
 /// # Example
 ///
 /// ```
-/// 
+///
 /// let (old, new) = (Time::new(1, 0), Time::new(1, 55));
 /// assert_eq!(wrap_duration(old, new), Time::new(0, 55));
 
@@ -35,7 +35,6 @@ mod tests {
     fn test_wrap_duration() {
         let (old, new) = (Time::new(1, 0), Time::new(1, 55));
         assert_eq!(wrap_duration(old, new), Time::new(0, 55));
-
 
         let (old, new) = (Time::new(0, 55), Time::new(0, 0));
         assert_eq!(wrap_duration(old, new), Time::new(1, 0));

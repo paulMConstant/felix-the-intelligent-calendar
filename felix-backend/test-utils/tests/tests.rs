@@ -314,7 +314,7 @@ fn add_activities() {
                 );
                 assert_eq!(
                     activity.insertion_interval(),
-                    expected_groups,
+                    expected_insertion_interval,
                     "Activities were not added right"
                 );
             }

@@ -1,12 +1,12 @@
 use glib::clone;
 use gtk::prelude::*;
 
-use crate::app::{App,
-notify::notify_err,
-    {
-        ui::{
-            activities_treeview_config::*, helpers::tree::get_selection_from_treeview}},
-            connect::ui::wrap_duration::wrap_duration};
+use crate::app::{
+    connect::ui::wrap_duration::wrap_duration,
+    notify::notify_err,
+    ui::{activities_treeview_config::*, helpers::tree::get_selection_from_treeview},
+    App,
+};
 
 use felix_backend::data::{clean_string, ActivityID, Time, RGBA};
 use felix_backend::errors::does_not_exist::DoesNotExist;
