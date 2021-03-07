@@ -1,10 +1,12 @@
 use glib::clone;
 use gtk::prelude::*;
 
-use crate::app::notify::notify_err;
-use crate::app::ui::activities_treeview_config::*;
-use crate::app::ui::helpers::tree::get_selection_from_treeview;
-use crate::app::App;
+use crate::app::{App,
+notify::notify_err,
+    {
+        ui::{
+            activities_treeview_config::*, helpers::tree::get_selection_from_treeview}},
+            connect::ui::wrap_duration::wrap_duration};
 
 use felix_backend::data::{clean_string, ActivityID, Time, RGBA};
 use felix_backend::errors::does_not_exist::DoesNotExist;
@@ -135,14 +137,13 @@ impl App {
             activity_duration_hour_spin
         );
 
-        let data = self.data.clone();
-        let ui = self.ui.clone();
-        let counter = self.data_check_result_available_timeout_counter.clone();
+        let data = &self.data;
+        let ui = &self.ui;
+        let counter = &self.data_check_result_available_timeout_counter;
 
         macro_rules! set_duration_closure {
             ($data:ident, $ui:ident, $counter: ident, $minutes_spin:ident, $hours_spin:ident) => {
                 safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
-                let mut hours = hours; // Make original immutable variable mutable
 
                 let id = $ui
                     .lock()
@@ -156,34 +157,24 @@ impl App {
                     .expect("Setting duration of activity which does not exist")
                     .duration();
 
-                // Wrap if the duration goes from 0:55 to 0 or from 0 to 0:55
-                if activity_duration.minutes() == 55 && minutes == 0 {
-                    // Safe guard
-                    if hours < 23 {
-                        // Duration goes up from 0:55 to 1:00
-                        hours += 1;
-                    }
-                } else if activity_duration.minutes() == 0 && minutes == 55 {
-                    // Duration goes down from 1:00 to 0:55
-                    if hours > 0 {
-                        hours -= 1;
-                    }
-                }
-
-                let new_duration = Time::new(hours, minutes);
+                let new_duration = wrap_duration(activity_duration, Time::new(hours, minutes));
                 let activity = data
                     .activity(id)
                     .expect("Getting activity which does not exist");
 
-                let set_activity_result = data.set_activity_duration(id, new_duration);
+                let set_duration_result = data.set_activity_duration(id, new_duration);
 
                 let can_start_polling_to_reinsert_activity_which_was_removed =
-                    set_activity_result.is_ok()
+                    set_duration_result.is_ok()
                     && new_duration > activity.duration()
                     && activity.insertion_interval().is_some();
 
-                if let Err(e) = set_activity_result {
+                if let Err(e) = set_duration_result {
                     notify_err(e);
+
+                    // Update the spinbuttons to the old value
+                    $minutes_spin.set_value(activity_duration.minutes() as f64);
+                    $hours_spin.set_value(activity_duration.hours() as f64);
                 }
 
                 // If the activity duration is longer, the activity is removed from the schedule.
@@ -224,14 +215,6 @@ impl App {
                         *$counter.borrow_mut() = 0;
                     }
                 }
-
-                // Update the spinbuttons
-                let activity_duration = data
-                    .activity(id)
-                    .expect("Setting duration of activity which does not exist")
-                    .duration();
-                $minutes_spin.set_value(activity_duration.minutes() as f64);
-                $hours_spin.set_value(activity_duration.hours() as f64);
             };
         }
 

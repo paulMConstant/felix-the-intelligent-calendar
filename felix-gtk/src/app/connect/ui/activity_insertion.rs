@@ -1,9 +1,11 @@
-use crate::app::{notify::notify_err, ui::EntityToShow, App};
+use crate::app::{notify::notify_err, ui::EntityToShow, App,
+    connect::ui::wrap_duration::wrap_duration};
 
 use felix_backend::data::{clean_string, ActivityID, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::sync::Arc;
+use std::convert::TryFrom;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -13,6 +15,7 @@ impl App {
         self.connect_show_schedule();
         self.connect_activity_clicked();
         self.connect_insert_activity_switch();
+        self.connect_change_duration_of_inserted_activity();
 
         self.set_activity_try_insert_callback();
         self.set_activity_get_possible_insertions_callback();
@@ -80,18 +83,22 @@ impl App {
         let ui = self.ui.clone();
         let data = self.data.clone();
 
-        main_window.connect_button_press_event(move |_window, event| {
-            const RIGHT_CLICK: u32 = 3;
-            const LEFT_CLICK: u32 = 1;
+        app_register_signal!(
+            self, 
+            main_window,
+            main_window.connect_button_press_event(move |_window, event| {
+                const RIGHT_CLICK: u32 = 3;
+                const LEFT_CLICK: u32 = 1;
 
-            match event.get_button() {
-                RIGHT_CLICK => ui.lock().unwrap().on_right_click(&(data.lock().unwrap())),
-                LEFT_CLICK => ui.lock().unwrap().on_left_click(&(data.lock().unwrap())),
-                _ => { // Do nothing
+                match event.get_button() {
+                    RIGHT_CLICK => ui.lock().unwrap().on_right_click(&(data.lock().unwrap())),
+                    LEFT_CLICK => ui.lock().unwrap().on_left_click(&(data.lock().unwrap())),
+                    _ => { // Do nothing
+                    }
                 }
-            }
-            glib::signal::Inhibit(true)
-        });
+                glib::signal::Inhibit(true)
+            })
+        );
     }
 
     fn connect_insert_activity_switch(&self) {
@@ -118,6 +125,74 @@ impl App {
                 }
             })
         );
+    }
+
+    fn connect_change_duration_of_inserted_activity(&self) {
+        fetch_from!(self.ui(), activity_beginning_hour_spin, activity_beginning_minute_spin);
+
+        let data = &self.data;
+        let ui = &self.ui;
+
+        macro_rules! set_beginning_closure {
+            ($data: ident, $ui: ident, $minutes_spin: ident, $hours_spin: ident) => {
+                safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
+
+                let id = $ui
+                    .lock()
+                    .unwrap()
+                    .current_activity()
+                    .expect("Current activity should be set before setting duration")
+                    .id();
+
+                let mut data = $data.lock().unwrap();
+
+                let activity_beginning = data
+                    .activity(id)
+                    .expect("Setting duration of activity which does not exist")
+                    .insertion_interval()
+                    .expect("Changing the beginning of an activity which is not inserted")
+                    .beginning();
+
+                let new_beginning = wrap_duration(activity_beginning, Time::new(hours, minutes));
+
+                if let Err(e) = data.insert_activity(id, Some(new_beginning)) {
+                    notify_err(e);
+
+                    // Update the spinbuttons to the old value
+                    $minutes_spin.set_value(activity_beginning.minutes() as f64);
+                    $hours_spin.set_value(activity_beginning.hours() as f64);
+                }
+            }
+        }
+
+        let minute_spin = activity_beginning_minute_spin.clone();
+        app_register_signal!(
+            self,
+            minute_spin,
+            minute_spin.connect_changed(
+                clone!(@strong data,
+                       @strong ui,
+                       @weak activity_beginning_hour_spin
+                       => move |activity_beginning_minute_spin| {
+                set_beginning_closure!(data,
+                                       ui,
+                                       activity_beginning_minute_spin,
+                                       activity_beginning_hour_spin);
+           })));
+
+        app_register_signal!(
+            self,
+            activity_beginning_hour_spin,
+            activity_beginning_hour_spin.connect_changed(
+                clone!(@strong data,
+                       @strong ui,
+                       @weak activity_beginning_minute_spin
+                       => move |activity_beginning_hour_spin| {
+                set_beginning_closure!(data,
+                                       ui,
+                                       activity_beginning_minute_spin,
+                                       activity_beginning_hour_spin);
+               })));
     }
 
     fn set_activity_try_insert_callback(&self) {
