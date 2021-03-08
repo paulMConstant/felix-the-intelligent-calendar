@@ -88,12 +88,7 @@ impl Ui {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
     }
 
-    pub fn on_entity_in_activity_renamed(
-        &mut self,
-        data: &Data,
-        entity: &Entity,
-        _old_name: &String,
-    ) {
+    pub fn on_entity_in_activity_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &str) {
         self.on_entities_or_groups_changed(data, entity);
     }
 
@@ -101,7 +96,7 @@ impl Ui {
         &mut self,
         data: &Data,
         position_of_removed_entity: usize,
-        _name_of_removed_entity: &String,
+        _name_of_removed_entity: &str,
     ) {
         self.on_entities_or_groups_changed(data, position_of_removed_entity);
     }

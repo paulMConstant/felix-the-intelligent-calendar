@@ -23,7 +23,7 @@ pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;
 
-use felix_backend::data::{Activity, ActivityID, Entity, Group, Time};
+use felix_backend::data::{Activity, ActivityId, Entity, Group, Time};
 
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
@@ -38,7 +38,7 @@ pub struct Ui {
     custom_work_hours_builder: WorkHoursBuilder,
     activity_insertion: Arc<Mutex<ActivityInsertionUi>>,
     get_possible_insertions_callback:
-        Arc<dyn Fn(ActivityID) -> (Option<HashSet<Time>>, Vec<String>)>,
+        Arc<dyn Fn(ActivityId) -> (Option<HashSet<Time>>, Vec<String>)>,
 }
 
 impl Ui {

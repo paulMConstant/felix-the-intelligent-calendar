@@ -1,6 +1,6 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::{ActivityID, Data, Time};
+use crate::data::{ActivityId, Data, Time};
 use crate::errors::{
     add_entity_to_inserted_activity_spot_taken::AddEntityToInsertedActivitySpotTaken,
     not_enough_time::NotEnoughTime, Result,
@@ -13,10 +13,9 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the activity is not found.
-    #[must_use]
     pub(super) fn check_entity_without_enough_time_to_set_duration(
         &self,
-        id: ActivityID,
+        id: ActivityId,
         new_duration: Time,
     ) -> Result<()> {
         let activity = self.activity(id)?;
@@ -32,7 +31,7 @@ impl Data {
                 .iter()
                 // Call to expect() : we are sure that all entities in the activity exist.
                 .find(|entity_name| {
-                    self.free_time_of(entity_name.clone())
+                    self.free_time_of(&(*entity_name).clone())
                         .expect("Could not get entity participating in an activity")
                         < required_free_time
                 })
@@ -54,11 +53,10 @@ impl Data {
     ///
     /// Returns Err if the entity does not exist, the id is invalid or the entity
     /// does not have enough time.
-    #[must_use]
     pub(super) fn check_has_enough_time_for_activity(
         &self,
-        activity_id: ActivityID,
-        entity_name: &String,
+        activity_id: ActivityId,
+        entity_name: &str,
     ) -> Result<()> {
         if self.has_enough_time_for_activity(activity_id, &entity_name)? {
             Ok(())
@@ -77,11 +75,10 @@ impl Data {
     ///
     /// Returns Err if any activity of the entity is inserted in a slot which overlaps with the
     /// given activity's insertion slot.
-    #[must_use]
     pub(super) fn check_no_activity_is_overlapping(
         &self,
-        activity_id: ActivityID,
-        entity_name: &String,
+        activity_id: ActivityId,
+        entity_name: &str,
     ) -> Result<()> {
         let activity = self.activity(activity_id)?;
         let maybe_insertion_interval = activity.insertion_interval();
@@ -104,7 +101,7 @@ impl Data {
                 })
             {
                 Err(AddEntityToInsertedActivitySpotTaken::new(
-                    entity_name.clone(),
+                    entity_name,
                     activity_name,
                     blocking_activity.name(),
                 ))
@@ -123,15 +120,14 @@ impl Data {
     ///
     /// Returns Err if any entity or the activity does not exist or if the entity does not
     /// have enough time for the activity.
-    #[must_use]
     pub(super) fn check_entity_without_enough_time_for_activity(
         &self,
-        activity_id: ActivityID,
-        entities: &Vec<String>,
+        activity_id: ActivityId,
+        entities: &[String],
     ) -> Result<()> {
         // Check that each entity has enough time
         for entity_name in entities {
-            if self.has_enough_time_for_activity(activity_id, entity_name)? == false {
+            if !self.has_enough_time_for_activity(activity_id, entity_name)? {
                 let activity = self.activity(activity_id)?;
                 return Err(NotEnoughTime::activity_added_for(
                     entity_name,
@@ -147,11 +143,10 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the entity or activity does not exist.
-    #[must_use]
     fn has_enough_time_for_activity(
         &self,
-        activity_id: ActivityID,
-        entity_name: &String,
+        activity_id: ActivityId,
+        entity_name: &str,
     ) -> Result<bool> {
         let free_time = self.free_time_of(entity_name)?;
         Ok(free_time >= self.activity(activity_id)?.duration())

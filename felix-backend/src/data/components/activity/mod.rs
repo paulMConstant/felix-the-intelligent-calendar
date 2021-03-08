@@ -6,9 +6,9 @@ mod computation;
 use crate::data::{Time, TimeInterval};
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
-pub use activity_metadata::RGBA;
+pub use activity_metadata::Rgba;
 
-pub type ActivityID = usize;
+pub type ActivityId = usize;
 
 /// An activity represents a group of entities which must meet during a defined period of time.
 ///
@@ -27,7 +27,7 @@ impl Activity {
     /// * computation data (duration, time interval if inserted,
     /// incompatible activities, possible insertion times)
     #[must_use]
-    fn new(id: ActivityID, name: String) -> Activity {
+    fn new(id: ActivityId, name: String) -> Activity {
         Activity {
             metadata: ActivityMetadata::new(id, name),
             computation_data: ActivityComputationData::new(),
@@ -38,7 +38,7 @@ impl Activity {
 
     /// Simple getter for the unique id.
     #[must_use]
-    pub fn id(&self) -> ActivityID {
+    pub fn id(&self) -> ActivityId {
         self.metadata.id()
     }
 
@@ -75,7 +75,7 @@ impl Activity {
 
     /// Simple getter for the color.
     #[must_use]
-    pub fn color(&self) -> RGBA {
+    pub fn color(&self) -> Rgba {
         self.metadata.color()
     }
 }

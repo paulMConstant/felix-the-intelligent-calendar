@@ -32,7 +32,6 @@ impl Data {
     /// let invalid_name = "Jean";
     /// assert!(data.entity(invalid_name).is_err());
     /// ```
-    #[must_use]
     pub fn entity<S>(&self, name: S) -> Result<Entity>
     where
         S: Into<String>,
@@ -58,7 +57,6 @@ impl Data {
     /// // Name already taken
     /// assert!(data.add_entity(name).is_err());
     /// ```
-    #[must_use]
     pub fn add_entity<S>(&mut self, name: S) -> Result<String>
     where
         S: Into<String>,
@@ -93,7 +91,6 @@ impl Data {
     /// // Entity does not exist anymore
     /// assert!(data.remove_entity(name).is_err());
     /// ```
-    #[must_use]
     pub fn remove_entity<S>(&mut self, name: S) -> Result<()>
     where
         S: Into<String>,
@@ -142,7 +139,6 @@ impl Data {
     /// // No entity has this name anymore
     /// assert!(data.set_entity_name(invalid_name, "other name").is_err());
     /// ```
-    #[must_use]
     pub fn set_entity_name<S1, S2>(&mut self, old_name: S1, new_name: S2) -> Result<String>
     where
         S1: Into<String>,
@@ -190,7 +186,6 @@ impl Data {
     /// assert!(data.set_entity_mail(name.clone(), mail).is_ok());
     /// assert_eq!(data.entity(name).unwrap().mail(), mail);
     /// ```
-    #[must_use]
     pub fn set_entity_mail<S1, S2>(&mut self, entity_name: S1, mail: S2) -> Result<()>
     where
         S1: Into<String>,
@@ -219,7 +214,6 @@ impl Data {
     /// assert!(data.set_send_mail_to(name.clone(), send).is_ok());
     /// assert!(data.entity(name).unwrap().send_me_a_mail());
     /// ```
-    #[must_use]
     pub fn set_send_mail_to<S>(&mut self, entity_name: S, send: bool) -> Result<()>
     where
         S: Into<String>,
@@ -255,7 +249,6 @@ impl Data {
     /// // Total time is 4 hours, time taken by activity is 1 hour.
     /// assert_eq!(data.free_time_of(name).unwrap(), Time::new(3, 0));
     /// ```
-    #[must_use]
     pub fn free_time_of<S>(&self, entity_name: S) -> Result<Time>
     where
         S: Into<String>,
@@ -297,14 +290,13 @@ impl Data {
     /// let expected = data.entity(name.clone()).unwrap().custom_work_hours();
     /// assert_eq!(data.work_hours_of(name).unwrap(), expected);
     /// ```
-    #[must_use]
     pub fn work_hours_of<S>(&self, entity_name: S) -> Result<Vec<TimeInterval>>
     where
         S: Into<String>,
     {
         let custom_work_hours = self.entity(entity_name)?.custom_work_hours();
-        Ok(if custom_work_hours.len() == 0 {
-            self.work_hours().clone()
+        Ok(if custom_work_hours.is_empty() {
+            self.work_hours()
         } else {
             custom_work_hours
         })
@@ -332,7 +324,6 @@ impl Data {
     /// assert!(data.add_custom_work_interval_for(name.clone(), overlapping_interval).is_err());
     /// assert_eq!(data.entity(name).unwrap().custom_work_hours()[0], custom_work_interval);
     /// ```
-    #[must_use]
     pub fn add_custom_work_interval_for<S>(
         &mut self,
         entity_name: S,
@@ -350,7 +341,7 @@ impl Data {
         )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)?;
-        self.queue_entities(vec![entity_name.clone()])?;
+        self.queue_entities(vec![entity_name])?;
 
         self.events()
             .borrow_mut()
@@ -382,7 +373,6 @@ impl Data {
     /// let nonexistent_interval = custom_work_interval;
     /// assert!(data.remove_custom_work_interval_for(name, nonexistent_interval).is_err());
     /// ```
-    #[must_use]
     pub fn remove_custom_work_interval_for<S>(
         &mut self,
         entity_name: S,
@@ -400,7 +390,7 @@ impl Data {
         )?;
         self.entities
             .remove_custom_work_interval_for(&entity_name, interval)?;
-        self.queue_entities(vec![entity_name.clone()])?;
+        self.queue_entities(vec![entity_name])?;
 
         self.events()
             .borrow_mut()
@@ -431,7 +421,6 @@ impl Data {
     /// assert!(data.update_custom_work_interval_for(name.clone(), interval, new_interval).is_ok());
     /// assert_eq!(data.work_hours_of(name).unwrap()[0], new_interval);
     /// ```
-    #[must_use]
     pub fn update_custom_work_interval_for<S>(
         &mut self,
         entity_name: S,
@@ -452,7 +441,7 @@ impl Data {
         self.entities
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
 
-        self.queue_entities(vec![entity_name.clone()])?;
+        self.queue_entities(vec![entity_name])?;
 
         self.events()
             .borrow_mut()

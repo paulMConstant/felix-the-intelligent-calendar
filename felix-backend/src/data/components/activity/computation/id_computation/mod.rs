@@ -4,15 +4,10 @@
 mod tests;
 
 use super::super::activity_metadata::ActivityMetadata;
-use crate::data::ActivityID;
-use std::convert::TryFrom;
+use crate::data::ActivityId;
 
 /// Generates the smallest unused id.
-///
-/// # Panics
-///
-/// Panics if there is no id available fitting in ActivityID data type.
-pub fn generate_next_id(mut used_ids: Vec<&ActivityID>) -> ActivityID {
+pub fn generate_next_id(mut used_ids: Vec<&ActivityId>) -> ActivityId {
     // Fetch the ids in ascending order.
     used_ids.sort();
 
@@ -23,17 +18,11 @@ pub fn generate_next_id(mut used_ids: Vec<&ActivityID>) -> ActivityID {
         // Compute the difference between neighbours to check for the first hole
         // Example : [0, 1, 2, 4, 5] -> [1, 1, 2, 1] -> tab[2] > 1 : 3 is the hole to fill
         if let Some(index) = used_ids.windows(2).map(|w| w[1] - w[0]).position(|i| i > 1) {
-            // Found a hole ! Return its index + 1.
-            match ActivityID::try_from(index + 1) {
-                Ok(i) => i,
-                Err(_) => panic!("All ids have been used !"),
-            }
+            // Found a hole ! Return the index + 1 (cf example : index 2 means next number is 3)
+            index + 1
         } else {
             // Hole not found : return the length of the used ids.
-            match ActivityID::try_from(used_ids.len()) {
-                Ok(i) => i,
-                Err(_) => panic!("All ids have been used !"),
-            }
+            used_ids.len()
         }
     }
 }
@@ -42,8 +31,8 @@ pub fn generate_next_id(mut used_ids: Vec<&ActivityID>) -> ActivityID {
 /// given all other metadata.
 pub fn compute_incompatible_ids(
     metadata: &ActivityMetadata,
-    metadata_vec: &Vec<ActivityMetadata>,
-) -> Vec<ActivityID> {
+    metadata_vec: &[ActivityMetadata],
+) -> Vec<ActivityId> {
     metadata_vec
         .iter()
         // The entities have one element in common

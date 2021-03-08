@@ -1,4 +1,4 @@
-use felix_backend::data::ActivityID;
+use felix_backend::data::ActivityId;
 
 pub const DRAG_WIDTH: i32 = 300;
 pub const DRAG_HEIGHT: i32 = 30;
@@ -10,4 +10,4 @@ pub const DRAG_FONT_SIZE: i32 = 14;
 pub const DRAG_TEXT_Y_OFFSET: f64 = 20.0;
 
 pub const DRAG_TYPE: &str = "ACTIVITY";
-pub const DRAG_DATA_FORMAT: usize = std::mem::size_of::<ActivityID>();
+pub const DRAG_DATA_FORMAT: usize = std::mem::size_of::<ActivityId>();

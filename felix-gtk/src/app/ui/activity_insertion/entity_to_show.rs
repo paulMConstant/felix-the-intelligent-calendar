@@ -1,11 +1,11 @@
-use felix_backend::data::{Activity, ActivityID, Data, Time, TimeInterval, RGBA};
+use felix_backend::data::{Activity, ActivityId, Data, Rgba, Time, TimeInterval};
 
 /// Simple struct holding an activity's name and insertion interval.
 pub struct ActivityToDisplay {
-    id: ActivityID,
+    id: ActivityId,
     name: String,
     insertion_interval: Option<TimeInterval>,
-    color: RGBA,
+    color: Rgba,
 }
 
 impl ActivityToDisplay {
@@ -20,7 +20,7 @@ impl ActivityToDisplay {
     }
 
     #[must_use]
-    pub fn id(&self) -> ActivityID {
+    pub fn id(&self) -> ActivityId {
         self.id
     }
 
@@ -35,7 +35,7 @@ impl ActivityToDisplay {
     }
 
     #[must_use]
-    pub fn color(&self) -> &RGBA {
+    pub fn color(&self) -> &Rgba {
         &self.color
     }
 }

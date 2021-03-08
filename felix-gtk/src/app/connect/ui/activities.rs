@@ -8,7 +8,7 @@ use crate::app::{
     App,
 };
 
-use felix_backend::data::{clean_string, ActivityID, Time, RGBA};
+use felix_backend::data::{clean_string, ActivityId, Rgba, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
@@ -80,7 +80,7 @@ impl App {
                     get_selection_from_treeview(&tree_view, ACTIVITY_ID_COLUMN);
                 if let Some(activity_id_str) = selected_activity_id {
                     let activity_id = activity_id_str
-                        .parse::<ActivityID>()
+                        .parse::<ActivityId>()
                         .expect("Error when parsing activity ID from model");
 
                     let data = data.lock().unwrap();
@@ -415,7 +415,7 @@ impl App {
                     .unwrap()
                     .set_activity_color(
                         current_activity_id,
-                        RGBA {
+                        Rgba {
                             red: color.red,
                             green: color.green,
                             blue: color.blue,

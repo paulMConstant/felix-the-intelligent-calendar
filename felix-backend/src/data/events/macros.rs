@@ -62,6 +62,12 @@ macro_rules! create_events_impl {
             create_emit_events!($($element { $($param_name: $param_type),* }),*);
         }
 
+        impl Default for $events_name {
+            fn default() -> Self {
+                $events_name::new()
+            }
+        }
+
         impl Eq for $events_name {}
         impl PartialEq for $events_name {
             fn eq(&self, _other: &Self) -> bool {
@@ -91,7 +97,7 @@ macro_rules! create_events_impl {
 ///
 ///```
 /// create_events!(Events:
-///     renamed {old_name: &String, new_name: &String},
+///     renamed {old_name: &str, new_name: &str},
 ///     something_changed {}
 /// )
 ///```
@@ -99,7 +105,7 @@ macro_rules! create_events_impl {
 ///
 ///```
 /// pub struct Events {
-///     renamed: Vec<Box<dyn FnMut(&Data, &String, &String)>>,
+///     renamed: Vec<Box<dyn FnMut(&Data, &str, &str)>>,
 ///     something_changed: Vec<Box<dyn FnMut(&Data)>>,
 /// }
 ///
@@ -113,7 +119,7 @@ macro_rules! create_events_impl {
 ///     }
 ///
 ///     pub fn do_when_renamed(&mut self,
-///         callbacks: Vec<Box<dyn FnMut(&Data, &String, &String)>>) {
+///         callbacks: Vec<Box<dyn FnMut(&Data, &str, &str)>>) {
 ///         self.renamed.extend(callbacks);
 ///     }
 ///
@@ -124,8 +130,8 @@ macro_rules! create_events_impl {
 ///
 ///     pub fn emit_renamed(&mut self,
 ///                         data: &Data,
-///                         old_name: &String,
-///                         new_name: &String) {
+///                         old_name: &str,
+///                         new_name: &str) {
 ///         for callback in &mut self.renamed {
 ///             callback(data, old_name, new_name);
 ///         }
@@ -135,6 +141,12 @@ macro_rules! create_events_impl {
 ///         for callback in &mut self.something_changed {
 ///             callback(data);
 ///         }
+///     }
+/// }
+///
+/// impl Default for Events {
+///     fn default() -> Self {
+///         Events::new()
 ///     }
 /// }
 ///

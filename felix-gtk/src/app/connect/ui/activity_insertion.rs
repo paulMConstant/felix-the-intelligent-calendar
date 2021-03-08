@@ -2,7 +2,7 @@ use crate::app::{
     connect::ui::wrap_duration::wrap_duration, notify::notify_err, ui::EntityToShow, App,
 };
 
-use felix_backend::data::{clean_string, ActivityID, Time};
+use felix_backend::data::{clean_string, ActivityId, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
@@ -207,7 +207,7 @@ impl App {
             .lock()
             .unwrap()
             .set_activity_try_insert_callback(Arc::new(Box::new(
-                move |entity_name: String, activity_id: ActivityID, insertion_time: Time| {
+                move |entity_name: String, activity_id: ActivityId, insertion_time: Time| {
                     let mut data = data.lock().unwrap();
                     let activity = data
                         .activity(activity_id)
@@ -241,7 +241,7 @@ impl App {
             .lock()
             .unwrap()
             .set_activity_get_possible_insertions_callback(Arc::new(Box::new(
-                        move |id: ActivityID| {
+                        move |id: ActivityId| {
             let mut data = data.lock().unwrap();
             let activity_participants = data.activity(id)
                 .expect("Trying to get possible insertion times of activity which does not exist !")

@@ -6,7 +6,7 @@ use super::{
 
 use crate::app::ui::drag_config::*;
 
-use felix_backend::data::ActivityID;
+use felix_backend::data::ActivityId;
 
 use gtk::prelude::*;
 
@@ -61,8 +61,8 @@ impl ActivityInsertionUi {
                 }
                 let schedules = schedules.lock().unwrap();
                 if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
-                    let activity_id: ActivityID =
-                        byteorder::NativeEndian::read_u32(&selection_data.get_data()) as ActivityID;
+                    let activity_id: ActivityId =
+                        byteorder::NativeEndian::read_u32(&selection_data.get_data()) as ActivityId;
                     let insertion_time = get_time_on_y(y, &schedules);
                     drop(schedules); // Unlock
                     (try_insert_activity_callback)(entity_name, activity_id, insertion_time);

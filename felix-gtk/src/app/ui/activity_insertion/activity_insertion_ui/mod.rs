@@ -8,7 +8,7 @@ use crate::app::ui::EntityToShow;
 use fetch_data_from_cursor_position::get_id_of_activity_under_cursor;
 use schedules::Schedules;
 
-use felix_backend::data::{ActivityID, Time};
+use felix_backend::data::{ActivityId, Time};
 
 use glib::clone;
 use gtk::prelude::*;
@@ -29,7 +29,7 @@ struct MousePosition {
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
-    try_insert_activity_callback: Arc<dyn Fn(String, ActivityID, Time)>,
+    try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
     mouse_position: Rc<RefCell<Option<MousePosition>>>,
 }
 
@@ -59,7 +59,7 @@ impl ActivityInsertionUi {
 
     pub fn set_activity_try_insert_callback(
         &mut self,
-        callback: Arc<dyn Fn(String, ActivityID, Time)>,
+        callback: Arc<dyn Fn(String, ActivityId, Time)>,
     ) {
         self.try_insert_activity_callback = callback;
         // Enable drop only after the callback has been set
@@ -86,7 +86,7 @@ impl ActivityInsertionUi {
     }
 
     #[must_use]
-    pub(super) fn get_id_of_activity_under_cursor(&self) -> Option<ActivityID> {
+    pub(super) fn get_id_of_activity_under_cursor(&self) -> Option<ActivityId> {
         let cursor_position = (*self.mouse_position.borrow()).clone();
         cursor_position.and_then(|pos| {
             get_id_of_activity_under_cursor(pos.x, pos.y, &self.schedules_to_show.lock().unwrap())

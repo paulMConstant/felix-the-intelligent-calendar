@@ -9,7 +9,7 @@
 //! - Set color
 //! - Activity insertion
 
-use felix_backend::data::{Time, TimeInterval, RGBA};
+use felix_backend::data::{Rgba, Time, TimeInterval};
 use test_utils::{Activity, DataBuilder};
 
 use std::collections::HashSet;
@@ -393,7 +393,7 @@ fn basic_set_color() {
         DataBuilder::new().with_activity(Activity::default()),
         {
             let id = data.activities_sorted()[0].id();
-            let color = RGBA {
+            let color = Rgba {
                 red: 0.8,
                 green: 0.7,
                 blue: 0.5,

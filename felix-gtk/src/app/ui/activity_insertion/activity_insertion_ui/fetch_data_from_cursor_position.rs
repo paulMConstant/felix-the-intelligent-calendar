@@ -1,5 +1,5 @@
 use super::Schedules;
-use felix_backend::data::{ActivityID, Time};
+use felix_backend::data::{ActivityId, Time};
 
 #[must_use]
 pub(super) fn get_name_of_entity_from_x(x: i32, schedules: &Schedules) -> Option<String> {
@@ -23,7 +23,7 @@ pub(super) fn get_id_of_activity_under_cursor(
     x: i32,
     y: i32,
     schedules: &Schedules,
-) -> Option<ActivityID> {
+) -> Option<ActivityId> {
     if let Some(entity) = get_name_of_entity_from_x(x, schedules) {
         let time = get_time_on_y(y, schedules);
         // Check if an activity has the given insertion time

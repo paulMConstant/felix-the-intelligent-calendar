@@ -23,7 +23,7 @@ impl Ui {
         &mut self,
         data: &Data,
         position_of_removed_entity: usize,
-        _name_of_removed_entity: &String,
+        _name_of_removed_entity: &str,
     ) {
         let entities = &data.entities_sorted();
         let (new_current_entity, _) = get_next_element(position_of_removed_entity, entities);
@@ -31,7 +31,7 @@ impl Ui {
         self.update_entities_treeview(entities);
     }
 
-    pub fn on_entity_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &String) {
+    pub fn on_entity_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &str) {
         self.update_current_entity_name_only(Some(entity.clone()));
         self.update_entities_treeview(&data.entities_sorted());
     }

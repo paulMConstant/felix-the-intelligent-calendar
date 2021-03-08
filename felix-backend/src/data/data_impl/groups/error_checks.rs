@@ -10,15 +10,14 @@ impl Data {
     ///
     /// Returns Err if the entity name is empty, if the entity is not found
     /// or if the entity will not have enough time for the group's activities.
-    #[must_use]
     pub(super) fn check_has_enough_time_for_group(
         &self,
-        group_name: &String,
-        entity_name: &String,
+        group_name: &str,
+        entity_name: &str,
     ) -> Result<()> {
         let entity_should_be_added_to_activity = |activity: &Activity| {
-            activity.groups_sorted().contains(group_name)
-                && activity.entities_sorted().contains(entity_name) == false
+            activity.groups_sorted().contains(&group_name.into())
+                && !activity.entities_sorted().contains(&entity_name.into())
         };
 
         let duration_of_added_activities: Time = self
@@ -46,8 +45,7 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the name is taken.
-    #[must_use]
-    pub(super) fn check_name_taken_by_entity(&self, name: &String) -> Result<()> {
+    pub(super) fn check_name_taken_by_entity(&self, name: &str) -> Result<()> {
         if let Some(entity_name) = self
             .entities_sorted()
             .iter()

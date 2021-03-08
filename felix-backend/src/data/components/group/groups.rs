@@ -1,5 +1,6 @@
 use super::Group;
 use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
 /// Manages groups.
@@ -33,8 +34,7 @@ impl Groups {
     /// # Errors
     ///
     /// Returns Err if the group does not exist.
-    #[must_use]
-    pub fn get_by_name(&self, name: &String) -> Result<Group> {
+    pub fn get_by_name(&self, name: &str) -> Result<Group> {
         match self.groups.get(name) {
             Some(group) => Ok(group.clone()),
             None => Err(DoesNotExist::group_does_not_exist(name)),
@@ -46,13 +46,13 @@ impl Groups {
     /// # Errors
     ///
     /// Returns Err if a group with the same name exists.
-    #[must_use]
     pub fn add(&mut self, name: String) -> Result<()> {
-        if self.groups.contains_key(&name) {
-            Err(NameTaken::name_taken_by_group(name))
-        } else {
-            self.groups.insert(name.clone(), Group::new(name));
-            Ok(())
+        match self.groups.entry(name.clone()) {
+            Entry::Occupied(_) => Err(NameTaken::name_taken_by_group(name)),
+            Entry::Vacant(v) => {
+                v.insert(Group::new(name));
+                Ok(())
+            }
         }
     }
 
@@ -61,8 +61,7 @@ impl Groups {
     /// # Errors
     ///
     /// Returns Err if the group is not found.
-    #[must_use]
-    pub fn remove(&mut self, name: &String) -> Result<()> {
+    pub fn remove(&mut self, name: &str) -> Result<()> {
         match self.groups.remove(name) {
             Some(_) => Ok(()),
             None => Err(DoesNotExist::group_does_not_exist(name)),
@@ -74,8 +73,7 @@ impl Groups {
     /// # Errors
     ///
     /// Returns Err if the group is not found or if the entity is already in the group.
-    #[must_use]
-    pub fn add_entity_to_group(&mut self, group_name: &String, entity_name: String) -> Result<()> {
+    pub fn add_entity_to_group(&mut self, group_name: &str, entity_name: String) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
                 group.inner.add_entity(entity_name)?;
@@ -90,12 +88,7 @@ impl Groups {
     /// # Errors
     ///
     /// Returns Err if the group is not found or if the entity is already in the group.
-    #[must_use]
-    pub fn remove_entity_from_group(
-        &mut self,
-        group_name: &String,
-        entity_name: &String,
-    ) -> Result<()> {
+    pub fn remove_entity_from_group(&mut self, group_name: &str, entity_name: &str) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
                 group.inner.remove_entity(entity_name)?;
@@ -106,7 +99,7 @@ impl Groups {
     }
 
     /// Removes the entity with given name from all groups.
-    pub fn remove_entity_from_all(&mut self, entity: &String) {
+    pub fn remove_entity_from_all(&mut self, entity: &str) {
         for group in self.groups.values_mut() {
             let _ = group.inner.remove_entity(entity);
         }
@@ -117,25 +110,25 @@ impl Groups {
     /// # Errors
     ///
     /// Returns Err if the group is not found or if a group already has this name.
-    #[must_use]
-    pub fn set_name_of(&mut self, old_name: &String, new_name: String) -> Result<()> {
-        if self.groups.contains_key(&new_name) {
-            Err(NameTaken::name_taken_by_group(new_name))
-        } else {
-            // We have to change the key and the value
-            match self.groups.remove(old_name) {
-                Some(mut group) => {
-                    group.inner.set_name(new_name.clone());
-                    self.groups.insert(new_name, group);
-                    Ok(())
+    pub fn set_name_of(&mut self, old_name: &str, new_name: String) -> Result<()> {
+        match self.groups.entry(new_name.clone()) {
+            Entry::Occupied(_) => Err(NameTaken::name_taken_by_group(new_name)),
+            Entry::Vacant(_) => {
+                // We have to change the key and the value
+                match self.groups.remove(old_name) {
+                    Some(mut group) => {
+                        group.inner.set_name(new_name.clone());
+                        self.groups.insert(new_name, group);
+                        Ok(())
+                    }
+                    None => Err(DoesNotExist::group_does_not_exist(old_name)),
                 }
-                None => Err(DoesNotExist::group_does_not_exist(old_name)),
             }
         }
     }
 
     /// Renames the entity with given name in all groups.
-    pub fn rename_entity_in_all(&mut self, old_name: &String, new_name: String) {
+    pub fn rename_entity_in_all(&mut self, old_name: &str, new_name: String) {
         for group in self.groups.values_mut() {
             // We don't care about the result : it is fine if the entity is not
             // taking part in the activity, this will yield no conflict when it is renamed

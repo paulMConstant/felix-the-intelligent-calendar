@@ -1,7 +1,7 @@
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::ui::{activities_treeview_config::*, drag_config::*, Ui};
 
-use felix_backend::data::ActivityID;
+use felix_backend::data::ActivityId;
 
 use gdk::prelude::GdkContextExt;
 use gtk::prelude::*;
@@ -82,7 +82,7 @@ impl Ui {
             // 2. Draw possible activity beginnings
             let selected_activity_id = get_selection_from_treeview(&treeview, ACTIVITY_ID_COLUMN)
                 .expect("Dragging an activity when no activity is selected")
-                .parse::<ActivityID>()
+                .parse::<ActivityId>()
                 .expect("Error when parsing activity ID from activities model");
 
             let (maybe_possible_insertion_times, concerned_entities) =
@@ -105,7 +105,7 @@ impl Ui {
                 let selected_activity_id =
                     get_selection_from_treeview(treeview, ACTIVITY_ID_COLUMN)
                         .expect("Dragging an activity when no activity is selected")
-                        .parse::<ActivityID>()
+                        .parse::<ActivityId>()
                         .expect("Error when parsing activity ID from activities model");
 
                 let buffer: &mut [u8; DRAG_DATA_FORMAT] = &mut [0; DRAG_DATA_FORMAT];

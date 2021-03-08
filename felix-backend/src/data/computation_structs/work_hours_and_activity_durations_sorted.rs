@@ -2,7 +2,7 @@ use crate::data::{Time, TimeInterval};
 
 use felix_computation_api::find_possible_beginnings::WorkHourInMinutes;
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct WorkHoursAndActivityDurationsSorted {
     work_hours: Vec<TimeInterval>,
     activity_durations: Vec<Time>,
@@ -13,7 +13,7 @@ impl WorkHoursAndActivityDurationsSorted {
         mut work_hours: Vec<TimeInterval>,
         mut activity_durations: Vec<Time>,
     ) -> WorkHoursAndActivityDurationsSorted {
-        work_hours.sort_by(|a, b| a.duration().cmp(&b.duration()));
+        work_hours.sort_by_key(|a| a.duration());
         activity_durations.sort();
         WorkHoursAndActivityDurationsSorted {
             work_hours,
@@ -41,18 +41,20 @@ impl WorkHoursAndActivityDurationsSorted {
     }
 }
 
-fn work_hours_to_durations(work_hours: &Vec<TimeInterval>) -> Vec<Time> {
+fn work_hours_to_durations(work_hours: &[TimeInterval]) -> Vec<Time> {
     work_hours
         .iter()
         .map(|work_hour| work_hour.duration())
         .collect()
 }
 
-impl Eq for WorkHoursAndActivityDurationsSorted {}
-impl PartialEq for WorkHoursAndActivityDurationsSorted {
-    fn eq(&self, other: &Self) -> bool {
-        self.activity_durations == other.activity_durations
-            && (work_hours_to_durations(&self.work_hours)
-                == work_hours_to_durations(&other.work_hours))
-    }
-}
+// TODO maybe use this instead to avoid multiple calculations ?
+// Maybe this is not really useful
+//impl Eq for WorkHoursAndActivityDurationsSorted {}
+//impl PartialEq for WorkHoursAndActivityDurationsSorted {
+//fn eq(&self, other: &Self) -> bool {
+//self.activity_durations == other.activity_durations
+//&& (work_hours_to_durations(&self.work_hours)
+//== work_hours_to_durations(&other.work_hours))
+//}
+//}

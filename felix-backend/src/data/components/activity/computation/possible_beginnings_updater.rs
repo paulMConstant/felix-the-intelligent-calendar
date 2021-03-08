@@ -1,5 +1,5 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityID, Time,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Time,
     MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
@@ -22,7 +22,7 @@ type WorkHoursAndActivityDurationsSortedCache =
 /// This class is NOT thread-safe, it only runs the computations in a separate thread pool.
 #[derive(Debug)]
 pub struct PossibleBeginningsUpdater {
-    possible_beginnings_up_to_date: HashMap<ActivityID, bool>,
+    possible_beginnings_up_to_date: HashMap<ActivityId, bool>,
     // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
     thread_pool: Rc<rayon::ThreadPool>,
@@ -40,18 +40,18 @@ impl PossibleBeginningsUpdater {
     }
 
     /// Informs the updater that a new activity has been added.
-    pub fn notify_new_activity(&mut self, id: ActivityID) {
+    pub fn notify_new_activity(&mut self, id: ActivityId) {
         self.possible_beginnings_up_to_date.insert(id, true);
     }
 
     /// Informs the updater that an activity has been deleted.
-    pub fn notify_activity_removed(&mut self, id: ActivityID) {
+    pub fn notify_activity_removed(&mut self, id: ActivityId) {
         self.possible_beginnings_up_to_date.remove(&id);
     }
 
     /// Returns true if the activity possible beginnings are up to date.
     #[must_use]
-    pub fn activity_beginnings_are_up_to_date(&self, id: &ActivityID) -> bool {
+    pub fn activity_beginnings_are_up_to_date(&self, id: &ActivityId) -> bool {
         *self
             .possible_beginnings_up_to_date
             .get(id)
@@ -63,7 +63,7 @@ impl PossibleBeginningsUpdater {
     pub fn queue_work_hours_and_activity_durations(
         &mut self,
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
-        out_of_date_activities: HashSet<ActivityID>,
+        out_of_date_activities: HashSet<ActivityId>,
     ) {
         if out_of_date_activities.is_empty() {
             // No activities are concerned - return
@@ -75,7 +75,7 @@ impl PossibleBeginningsUpdater {
         }
 
         for key in work_hours_and_activity_durations {
-            if self.computation_cache.lock().unwrap().contains_key(&key) == false {
+            if !self.computation_cache.lock().unwrap().contains_key(&key) {
                 let computation_cache = &self.computation_cache;
 
                 // Launch the computation in a separate thread
@@ -129,7 +129,7 @@ impl PossibleBeginningsUpdater {
         // Intersect all possible beginnings
         if let Some(mut all_possible_beginnings) = maybe_all_possible_beginnings {
             // Sort sets by ascending size so that fewer checks are done for intersections
-            all_possible_beginnings.sort_by(|a, b| a.len().cmp(&b.len()));
+            all_possible_beginnings.sort_by_key(|a| a.len());
 
             let first_set = all_possible_beginnings[0];
             let intersection = first_set

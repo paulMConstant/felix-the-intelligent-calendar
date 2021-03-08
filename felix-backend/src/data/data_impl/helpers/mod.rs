@@ -7,7 +7,6 @@ use crate::errors::{empty_name::EmptyName, Result};
 /// # Errors
 ///
 /// Returns Err if the formatted string is empty.
-#[must_use]
 pub fn clean_string<S>(s: S) -> Result<String>
 where
     S: Into<String>,

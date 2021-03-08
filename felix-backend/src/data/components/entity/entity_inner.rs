@@ -66,7 +66,6 @@ impl EntityInner {
     /// # Errors
     ///
     /// Returns Err if the interval is overlapping with an existing one.
-    #[must_use]
     pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.custom_work_hours.add_work_interval(interval)
     }
@@ -76,7 +75,6 @@ impl EntityInner {
     /// # Errors
     ///
     /// Returns Err if the interval is not found.
-    #[must_use]
     pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.custom_work_hours.remove_work_interval(interval)
     }
@@ -87,7 +85,6 @@ impl EntityInner {
     ///
     /// Returns Err if the work interval is not found or if the new interval overlaps
     /// with existing ones.
-    #[must_use]
     pub fn update_work_interval(
         &mut self,
         old_interval: TimeInterval,

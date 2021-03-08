@@ -9,7 +9,6 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if an entity is found.
-    #[must_use]
     pub(super) fn check_entity_without_enough_time_to_update_interval(
         &self,
         old_duration: Time,
@@ -32,7 +31,6 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if an entity is found.
-    #[must_use]
     pub(super) fn check_entity_without_enough_time_to_remove_interval(
         &self,
         interval_duration: Time,

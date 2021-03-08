@@ -38,7 +38,6 @@ impl GroupInner {
     /// # Errors
     ///
     /// Returns Err if the entity is already in the group.
-    #[must_use]
     pub fn add_entity(&mut self, entity_name: String) -> Result<()> {
         if self.entities.insert(entity_name.clone()) {
             Ok(())
@@ -52,8 +51,7 @@ impl GroupInner {
     /// # Errors
     ///
     /// Returns Err if the entity is not in the group.
-    #[must_use]
-    pub fn remove_entity(&mut self, entity_name: &String) -> Result<()> {
+    pub fn remove_entity(&mut self, entity_name: &str) -> Result<()> {
         if self.entities.remove(entity_name) {
             Ok(())
         } else {
@@ -72,8 +70,7 @@ impl GroupInner {
     ///
     /// Returns Err if the entity is not part of the group or if
     /// an entity with the new name is already in the group.
-    #[must_use]
-    pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<()> {
+    pub fn rename_entity(&mut self, old_name: &str, new_name: String) -> Result<()> {
         if self.entities.contains(&new_name) {
             return Err(NameTaken::name_taken_by_entity(new_name));
         };

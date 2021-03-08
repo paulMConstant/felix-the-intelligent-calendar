@@ -40,7 +40,6 @@ impl WorkHours {
     /// # Errors
     ///
     /// Returns Err if the interval was not found.
-    #[must_use]
     pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         if let Some(index) = self
             .work_intervals
@@ -60,7 +59,6 @@ impl WorkHours {
     ///
     /// Returns Err if the interval was not found or if the new interval overlaps with
     /// the work hours.
-    #[must_use]
     pub fn update_work_interval(
         &mut self,
         old_interval: TimeInterval,
@@ -85,7 +83,6 @@ impl WorkHours {
     /// # Errors
     ///
     /// Returns Err if the interval overlaps else Ok(()).
-    #[must_use]
     fn check_if_interval_overlaps(
         &self,
         interval: TimeInterval,

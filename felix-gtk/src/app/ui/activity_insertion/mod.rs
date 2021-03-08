@@ -4,7 +4,7 @@ pub mod entity_to_show;
 use crate::app::ui::Ui;
 use entity_to_show::EntityToShow;
 
-use felix_backend::data::{Activity, ActivityID, Data, Entity, Time};
+use felix_backend::data::{Activity, ActivityId, Data, Entity, Time};
 
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -29,14 +29,14 @@ impl Ui {
 
     pub fn set_activity_get_possible_insertions_callback(
         &mut self,
-        callback: Arc<dyn Fn(ActivityID) -> (Option<HashSet<Time>>, Vec<String>)>,
+        callback: Arc<dyn Fn(ActivityId) -> (Option<HashSet<Time>>, Vec<String>)>,
     ) {
         self.get_possible_insertions_callback = callback;
     }
 
     pub fn set_activity_try_insert_callback(
         &mut self,
-        callback: Arc<dyn Fn(String, ActivityID, Time)>,
+        callback: Arc<dyn Fn(String, ActivityId, Time)>,
     ) {
         self.activity_insertion
             .lock()
@@ -78,11 +78,14 @@ impl Ui {
         &mut self,
         data: &Data,
         entity: &Entity,
-        old_name: &String,
+        old_name: &str,
     ) {
         let activity_insertion = self.activity_insertion.lock().unwrap();
-        if activity_insertion.shown_entities().contains(old_name) {
-            activity_insertion.remove_entity_schedule(old_name);
+        if activity_insertion
+            .shown_entities()
+            .contains(&old_name.into())
+        {
+            activity_insertion.remove_entity_schedule(&old_name.into());
             let new_entity = EntityToShow::new(entity.name(), data);
             activity_insertion.show_entities_schedule(vec![new_entity]);
         }
@@ -92,12 +95,12 @@ impl Ui {
         &mut self,
         _data: &Data,
         _position: usize,
-        old_name: &String,
+        old_name: &str,
     ) {
         self.activity_insertion
             .lock()
             .unwrap()
-            .remove_entity_schedule(old_name);
+            .remove_entity_schedule(&old_name.into());
     }
 
     pub fn on_left_click(&mut self, data: &Data) {

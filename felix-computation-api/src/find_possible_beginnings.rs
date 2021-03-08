@@ -32,6 +32,12 @@ impl SumAndDurationIndexes {
     }
 }
 
+impl Default for SumAndDurationIndexes {
+    fn default() -> Self {
+        SumAndDurationIndexes::new()
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct WorkHourInMinutes {
     beginning: u16,
@@ -114,7 +120,7 @@ pub fn find_possible_beginnings(
 
                 // Sort to use the biggest work hours first.
                 // Sort ascending because we take the last element of the work hours each time.
-                new_work_hour_durations.sort();
+                new_work_hour_durations.sort_unstable();
 
                 // Check if the rest of the activities fit in the schedule.
                 if can_fit_in_schedule(
@@ -155,12 +161,12 @@ pub fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
         let mut res = vec![SumAndDurationIndexes::new(); set_size];
 
         // Run counter from 000..0 to 111..1
-        for counter in 0..set_size {
-            for duration_index in 0..durations.len() {
+        for (counter, sum_and_indexes) in res.iter_mut().enumerate().take(set_size) {
+            for (duration_index, duration) in durations.iter().enumerate() {
                 if counter & (1 << duration_index) == 0 {
                     // The index was included in the counter. Add it to the result.
-                    res[counter].indexes.insert(duration_index as u16);
-                    res[counter].sum_minutes += durations[duration_index];
+                    sum_and_indexes.indexes.insert(duration_index as u16);
+                    sum_and_indexes.sum_minutes += duration;
                 }
             }
         }

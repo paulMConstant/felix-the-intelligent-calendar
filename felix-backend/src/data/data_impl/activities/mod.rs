@@ -2,7 +2,7 @@ mod error_checks;
 mod inner;
 
 use super::helpers::clean_string;
-use crate::data::{Activity, ActivityID, Data, Time, RGBA};
+use crate::data::{Activity, ActivityId, Data, Rgba, Time};
 use crate::errors::{invalid_insertion::InvalidInsertion, Result};
 
 use std::collections::HashSet;
@@ -20,13 +20,11 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the activity is not found.
-    #[must_use]
-    pub fn activity(&self, id: ActivityID) -> Result<Activity> {
+    pub fn activity(&self, id: ActivityId) -> Result<Activity> {
         self.activities.get_by_id(id)
     }
 
     /// Returns the activities in which the given entity participates.
-    #[must_use]
     pub fn activities_of<S>(&self, entity_name: S) -> Result<Vec<&Activity>>
     where
         S: Into<String>,
@@ -46,10 +44,9 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the activity is not found.
-    #[must_use]
     pub fn possible_insertion_times_of_activity(
         &mut self,
-        id: ActivityID,
+        id: ActivityId,
     ) -> Result<Option<HashSet<Time>>> {
         let activity = self.activities.get_by_id(id)?;
         let participants = activity.entities_sorted();
@@ -82,7 +79,6 @@ impl Data {
     /// assert_eq!(activities.len(), 1);
     /// assert_eq!(activities[0].id(), activity_id);
     /// ```
-    #[must_use]
     pub fn add_activity<S>(&mut self, name: S) -> Result<Activity>
     where
         S: Into<String>,
@@ -116,8 +112,7 @@ impl Data {
     /// assert!(data.remove_activity(activity_id).is_ok());
     /// assert!(data.activities_sorted().is_empty());
     /// ```
-    #[must_use]
-    pub fn remove_activity(&mut self, id: ActivityID) -> Result<()> {
+    pub fn remove_activity(&mut self, id: ActivityId) -> Result<()> {
         let activities = self.activities_sorted();
         let position_of_removed_activity = activities
             .into_iter()
@@ -164,8 +159,7 @@ impl Data {
     /// assert_eq!(entities.len(), 1);
     /// assert_eq!(entities[0], entity_name);
     /// ```
-    #[must_use]
-    pub fn add_entity_to_activity<S>(&mut self, id: ActivityID, entity_name: S) -> Result<()>
+    pub fn add_entity_to_activity<S>(&mut self, id: ActivityId, entity_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -205,8 +199,7 @@ impl Data {
     /// assert!(data.remove_entity_from_activity(activity_id, entity_name).is_ok());
     /// assert!(data.activity(activity_id).unwrap().entities_sorted().is_empty());
     /// ```
-    #[must_use]
-    pub fn remove_entity_from_activity<S>(&mut self, id: ActivityID, entity_name: S) -> Result<()>
+    pub fn remove_entity_from_activity<S>(&mut self, id: ActivityId, entity_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -248,8 +241,7 @@ impl Data {
     /// let groups = data.activity(id).unwrap().groups_sorted();
     /// assert_eq!(groups[0], group_name);
     /// ```
-    #[must_use]
-    pub fn add_group_to_activity<S>(&mut self, id: ActivityID, group_name: S) -> Result<()>
+    pub fn add_group_to_activity<S>(&mut self, id: ActivityId, group_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -304,8 +296,7 @@ impl Data {
     /// let groups = data.activity(id).unwrap().groups_sorted();
     /// assert!(groups.is_empty());
     /// ```
-    #[must_use]
-    pub fn remove_group_from_activity<S>(&mut self, id: ActivityID, group_name: S) -> Result<()>
+    pub fn remove_group_from_activity<S>(&mut self, id: ActivityId, group_name: S) -> Result<()>
     where
         S: Into<String>,
     {
@@ -351,8 +342,7 @@ impl Data {
     /// let new_name = data.set_activity_name(activity_id, "New name").unwrap();
     /// assert_eq!(data.activity(activity_id).unwrap().name(), new_name);
     /// ```
-    #[must_use]
-    pub fn set_activity_name<S>(&mut self, id: ActivityID, name: S) -> Result<String>
+    pub fn set_activity_name<S>(&mut self, id: ActivityId, name: S) -> Result<String>
     where
         S: Into<String>,
     {
@@ -383,8 +373,7 @@ impl Data {
     /// assert!(data.set_activity_duration(activity_id, min_valid_duration).is_ok());
     /// assert_eq!(data.activity(activity_id).unwrap().duration(), min_valid_duration);
     /// ```
-    #[must_use]
-    pub fn set_activity_duration(&mut self, id: ActivityID, new_duration: Time) -> Result<()> {
+    pub fn set_activity_duration(&mut self, id: ActivityId, new_duration: Time) -> Result<()> {
         // If the duration is longer than the previous one, check for conflicts
         let activity = self.activity(id)?;
         if new_duration > activity.duration() {
@@ -412,16 +401,15 @@ impl Data {
     ///
     /// # Example
     /// ```
-    /// use felix_backend::data::{Data, RGBA};
+    /// use felix_backend::data::{Data, Rgba};
     /// let mut data = Data::new();
     ///
     /// let activity_id = data.add_activity("Test").unwrap().id();
-    /// let color = RGBA { red: 1.0, green: 0.5, blue: 0.3, alpha: 1.0 };
+    /// let color = Rgba { red: 1.0, green: 0.5, blue: 0.3, alpha: 1.0 };
     /// data.set_activity_color(activity_id, color).unwrap();
     /// assert_eq!(color, data.activity(activity_id).unwrap().color());
     /// ```
-    #[must_use]
-    pub fn set_activity_color(&mut self, id: ActivityID, color: RGBA) -> Result<()> {
+    pub fn set_activity_color(&mut self, id: ActivityId, color: Rgba) -> Result<()> {
         self.activities.set_color(id, color)?;
         let activity = self.activity(id)?;
         self.events()
@@ -461,8 +449,7 @@ impl Data {
     /// let expected_insertion_interval = TimeInterval::new(insertion_time, end);
     /// assert_eq!(activity.insertion_interval().unwrap(), expected_insertion_interval);
     /// ```
-    #[must_use]
-    pub fn insert_activity(&mut self, id: ActivityID, insertion_time: Option<Time>) -> Result<()> {
+    pub fn insert_activity(&mut self, id: ActivityId, insertion_time: Option<Time>) -> Result<()> {
         if let Some(insertion_time) = insertion_time {
             // We want to insert the activity
             if let Some(possible_insertion_times) = self.possible_insertion_times_of_activity(id)? {

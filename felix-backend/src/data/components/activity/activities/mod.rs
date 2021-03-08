@@ -10,21 +10,21 @@ use super::{
 };
 
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityID, Time,
-    MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES, RGBA,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Rgba, Time,
+    MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
-pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityID, Time>;
+pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
 #[derive(Debug)]
 pub struct Activities {
-    activities: HashMap<ActivityID, Activity>,
+    activities: HashMap<ActivityId, Activity>,
     possible_beginnings_updater: PossibleBeginningsUpdater,
     activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings,
 }
@@ -45,13 +45,12 @@ impl Activities {
     #[must_use]
     pub fn sorted_by_name(&self) -> Vec<&Activity> {
         let mut activity_vec: Vec<&Activity> = self.activities.values().collect();
-        activity_vec.sort_by(|a, b| a.name().cmp(&b.name()));
+        activity_vec.sort_by_key(|a| a.name());
         activity_vec
     }
 
     /// Returns a copy of the activity with given id.
-    #[must_use]
-    pub fn get_by_id(&self, id: ActivityID) -> Result<Activity> {
+    pub fn get_by_id(&self, id: ActivityId) -> Result<Activity> {
         match self.activities.get(&id) {
             Some(activity) => Ok(activity.clone()),
             None => Err(DoesNotExist::activity_does_not_exist(id)),
@@ -59,8 +58,7 @@ impl Activities {
     }
 
     /// Simple private mutable getter for an activity.
-    #[must_use]
-    fn get_mut_by_id(&mut self, id: ActivityID) -> Result<&mut Activity> {
+    fn get_mut_by_id(&mut self, id: ActivityId) -> Result<&mut Activity> {
         match self.activities.get_mut(&id) {
             Some(activity) => Ok(activity),
             None => Err(DoesNotExist::activity_does_not_exist(id)),
@@ -83,10 +81,6 @@ impl Activities {
     /// Adds an activity with the given name to the collection.
     /// Automatically assigns a unique id.
     /// Returns an immutable reference to the newly created activity.
-    ///
-    /// # Panics
-    ///
-    /// Panics if there is no id available under 65536.
     pub fn add(&mut self, name: String) -> &Activity {
         let used_ids = self.activities.keys().collect();
         let id = generate_next_id(used_ids);
@@ -106,8 +100,7 @@ impl Activities {
     /// # Errors
     ///
     /// Returns Err if there is no activity with the given id.
-    #[must_use]
-    pub fn remove(&mut self, id: ActivityID) -> Result<()> {
+    pub fn remove(&mut self, id: ActivityId) -> Result<()> {
         match self.activities.remove(&id) {
             None => Err(DoesNotExist::activity_does_not_exist(id)),
             Some(_) => {
@@ -123,9 +116,9 @@ impl Activities {
     /// # Errors
     ///
     /// Returns Err if there is no activity with the given id.
-    #[must_use]
-    pub fn set_name(&mut self, id: ActivityID, name: String) -> Result<()> {
-        Ok(self.get_mut_by_id(id)?.metadata.set_name(name))
+    pub fn set_name(&mut self, id: ActivityId, name: String) -> Result<()> {
+        self.get_mut_by_id(id)?.metadata.set_name(name);
+        Ok(())
     }
 
     /// Adds an entity to the activity with the given id.
@@ -134,23 +127,18 @@ impl Activities {
     ///
     /// Returns Err if the activity is not found or if the entity is already
     /// taking part in the activity.
-    #[must_use]
-    pub fn add_entity(&mut self, id: ActivityID, entity: String) -> Result<()> {
+    pub fn add_entity(&mut self, id: ActivityId, entity: String) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.add_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
     }
 
     /// Adds an entity in every activity which contains the given group.
-    pub fn add_entity_to_activities_with_group(
-        &mut self,
-        group_name: &String,
-        entity_name: String,
-    ) {
+    pub fn add_entity_to_activities_with_group(&mut self, group_name: &str, entity_name: String) {
         for activity in self
             .activities
             .values_mut()
-            .filter(|activity| activity.groups_sorted().contains(group_name))
+            .filter(|activity| activity.groups_sorted().contains(&group_name.into()))
         {
             // We do not care about errors : we want the activity to contain the entity, if it
             // is already the case, it is fine
@@ -188,15 +176,14 @@ impl Activities {
     ///
     /// Returns Err if the activity is not found or if the entity is not
     /// taking part in the activtiy.
-    #[must_use]
-    pub fn remove_entity(&mut self, id: ActivityID, entity: &String) -> Result<()> {
+    pub fn remove_entity(&mut self, id: ActivityId, entity: &str) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.remove_entity(entity)?;
         self.update_incompatible_activities();
         Ok(())
     }
 
     /// Removes the entity with given name from all activities.
-    pub fn remove_entity_from_all(&mut self, entity: &String) {
+    pub fn remove_entity_from_all(&mut self, entity: &str) {
         for activity in self.activities.values_mut() {
             // We don't care about the result : if the entity is not
             // taking part in the activity, that is what we want in the first place
@@ -206,7 +193,7 @@ impl Activities {
     }
 
     /// Renames the entity with given name in all activities.
-    pub fn rename_entity_in_all(&mut self, old_name: &String, new_name: String) {
+    pub fn rename_entity_in_all(&mut self, old_name: &str, new_name: String) {
         for activity in self.activities.values_mut() {
             // We don't care about the result : if the entity is not
             // taking part in the activity, it does not need to be renamed
@@ -220,8 +207,7 @@ impl Activities {
     ///
     /// Returns Err if the activity is not found or if
     /// the group is already taking part in the activity.
-    #[must_use]
-    pub fn add_group(&mut self, id: ActivityID, group_name: String) -> Result<()> {
+    pub fn add_group(&mut self, id: ActivityId, group_name: String) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.add_group(group_name)
     }
 
@@ -231,13 +217,12 @@ impl Activities {
     ///
     /// Returns Err if the activity si not found or if the group is not taking part in the
     /// activity.
-    #[must_use]
-    pub fn remove_group(&mut self, id: ActivityID, group_name: &String) -> Result<()> {
+    pub fn remove_group(&mut self, id: ActivityId, group_name: &str) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.remove_group(group_name)
     }
 
     /// Removes the group with the given name from all activities.
-    pub fn remove_group_from_all(&mut self, group: &String) {
+    pub fn remove_group_from_all(&mut self, group: &str) {
         for activity in self.activities.values_mut() {
             // We don't care about the result: if the group is not in the activity, this
             // is what we want.
@@ -247,7 +232,7 @@ impl Activities {
     }
 
     /// Renames the group with given name in all activities.
-    pub fn rename_group_in_all(&mut self, old_name: &String, new_name: String) {
+    pub fn rename_group_in_all(&mut self, old_name: &str, new_name: String) {
         for activity in self.activities.values_mut() {
             // We don't care about the result : if the entity is not
             // taking part in the activity, it does not need to be renamed
@@ -261,8 +246,7 @@ impl Activities {
     ///
     /// Returns Err if the activity is not found or if the duration is too short
     /// (< MIN\_TIME\_DISCRETIZATION).
-    #[must_use]
-    pub fn set_duration(&mut self, id: ActivityID, duration: Time) -> Result<()> {
+    pub fn set_duration(&mut self, id: ActivityId, duration: Time) -> Result<()> {
         if duration < MIN_TIME_DISCRETIZATION {
             return Err(DurationTooShort::new());
         }
@@ -278,8 +262,7 @@ impl Activities {
     /// # Errors
     ///
     /// Returns Err if the activity is not found.
-    #[must_use]
-    pub fn set_color(&mut self, id: ActivityID, color: RGBA) -> Result<()> {
+    pub fn set_color(&mut self, id: ActivityId, color: Rgba) -> Result<()> {
         self.get_mut_by_id(id)?.metadata.set_color(color);
         Ok(())
     }
@@ -288,7 +271,7 @@ impl Activities {
     pub fn must_update_possible_activity_beginnings(
         &mut self,
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
-        concerned_activity_ids: HashSet<ActivityID>,
+        concerned_activity_ids: HashSet<ActivityId>,
     ) {
         self.possible_beginnings_updater
             .queue_work_hours_and_activity_durations(
@@ -304,11 +287,10 @@ impl Activities {
     /// # Errors
     ///
     /// Returns Err if the activity with given id is not found.
-    #[must_use]
     pub fn possible_insertion_times_of_activity(
         &mut self,
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
-        concerned_activity_id: ActivityID,
+        concerned_activity_id: ActivityId,
     ) -> Result<Option<HashSet<Time>>> {
         let concerned_activity = self.get_by_id(concerned_activity_id)?;
 
@@ -359,14 +341,14 @@ impl Activities {
         &self,
         possible_beginnings: Option<HashSet<Time>>,
         activity_duration: Time,
-        incompatible_activity_ids: Vec<ActivityID>,
+        incompatible_activity_ids: Vec<ActivityId>,
     ) -> Option<HashSet<Time>> {
         // Offset with the duration of the activity
         // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
         // at 10:50.
         let offset_activity_duration = activity_duration - MIN_TIME_DISCRETIZATION;
 
-        possible_beginnings.and_then(|mut possible_beginnings| {
+        possible_beginnings.map(|mut possible_beginnings| {
             for incompatible_insertion_interval in incompatible_activity_ids
                 .iter()
                 .copied()
@@ -386,7 +368,7 @@ impl Activities {
                     current_time.add_minutes(MIN_TIME_DISCRETIZATION_MINUTES as i8);
                 }
             }
-            Some(possible_beginnings)
+            possible_beginnings
         })
     }
 
@@ -396,8 +378,7 @@ impl Activities {
     ///
     /// # Errors
     /// Returns Err if the activity is not found.
-    #[must_use]
-    pub fn insert_activity(&mut self, id: ActivityID, beginning: Option<Time>) -> Result<()> {
+    pub fn insert_activity(&mut self, id: ActivityId, beginning: Option<Time>) -> Result<()> {
         let activity = self.get_mut_by_id(id)?;
         activity.computation_data.insert(beginning);
         Ok(())
@@ -413,7 +394,7 @@ impl Activities {
     /// # Panics
     ///
     /// Panics if the activity is not inserted anywhere (this should never happen - logic error).
-    pub(crate) fn store_activity_was_inserted(&mut self, id: ActivityID) -> Result<()> {
+    pub(crate) fn store_activity_was_inserted(&mut self, id: ActivityId) -> Result<()> {
         let activity = self.get_by_id(id)?;
         let insertion_beginning = activity
             .insertion_interval()
@@ -433,7 +414,7 @@ impl Activities {
     /// crate-local.
     pub(crate) fn insert_activity_in_spot_closest_to(
         &mut self,
-        id: ActivityID,
+        id: ActivityId,
         ideal_beginning: Time,
         possible_beginnings: HashSet<Time>,
     ) -> Option<()> {
@@ -481,7 +462,7 @@ impl Activities {
         // the computation should be optimized, not this
         for data in &mut computation_data {
             let incompatible_ids = data.incompatible_activity_ids();
-            let mut incompatible_indexes: Vec<ActivityID> =
+            let mut incompatible_indexes: Vec<ActivityId> =
                 Vec::with_capacity(incompatible_ids.len());
             for (index_of_other, id_of_other) in ids.iter().enumerate() {
                 // We don't care if we compare ourselves to ourselves,

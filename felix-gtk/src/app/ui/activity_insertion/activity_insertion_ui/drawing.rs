@@ -1,6 +1,6 @@
 use super::{ActivityInsertionUi, Schedules, NUM_HOURS_IN_DAY};
 
-use felix_backend::data::{Time, RGBA};
+use felix_backend::data::{Rgba, Time};
 
 use cairo;
 use gtk::prelude::*;
@@ -381,18 +381,18 @@ fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mut
     }
 }
 
-fn foreground_color_depending_on_background_color(bg: RGBA) -> RGBA {
+fn foreground_color_depending_on_background_color(bg: Rgba) -> Rgba {
     // Magic values from
     // https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
     if (bg.red * 0.299 + bg.green * 0.587 + bg.blue * 0.114) > 0.73 {
-        RGBA {
+        Rgba {
             red: 0.0,
             green: 0.0,
             blue: 0.0,
             alpha: 1.0,
         }
     } else {
-        RGBA {
+        Rgba {
             red: 0.9,
             green: 0.9,
             blue: 0.9,

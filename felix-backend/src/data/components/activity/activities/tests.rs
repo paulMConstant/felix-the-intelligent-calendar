@@ -180,7 +180,7 @@ fn test_fetch_computation() {
             .incompatible_activity_ids()
             .iter()
             .map(|&index| activities[index].id())
-            .collect::<Vec<ActivityID>>();
+            .collect::<Vec<ActivityId>>();
         ids.sort();
         ids_from_indexes.sort();
         assert_eq!(ids, ids_from_indexes);

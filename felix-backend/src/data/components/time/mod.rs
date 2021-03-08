@@ -56,9 +56,8 @@ impl Time {
     pub fn new(hours: i8, minutes: i8) -> Time {
         assert!(
             (hours < 24 || hours == 24 && minutes == 0)
-                && minutes < 60
                 && hours >= 0
-                && minutes >= 0
+                && (0..60).contains(&minutes)
                 && minutes % MIN_TIME_DISCRETIZATION.minutes() == 0,
             "Time must be kept in [00:00, 24:00] and be a multiple of MIN_TIME_DISCRETIZATION"
         );
@@ -162,7 +161,7 @@ impl Time {
     pub fn add_hours(&mut self, hours: i8) {
         let new_hours = self.hours + hours;
         assert!(
-            new_hours >= 0 && new_hours < 24,
+            (0..24).contains(&new_hours),
             "The resulting time must be in [00:00, 24:00]"
         );
         self.hours = new_hours;

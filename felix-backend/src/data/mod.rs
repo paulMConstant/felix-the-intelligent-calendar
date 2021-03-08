@@ -12,7 +12,7 @@ use components::{
 };
 
 pub use components::{
-    activity::{Activity, ActivityID, RGBA},
+    activity::{Activity, ActivityId, Rgba},
     entity::Entity,
     group::Group,
     time::{
@@ -127,6 +127,12 @@ impl Data {
             events: Rc::new(RefCell::new(Events::new())),
             thread_pool,
         }
+    }
+}
+
+impl Default for Data {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

@@ -42,7 +42,7 @@ impl Ui {
         self.update_groups_treeview(&data.groups_sorted());
     }
 
-    pub fn on_entity_in_group_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &String) {
+    pub fn on_entity_in_group_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &str) {
         self.on_group_members_changed(data, entity);
     }
 
@@ -50,7 +50,7 @@ impl Ui {
         &mut self,
         data: &Data,
         position: usize,
-        _name_of_removed_entity: &String,
+        _name_of_removed_entity: &str,
     ) {
         self.on_group_members_changed(data, position);
     }

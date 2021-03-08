@@ -31,7 +31,6 @@ impl Data {
     /// let overlapping_interval = TimeInterval::new(Time::new(7, 0), Time::new(9, 0));
     /// assert!(data.add_work_interval(overlapping_interval).is_err());
     /// ```
-    #[must_use]
     pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.work_hours.add_work_interval(interval)?;
         self.events().borrow_mut().emit_work_hours_changed(self);
@@ -61,7 +60,6 @@ impl Data {
     /// let nonexistent_interval = interval;
     /// assert!(data.remove_work_interval(interval).is_err());
     /// ```
-    #[must_use]
     pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
         self.check_entity_without_enough_time_to_remove_interval(interval.duration())?;
         self.work_hours.remove_work_interval(interval)?;
@@ -90,7 +88,6 @@ impl Data {
     /// assert!(data.update_work_interval(interval, new_interval).is_ok());
     /// assert_eq!(data.work_hours()[0], new_interval);
     /// ```
-    #[must_use]
     pub fn update_work_interval(
         &mut self,
         old_interval: TimeInterval,

@@ -1,10 +1,10 @@
-use crate::data::ActivityID;
+use crate::data::ActivityId;
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
 
 /// Represents a color. Each field should be kept in [0.0; 1.0].
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct RGBA {
+pub struct Rgba {
     pub red: f64,
     pub green: f64,
     pub blue: f64,
@@ -17,24 +17,24 @@ pub struct RGBA {
 /// the entities are not directly computation-related.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ActivityMetadata {
-    id: ActivityID,
+    id: ActivityId,
     name: String,
     entities: HashSet<String>,
     groups: HashSet<String>,
-    display_color: RGBA,
+    display_color: Rgba,
 }
 
 impl ActivityMetadata {
     /// Creates new activity metadata.
     #[must_use]
-    pub fn new(id: ActivityID, name: String) -> ActivityMetadata {
+    pub fn new(id: ActivityId, name: String) -> ActivityMetadata {
         ActivityMetadata {
             id,
             name,
             entities: HashSet::new(),
             groups: HashSet::new(),
             // Default color is blue
-            display_color: RGBA {
+            display_color: Rgba {
                 red: 0.203,
                 green: 0.396,
                 blue: 0.643,
@@ -47,7 +47,7 @@ impl ActivityMetadata {
 
     /// Simple getter for the id.
     #[must_use]
-    pub fn id(&self) -> ActivityID {
+    pub fn id(&self) -> ActivityId {
         self.id
     }
 
@@ -81,7 +81,7 @@ impl ActivityMetadata {
 
     /// Getter for the color.
     #[must_use]
-    pub fn color(&self) -> RGBA {
+    pub fn color(&self) -> Rgba {
         self.display_color
     }
 
@@ -100,7 +100,6 @@ impl ActivityMetadata {
     /// # Errors
     ///
     /// Returns Err if the entity is already taking part in the activity.
-    #[must_use]
     pub fn add_entity(&mut self, entity: String) -> Result<()> {
         if self.entities.insert(entity.clone()) {
             Ok(())
@@ -114,8 +113,7 @@ impl ActivityMetadata {
     /// # Errors
     ///
     /// Returns Err if the entity is not taking part in the activity.
-    #[must_use]
-    pub fn remove_entity(&mut self, entity: &String) -> Result<()> {
+    pub fn remove_entity(&mut self, entity: &str) -> Result<()> {
         if self.entities.remove(entity) {
             Ok(())
         } else {
@@ -129,8 +127,7 @@ impl ActivityMetadata {
     ///
     /// Returns Err if the entity is not taking part in the activity or if
     /// an entity with the new name is already taking part in the activity.
-    #[must_use]
-    pub fn rename_entity(&mut self, old_name: &String, new_name: String) -> Result<()> {
+    pub fn rename_entity(&mut self, old_name: &str, new_name: String) -> Result<()> {
         if self.entities.contains(&new_name) {
             return Err(NameTaken::name_taken_by_entity(new_name));
         };
@@ -148,7 +145,6 @@ impl ActivityMetadata {
     /// # Errors
     ///
     /// Returns Err if the group is already taking part in the activity.
-    #[must_use]
     pub fn add_group(&mut self, group: String) -> Result<()> {
         if self.groups.contains(&group) {
             Err(AlreadyIn::group_already_in_activity(group, self.name()))
@@ -163,8 +159,7 @@ impl ActivityMetadata {
     /// # Errors
     ///
     /// Returns Err if the group is already taking part in the activity.
-    #[must_use]
-    pub fn remove_group(&mut self, group: &String) -> Result<()> {
+    pub fn remove_group(&mut self, group: &str) -> Result<()> {
         if self.groups.contains(group) {
             self.groups.remove(group);
             Ok(())
@@ -179,8 +174,7 @@ impl ActivityMetadata {
     ///
     /// Returns Err if the group is not taking part in the activity or
     /// if a group with this name is already present in the activity.
-    #[must_use]
-    pub fn rename_group(&mut self, old_name: &String, new_name: String) -> Result<()> {
+    pub fn rename_group(&mut self, old_name: &str, new_name: String) -> Result<()> {
         if self.groups.contains(&new_name) {
             return Err(NameTaken::name_taken_by_group(new_name));
         };
@@ -194,7 +188,7 @@ impl ActivityMetadata {
     }
 
     /// Sets the color of the activity.
-    pub fn set_color(&mut self, color: RGBA) {
+    pub fn set_color(&mut self, color: Rgba) {
         self.display_color = color;
     }
 }

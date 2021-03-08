@@ -1,10 +1,9 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::{ActivityID, Data};
+use crate::data::{ActivityId, Data};
 use crate::errors::Result;
 
 use std::collections::HashSet;
-use std::iter::FromIterator;
 
 impl Data {
     /// Returns all entities which participate in the given activity in more than one group.
@@ -12,15 +11,17 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the given activity id is not valid or the group does not exist.
-    #[must_use]
     pub(super) fn entities_participating_through_this_group_only(
         &self,
-        activity_id: ActivityID,
-        group_name: &String,
+        activity_id: ActivityId,
+        group_name: &str,
     ) -> Result<HashSet<String>> {
         let all_participating_groups = self.activity(activity_id)?.groups_sorted();
-        let entities_of_group =
-            HashSet::from_iter(self.group(group_name)?.entities_sorted().into_iter());
+        let entities_of_group = self
+            .group(group_name)?
+            .entities_sorted()
+            .into_iter()
+            .collect::<HashSet<_>>();
 
         let entities_in_other_groups = all_participating_groups
             .iter()

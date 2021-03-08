@@ -1,5 +1,5 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityID, Data,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data,
 };
 use crate::errors::Result;
 
@@ -9,7 +9,6 @@ use std::collections::HashSet;
 impl Data {
     /// Starts the computation of the possible beginnings of activities of entities whose work
     /// hours were modified.
-    #[must_use]
     pub(crate) fn queue_entities_on_global_work_hour_change(&mut self) -> Result<()> {
         let entities_to_queue = self
             .entities_sorted()
@@ -21,13 +20,11 @@ impl Data {
     }
 
     /// Starts the computation of the possible beginnings of the given activity.
-    #[must_use]
     pub(crate) fn queue_activity_participants(&mut self, activity: &Activity) -> Result<()> {
         self.queue_entities(activity.entities_sorted())
     }
 
     /// Starts the computation of the possible beginnings of the activities of the given entities.
-    #[must_use]
     pub(crate) fn queue_entities(&mut self, entities: Vec<String>) -> Result<()> {
         let work_hours_and_activity_durations =
             self.work_hours_and_activity_durations_from_entities(&entities)?;
@@ -40,7 +37,6 @@ impl Data {
     }
 
     /// Given a vector of entities, outputs their work hours and activity durations.
-    #[must_use]
     pub(crate) fn work_hours_and_activity_durations_from_entities(
         &self,
         entities: &[String],
@@ -63,8 +59,7 @@ impl Data {
     }
 
     /// Given a vector of entities, outputs the ids of all their activities.
-    #[must_use]
-    fn activity_ids_of_entities(&self, entities: &[String]) -> Result<HashSet<ActivityID>> {
+    fn activity_ids_of_entities(&self, entities: &[String]) -> Result<HashSet<ActivityId>> {
         let activities_of_entities = entities
             .iter()
             .map(|entity| self.activities_of(entity))
