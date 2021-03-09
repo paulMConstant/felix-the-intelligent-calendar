@@ -165,7 +165,7 @@ impl Data {
     {
         let entity_name = clean_string(entity_name)?;
         self.check_has_enough_time_for_activity(id, &entity_name)?;
-        self.check_no_activity_is_overlapping(id, &entity_name)?;
+        self.check_no_activity_of_the_entity_is_overlapping(id, &entity_name)?;
         self.activities.add_entity(id, entity_name.clone())?;
         self.queue_entities(vec![entity_name])?;
 
@@ -460,11 +460,23 @@ impl Data {
                         .emit_activity_inserted(self, &self.activity(id)?);
                     Ok(())
                 } else {
-                    // The given insertion time is not valid.
-                    Err(InvalidInsertion::insertion_not_in_computed_insertions(
-                        self.activity(id)?.name(),
-                        insertion_time,
-                    ))
+                    let activity = self.activity(id)?;
+                    if let Some(blocking_activity) =
+                        self.incompatible_activity_inserted_at_time(&activity, insertion_time)
+                    {
+                        Err(InvalidInsertion::would_overlap_with_activity(
+                            activity.name(),
+                            insertion_time,
+                            blocking_activity.name(),
+                        ))
+                    } else {
+                        Err(
+                            InvalidInsertion::cannot_fit_or_would_block_other_activities(
+                                activity.name(),
+                                insertion_time,
+                            ),
+                        )
+                    }
                 }
             } else {
                 // Computation is not finished

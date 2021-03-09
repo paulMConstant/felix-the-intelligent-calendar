@@ -1,12 +1,28 @@
 use felix_backend::data::Time;
-use felix_backend::errors::invalid_insertion::{InvalidInsertion, InvalidOrNotComputed};
+use felix_backend::errors::invalid_insertion::{
+    InvalidInsertion, InvalidOrNotComputed, WhyInvalid,
+};
 
 #[test]
-fn en_display_invalid_insertion() {
-    let error = InvalidInsertion::insertion_not_in_computed_insertions("Activity", Time::new(8, 0));
+fn en_display_cannot_fit_or_would_block_other_activities() {
+    let error =
+        InvalidInsertion::cannot_fit_or_would_block_other_activities("Activity", Time::new(8, 0));
     assert_eq!(
         error.to_string(),
-        "The activity 'Activity' cannot be inserted with beginning 08:00."
+        "Activity cannot be inserted with beginning 08:00 because this beginning is invalid or will cause problems in the future."
+    );
+}
+
+#[test]
+fn en_display_would_overlap_with_activity() {
+    let error = InvalidInsertion::would_overlap_with_activity(
+        "Activity",
+        Time::new(8, 0),
+        "Blocking Activity",
+    );
+    assert_eq!(
+        error.to_string(),
+        "Activity cannot be inserted with beginning 08:00 because it would overlap with 'Blocking Activity'."
     );
 }
 
@@ -24,12 +40,19 @@ fn en_display_insertion_not_computed() {
 fn fr_display_entity_already_in_group() {}
 
 #[test]
-fn fr_display_insertion_not_computed() {}
+fn fr_display_cannot_fit_or_would_block_other_activities() {}
+
+#[test]
+fn fr_display_would_overlap_with_activity() {}
 
 #[test]
 fn invalid_insertion_getters() {
-    let error = InvalidInsertion::insertion_not_in_computed_insertions("Activity", Time::new(8, 0));
+    let error =
+        InvalidInsertion::cannot_fit_or_would_block_other_activities("Activity", Time::new(8, 0));
     assert_eq!(error.who(), "Activity");
     assert_eq!(error.in_who(), Time::new(8, 0));
-    assert_eq!(error.reason(), InvalidOrNotComputed::Invalid);
+    assert_eq!(
+        error.reason(),
+        InvalidOrNotComputed::Invalid(WhyInvalid::CannotFitOrWouldBlockOtherActivities)
+    );
 }

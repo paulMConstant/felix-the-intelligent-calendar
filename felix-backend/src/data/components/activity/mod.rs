@@ -78,4 +78,10 @@ impl Activity {
     pub fn color(&self) -> Rgba {
         self.metadata.color()
     }
+
+    /// Simple getter for incompatible activities.
+    #[must_use]
+    pub(crate) fn incompatible_activity_ids(&self) -> Vec<ActivityId> {
+        self.computation_data.incompatible_activity_ids()
+    }
 }

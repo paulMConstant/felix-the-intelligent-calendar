@@ -29,7 +29,7 @@ impl Data {
         let work_hours_and_activity_durations =
             self.work_hours_and_activity_durations_from_entities(&entities)?;
         let activities_to_invalidate = self.activity_ids_of_entities(&entities)?;
-        self.activities.must_update_possible_activity_beginnings(
+        self.activities.trigger_update_possible_activity_beginnings(
             work_hours_and_activity_durations,
             activities_to_invalidate,
         );

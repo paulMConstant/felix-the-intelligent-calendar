@@ -476,7 +476,50 @@ fn basic_insert_activity_invalid_time() {
             let beginning = Time::new(14, 0);
             data.insert_activity(id, Some(beginning))
         },
-        "The activity 'Activity' cannot be inserted with beginning 14:00.",
+        "Activity cannot be inserted with beginning 14:00 because this beginning is invalid or will cause problems in the future.",
+        "Could insert activity in invalid interval"
+    );
+}
+
+#[test]
+fn insert_activity_invalid_time_overlaps() {
+    let (name1, name2) = ("Paul", "Antoine");
+    let activity_duration = Time::new(0, 30);
+    let beginning1 = Time::new(10, 20);
+    let beginning2 = Time::new(10, 0);
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1, name2])
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activities(vec![
+                Activity {
+                    name: "Blocking Activity",
+                    entities: vec![name1, name2],
+                    duration: activity_duration,
+                    groups: Vec::new(),
+                    insertion_time: Some(beginning1),
+                    ..Default::default()
+                }, Activity {
+                name: "Activity",
+                entities: vec![name1, name2],
+                duration: activity_duration,
+                groups: Vec::new(),
+                ..Default::default()
+            }]),
+        {
+            let id = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity(id)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+
+            data.insert_activity(id, Some(beginning2))
+        },
+        "Activity cannot be inserted with beginning 10:00 because it would overlap with 'Blocking Activity'.",
         "Could insert activity in invalid interval"
     );
 }

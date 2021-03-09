@@ -40,21 +40,3 @@ impl WorkHoursAndActivityDurationsSorted {
             .collect()
     }
 }
-
-fn work_hours_to_durations(work_hours: &[TimeInterval]) -> Vec<Time> {
-    work_hours
-        .iter()
-        .map(|work_hour| work_hour.duration())
-        .collect()
-}
-
-// TODO maybe use this instead to avoid multiple calculations ?
-// Maybe this is not really useful
-//impl Eq for WorkHoursAndActivityDurationsSorted {}
-//impl PartialEq for WorkHoursAndActivityDurationsSorted {
-//fn eq(&self, other: &Self) -> bool {
-//self.activity_durations == other.activity_durations
-//&& (work_hours_to_durations(&self.work_hours)
-//== work_hours_to_durations(&other.work_hours))
-//}
-//}

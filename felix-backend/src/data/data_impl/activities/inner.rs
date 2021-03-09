@@ -1,6 +1,6 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::{ActivityId, Data};
+use crate::data::{Activity, ActivityId, Data, Time, TimeInterval};
 use crate::errors::Result;
 
 use std::collections::HashSet;
@@ -36,5 +36,35 @@ impl Data {
             .difference(&entities_in_other_groups)
             .cloned()
             .collect())
+    }
+
+    /// Returns the first activity which is incompatible with the activity with given id
+    /// and whose insertion interval includes the given time, if it exists.
+    #[must_use]
+    pub(super) fn incompatible_activity_inserted_at_time(
+        &self,
+        activity: &Activity,
+        time: Time,
+    ) -> Option<Activity> {
+        let hypothetical_insertion_iterval = TimeInterval::new(time, time + activity.duration());
+        activity
+            .incompatible_activity_ids()
+            .iter()
+            .filter_map(|&id| {
+                let activity = self
+                    .activity(id)
+                    .expect("Found incompatible activity which does not exist");
+
+                if let Some(interval) = activity.insertion_interval() {
+                    if interval.overlaps_with(&hypothetical_insertion_iterval) {
+                        Some(activity)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .next()
     }
 }

@@ -75,7 +75,7 @@ impl Data {
     ///
     /// Returns Err if any activity of the entity is inserted in a slot which overlaps with the
     /// given activity's insertion slot.
-    pub(super) fn check_no_activity_is_overlapping(
+    pub(super) fn check_no_activity_of_the_entity_is_overlapping(
         &self,
         activity_id: ActivityId,
         entity_name: &str,
