@@ -1,12 +1,12 @@
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
-use crate::app::ui::{activities_treeview_config::*, drag_config::*, Ui};
+use crate::app::ui::{
+    activities_treeview_config::*, drag_config::*, EntitiesAndInsertionTimes, Ui,
+};
 
 use felix_backend::data::ActivityId;
 
 use gdk::prelude::GdkContextExt;
 use gtk::prelude::*;
-
-use cairo;
 
 use byteorder::ByteOrder;
 
@@ -85,15 +85,12 @@ impl Ui {
                 .parse::<ActivityId>()
                 .expect("Error when parsing activity ID from activities model");
 
-            let (maybe_possible_insertion_times, concerned_entities) =
+            let concerned_entities_and_possible_insertion_times =
                 get_possible_insertions_callback(selected_activity_id);
             activity_insertion
                 .lock()
                 .unwrap()
-                .show_possible_activity_insertions(
-                    maybe_possible_insertion_times,
-                    concerned_entities,
-                );
+                .show_possible_activity_insertions(concerned_entities_and_possible_insertion_times);
         });
     }
 
@@ -131,7 +128,10 @@ impl Ui {
             activity_insertion
                 .lock()
                 .unwrap()
-                .show_possible_activity_insertions(None, Vec::new())
+                .show_possible_activity_insertions(EntitiesAndInsertionTimes {
+                    entities: Vec::new(),
+                    insertion_times: None,
+                });
         });
     }
 }

@@ -28,8 +28,5 @@ fn get_widget_id<T>(widget: &T) -> String
 where
     T: IsA<gtk::Buildable>,
 {
-    widget
-        .get_buildable_name()
-        .expect("Widget has no ID !")
-        .to_string()
+    widget.get_buildable_name().expect("Widget has no ID !")
 }

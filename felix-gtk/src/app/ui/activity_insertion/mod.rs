@@ -1,12 +1,11 @@
 pub mod activity_insertion_ui;
 pub mod entity_to_show;
 
-use crate::app::ui::Ui;
+use crate::app::ui::{EntitiesAndInsertionTimes, Ui};
 use entity_to_show::EntityToShow;
 
 use felix_backend::data::{Activity, ActivityId, Data, Entity, Time};
 
-use std::collections::HashSet;
 use std::sync::Arc;
 
 use gtk::prelude::*;
@@ -29,7 +28,7 @@ impl Ui {
 
     pub fn set_activity_get_possible_insertions_callback(
         &mut self,
-        callback: Arc<dyn Fn(ActivityId) -> (Option<HashSet<Time>>, Vec<String>)>,
+        callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
     ) {
         self.get_possible_insertions_callback = callback;
     }
@@ -85,7 +84,7 @@ impl Ui {
             .shown_entities()
             .contains(&old_name.into())
         {
-            activity_insertion.remove_entity_schedule(&old_name.into());
+            activity_insertion.remove_entity_schedule(old_name);
             let new_entity = EntityToShow::new(entity.name(), data);
             activity_insertion.show_entities_schedule(vec![new_entity]);
         }
@@ -100,7 +99,7 @@ impl Ui {
         self.activity_insertion
             .lock()
             .unwrap()
-            .remove_entity_schedule(&old_name.into());
+            .remove_entity_schedule(old_name);
     }
 
     pub fn on_left_click(&mut self, data: &Data) {

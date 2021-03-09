@@ -41,11 +41,14 @@ pub fn tree_path_from_selection_index(
 }
 
 /// Returns the index of the first row containing the given value.
-fn index_of_row_containing(model: gtk::ListStore, value: &String) -> Option<i32> {
+fn index_of_row_containing(model: gtk::ListStore, value: &str) -> Option<i32> {
     let iter = model.get_iter_first();
-    if iter.is_none() {
-        return None;
-    }
+    iter.as_ref()?;
+    // Equivalen to
+    //if iter.is_none() {
+    //return None;
+    //}
+
     let iter = iter.expect("None case treated above");
 
     let mut index = 0;
@@ -55,7 +58,7 @@ fn index_of_row_containing(model: gtk::ListStore, value: &String) -> Option<i32>
         if value_model2.unwrap().unwrap() == *value {
             return Some(index);
         }
-        if model.iter_next(&iter) == false {
+        if !model.iter_next(&iter) {
             return None;
         }
         index += 1;

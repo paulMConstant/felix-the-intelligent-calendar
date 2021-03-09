@@ -87,19 +87,19 @@ impl Ui {
         create_entity_before_adding_to_group_box.hide();
     }
 
-    pub(super) fn update_groups_treeview(&self, groups: &Vec<&Group>) {
+    pub(super) fn update_groups_treeview(&self, groups: &[&Group]) {
         self.update_groups_list_store(groups);
         self.update_groups_treeview_selection();
     }
 
-    fn update_groups_list_store(&self, groups: &Vec<&Group>) {
+    fn update_groups_list_store(&self, groups: &[&Group]) {
         fetch_from!(self, groups_list_store, groups_tree_view);
 
         with_blocked_signals!(
             self,
             {
                 groups_list_store.clear();
-                for group_name in groups.into_iter().map(|group| group.name()) {
+                for group_name in groups.iter().map(|group| group.name()) {
                     groups_list_store.insert_with_values(None, &[0], &[&group_name]);
                 }
             },

@@ -59,19 +59,19 @@ impl Ui {
 
     /// Updates the treeview of entities and selects the given row if not None.
     /// If the given row is None, keeps the originally selected row.
-    pub(super) fn update_entities_treeview(&self, entities: &Vec<&Entity>) {
+    pub(super) fn update_entities_treeview(&self, entities: &[&Entity]) {
         self.update_entities_list_store(entities);
         self.update_entities_treeview_selection();
     }
 
-    fn update_entities_list_store(&self, entities: &Vec<&Entity>) {
+    fn update_entities_list_store(&self, entities: &[&Entity]) {
         fetch_from!(self, entities_list_store, entities_tree_view);
 
         with_blocked_signals!(
             self,
             {
                 entities_list_store.clear();
-                for entity_name in entities.into_iter().map(|entity| entity.name()) {
+                for entity_name in entities.iter().map(|entity| entity.name()) {
                     entities_list_store.insert_with_values(None, &[0], &[&entity_name]);
                 }
             },

@@ -85,9 +85,7 @@ impl App {
 
                     let data = data.lock().unwrap();
                     assign_or_return!(activity, data.activity(activity_id));
-                    ui.lock()
-                        .unwrap()
-                        .on_activity_selected(&data, activity.clone());
+                    ui.lock().unwrap().on_activity_selected(&data, activity);
                 }
             })
         );

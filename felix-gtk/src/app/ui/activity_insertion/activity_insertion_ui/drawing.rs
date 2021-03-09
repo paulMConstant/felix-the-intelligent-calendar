@@ -2,7 +2,6 @@ use super::{ActivityInsertionUi, Schedules, NUM_HOURS_IN_DAY};
 
 use felix_backend::data::{Rgba, Time};
 
-use cairo;
 use gtk::prelude::*;
 
 use std::sync::{Arc, Mutex};
@@ -337,13 +336,9 @@ fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mut
         .enumerate()
         .map(|(index, entity)| (index, entity.activities()))
     {
-        for activity in
-            activities
-                .iter()
-                .filter_map(|activity| match activity.insertion_interval() {
-                    Some(_) => Some(activity),
-                    None => None,
-                })
+        for activity in activities
+            .iter()
+            .filter(|activity| activity.insertion_interval().is_some())
         {
             let insertion_interval = activity
                 .insertion_interval()

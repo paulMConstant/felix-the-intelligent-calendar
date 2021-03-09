@@ -28,6 +28,11 @@ use felix_backend::data::{Activity, ActivityId, Entity, Group, Time};
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
+pub struct EntitiesAndInsertionTimes {
+    pub entities: Vec<String>,
+    pub insertion_times: Option<HashSet<Time>>,
+}
+
 pub struct Ui {
     builder: gtk::Builder,
     signals: HashMap<String, Vec<SignalHandlerId>>,
@@ -37,8 +42,7 @@ pub struct Ui {
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
     activity_insertion: Arc<Mutex<ActivityInsertionUi>>,
-    get_possible_insertions_callback:
-        Arc<dyn Fn(ActivityId) -> (Option<HashSet<Time>>, Vec<String>)>,
+    get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
 }
 
 impl Ui {

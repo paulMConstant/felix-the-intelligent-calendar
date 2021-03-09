@@ -4,7 +4,7 @@ mod fetch_activity_insertion_ui;
 mod fetch_data_from_cursor_position;
 mod schedules;
 
-use crate::app::ui::EntityToShow;
+use crate::app::ui::{EntitiesAndInsertionTimes, EntityToShow};
 use fetch_data_from_cursor_position::get_id_of_activity_under_cursor;
 use schedules::Schedules;
 
@@ -14,7 +14,6 @@ use glib::clone;
 use gtk::prelude::*;
 
 use std::cell::RefCell;
-use std::collections::HashSet;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
@@ -68,12 +67,13 @@ impl ActivityInsertionUi {
 
     pub fn show_possible_activity_insertions(
         &self,
-        possible_insertion_times: Option<HashSet<Time>>,
-        concerned_entities: Vec<String>,
+        concerned_entities_and_possible_insertion_times: EntitiesAndInsertionTimes,
     ) {
         let mut schedules = self.schedules_to_show.lock().unwrap();
-        schedules.possible_activity_insertion_times = possible_insertion_times;
-        schedules.activity_insertion_concerned_entities = concerned_entities;
+        schedules.possible_activity_insertion_times =
+            concerned_entities_and_possible_insertion_times.insertion_times;
+        schedules.activity_insertion_concerned_entities =
+            concerned_entities_and_possible_insertion_times.entities;
         drop(schedules);
 
         self.draw_schedules_sorted();
@@ -124,7 +124,7 @@ impl ActivityInsertionUi {
         self.draw_schedules_sorted();
     }
 
-    pub(super) fn remove_entity_schedule(&self, name_of_entity_to_remove: &String) {
+    pub(super) fn remove_entity_schedule(&self, name_of_entity_to_remove: &str) {
         let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
         if let Some(position) = schedules_to_show
             .entities_to_show

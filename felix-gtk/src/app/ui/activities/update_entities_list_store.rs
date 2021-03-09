@@ -11,7 +11,7 @@ type EntityNotInActivityButInGroup = Option<String>;
 type EntityInActivity = BTreeMap<EntityName, EntityNotInActivityButInGroup>;
 
 impl Ui {
-    pub(super) fn update_current_activity_entities(&self, groups: &Vec<&Group>) {
+    pub(super) fn update_current_activity_entities(&self, groups: &[&Group]) {
         fetch_from!(
             self,
             activity_entities_list_store,
@@ -48,7 +48,7 @@ impl Ui {
 /// Creates the list of entities which should be added to the list store.
 /// If any entity is present in an activity's group but not in the activity,
 /// the group in which they are present is returned as well.
-fn create_entity_list(activity: &Activity, groups: &Vec<&Group>) -> EntityInActivity {
+fn create_entity_list(activity: &Activity, groups: &[&Group]) -> EntityInActivity {
     let activity_entities = activity.entities_sorted();
     let mut entities: EntityInActivity = EntityInActivity::new();
 
@@ -75,9 +75,11 @@ fn create_entity_list(activity: &Activity, groups: &Vec<&Group>) -> EntityInActi
     }
 
     for entity in activity_entities {
-        if entities.contains_key(&entity) == false {
-            entities.insert(entity, None);
-        }
+        entities.entry(entity).or_insert(None);
+        // Equivalent to
+        //if !entities.contains_key(&entity) {
+        //entities.insert(entity, None);
+        //}
     }
     entities
 }

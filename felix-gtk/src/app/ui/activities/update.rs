@@ -27,7 +27,7 @@ impl Ui {
     }
 
     /// Updates the state of AppData and Activity-specific UI.
-    pub fn update_current_activity(&mut self, groups: &Vec<&Group>, activity: Option<Activity>) {
+    pub fn update_current_activity(&mut self, groups: &[&Group], activity: Option<Activity>) {
         self.update_current_activity_name_only(activity);
 
         if self.current_activity.is_some() {
@@ -39,12 +39,12 @@ impl Ui {
 
     /// Updates the treeview of activities and selects the given row if not None.
     /// If the given row is None, keeps the originally selected row.
-    pub(super) fn update_activities_treeview(&mut self, activities: &Vec<&Activity>) {
+    pub(super) fn update_activities_treeview(&mut self, activities: &[&Activity]) {
         self.update_activities_list_store(activities);
         self.update_activities_treeview_selection();
     }
 
-    fn update_activities_list_store(&self, activities: &Vec<&Activity>) {
+    fn update_activities_list_store(&self, activities: &[&Activity]) {
         fetch_from!(self, activities_list_store, activities_tree_view);
 
         with_blocked_signals!(
@@ -69,7 +69,7 @@ impl Ui {
         let current_activity_id_as_string = self
             .current_activity
             .as_ref()
-            .and_then(|activity| Some(format!("{}", activity.id())));
+            .map(|activity| activity.id().to_string());
         let selection_tree_path = tree_path_from_selection_index(
             None,
             activities_list_store,
@@ -83,7 +83,7 @@ impl Ui {
         );
     }
 
-    fn update_current_activity_view(&self, groups: &Vec<&Group>) {
+    fn update_current_activity_view(&self, groups: &[&Group]) {
         fetch_from!(
             self,
             activity_specific_box,

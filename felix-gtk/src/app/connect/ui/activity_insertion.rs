@@ -1,5 +1,6 @@
 use crate::app::{
-    connect::ui::wrap_duration::wrap_duration, notify::notify_err, ui::EntityToShow, App,
+    connect::ui::wrap_duration::wrap_duration, notify::notify_err, ui::EntitiesAndInsertionTimes,
+    ui::EntityToShow, App,
 };
 
 use felix_backend::data::{clean_string, ActivityId, Time};
@@ -213,7 +214,7 @@ impl App {
                         .activity(activity_id)
                         .expect("The activity we are inserting does not exist");
 
-                    if activity.entities_sorted().contains(&entity_name) == false {
+                    if !activity.entities_sorted().contains(&entity_name) {
                         // Inserting activity for wrong entity
                         return;
                     }
@@ -223,7 +224,7 @@ impl App {
                         .expect("Trying to insert activity which does not exist !");
 
                     if let Some(possible_insertion_times) = maybe_possible_insertion_times {
-                        if possible_insertion_times.contains(&insertion_time) == false {
+                        if !possible_insertion_times.contains(&insertion_time) {
                             // Inserting activity at wrong time
                             return;
                         }
@@ -249,7 +250,10 @@ impl App {
             let maybe_possible_insertion_times = data
                 .possible_insertion_times_of_activity(id)
                 .expect("Trying to get possible insertion times of activity which does not exist !");
-                (maybe_possible_insertion_times, activity_participants)
+            EntitiesAndInsertionTimes {
+                entities: activity_participants,
+                insertion_times: maybe_possible_insertion_times
+            }
            })
         ));
     }
