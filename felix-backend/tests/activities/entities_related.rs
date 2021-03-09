@@ -251,6 +251,50 @@ fn remove_entity_wrong_activity_id() {
     );
 }
 
+#[test]
+fn remove_last_entity_check_activity_uninserted() {
+    let (entity1, entity2) = ("Entity1", "Entity2");
+    let (beginning, end) = (Time::new(8, 0), Time::new(12, 0));
+    let duration = Time::new(1, 0);
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_work_interval(TimeInterval::new(beginning, end))
+            .with_entities(vec![entity1, entity2])
+            .with_activity(Activity {
+                entities: vec![entity1, entity2],
+                insertion_time: Some(beginning),
+                duration,
+                ..Default::default()
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.remove_entity_from_activity(id, entity1)
+                .expect("Could not remove entity");
+
+            // Check that the activity is still inserted
+            let activity = data.activity(id).expect("Could not get activity by id");
+            let expected_insertion_interval =
+                TimeInterval::new(beginning, beginning + activity.duration());
+            assert_eq!(
+                activity.insertion_interval(),
+                Some(expected_insertion_interval),
+                "Activity was uninserted even though it still has one participant"
+            );
+
+            // Remove the last entity from the activity and check that the activity was uninserted
+            data.remove_entity_from_activity(id, entity2)
+                .expect("Could not remove entity");
+            let activity = data.activity(id).expect("Could not get activity by id");
+            assert_eq!(
+                activity.insertion_interval(),
+                None,
+                "Activity is still inserted even though it has no participant anymore"
+            );
+        }
+    );
+}
+
 // *** Set duration ***
 #[test]
 fn set_activity_duration_not_enough_free_time() {

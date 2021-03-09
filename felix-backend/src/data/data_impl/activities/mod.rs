@@ -209,9 +209,15 @@ impl Data {
         self.activities.remove_entity(id, &entity_name)?;
 
         self.queue_entities(vec![entity_name])?;
-        // Queue the activity because it is not included in the entities' activities anymore
+
+        // Queue the activity because it is not included in the entity' activities anymore
         let activity = self.activity(id)?;
-        self.queue_activity_participants(&activity)?;
+        if activity.entities_sorted().is_empty() {
+            // Remove activity from schedule because it has no participants anymore
+            self.insert_activity(id, None)?;
+        } else {
+            self.queue_activity_participants(&activity)?;
+        }
 
         self.events()
             .borrow_mut()
