@@ -67,7 +67,7 @@ impl Ui {
     }
 
     pub fn on_activity_renamed(&mut self, data: &Data, activity: &Activity) {
-        self.update_current_activity_name_only(Some(activity.clone()));
+        self.update_current_activity_without_ui(Some(activity.clone()));
         self.update_activities_treeview(&data.activities_sorted());
     }
 

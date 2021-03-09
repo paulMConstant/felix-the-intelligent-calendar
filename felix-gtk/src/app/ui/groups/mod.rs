@@ -38,7 +38,7 @@ impl Ui {
     }
 
     pub fn on_group_renamed(&mut self, data: &Data, group: &Group) {
-        self.update_current_group_name_only(Some(group.clone()));
+        self.update_current_group_without_ui(Some(group.clone()));
         self.update_groups_treeview(&data.groups_sorted());
     }
 

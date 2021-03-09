@@ -32,7 +32,7 @@ impl Ui {
     }
 
     pub fn on_entity_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &str) {
-        self.update_current_entity_name_only(Some(entity.clone()));
+        self.update_current_entity_without_ui(Some(entity.clone()));
         self.update_entities_treeview(&data.entities_sorted());
     }
 

@@ -2,33 +2,16 @@ use crate::app::ui::helpers::tree::tree_path_from_selection_index;
 use crate::app::ui::Ui;
 use felix_backend::data::{Activity, Group};
 
-use gettextrs::gettext as tr;
 use gtk::prelude::*;
 
 impl Ui {
-    pub(super) fn update_current_activity_name_only(&mut self, activity: Option<Activity>) {
+    pub(super) fn update_current_activity_without_ui(&mut self, activity: Option<Activity>) {
         self.current_activity = activity;
-
-        if let Some(activity) = &self.current_activity {
-            fetch_from!(self, activity_add_to_button);
-
-            with_blocked_signals!(
-                self,
-                {
-                    activity_add_to_button.set_label(&format!(
-                        "{} '{}'",
-                        tr("Add to"),
-                        activity.name()
-                    ));
-                },
-                activity_add_to_button
-            );
-        }
     }
 
     /// Updates the state of AppData and Activity-specific UI.
     pub fn update_current_activity(&mut self, groups: &[&Group], activity: Option<Activity>) {
-        self.update_current_activity_name_only(activity);
+        self.update_current_activity_without_ui(activity);
 
         if self.current_activity.is_some() {
             self.update_current_activity_view(groups);

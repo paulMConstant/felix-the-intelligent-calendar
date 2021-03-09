@@ -2,21 +2,15 @@ use crate::app::ui::helpers::tree::tree_path_from_selection_index;
 use felix_backend::data::Group;
 
 use crate::app::ui::Ui;
-use gettextrs::gettext as tr;
 use gtk::prelude::*;
 
 impl Ui {
-    pub(super) fn update_current_group_name_only(&mut self, group: Option<Group>) {
+    pub(super) fn update_current_group_without_ui(&mut self, group: Option<Group>) {
         self.current_group = group;
-
-        if let Some(group) = &self.current_group {
-            fetch_from!(self, add_to_group_button);
-            add_to_group_button.set_label(&format!("{} '{}'", tr("Add to"), group.name()));
-        }
     }
 
     pub(super) fn update_current_group(&mut self, group: Option<Group>) {
-        self.update_current_group_name_only(group);
+        self.update_current_group_without_ui(group);
 
         if self.current_group.is_some() {
             self.update_current_group_view();
