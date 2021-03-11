@@ -170,6 +170,7 @@ impl ActivityInsertionUi {
     pub(super) fn connect_mouse_events(
         &self,
         set_activity_duration_callback: Arc<dyn Fn(ActivityId, bool)>,
+        shift_held: Rc<RefCell<bool>>,
     ) {
         fetch_from!(self, schedule_scrolled_window);
         let mouse_position = &self.mouse_position;
@@ -209,6 +210,11 @@ impl ActivityInsertionUi {
             clone!(@strong mouse_position, @strong schedules
                        => move |scrolled_window, event| {
                 update_mouse_position!(scrolled_window, event, mouse_position);
+                // Shift is not held, pretend nothing happened
+                if !*shift_held.borrow() {
+                    return glib::signal::Inhibit(false);
+                }
+
                 let mouse_position = mouse_position.borrow();
                 let mouse_position = mouse_position.as_ref().unwrap();
 

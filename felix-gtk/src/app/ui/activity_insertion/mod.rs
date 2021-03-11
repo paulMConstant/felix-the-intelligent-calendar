@@ -6,9 +6,12 @@ use entity_to_show::EntityToShow;
 
 use felix_backend::data::{ActivityId, Data, Entity, Time};
 
-use std::sync::{Arc, Mutex};
-
+use glib::clone;
 use gtk::prelude::*;
+
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 impl Ui {
     pub(super) fn on_init_activity_insertion(&self) {
@@ -44,10 +47,37 @@ impl Ui {
     }
 
     pub fn set_activity_duration_set_callback(&mut self, callback: Arc<dyn Fn(ActivityId, bool)>) {
+        // Connect events to check if shift is held
+        macro_rules! connect_shift_held {
+            ($shift_held: ident, $($window: ident),*) => {
+                $(
+                    $window.connect_key_press_event(clone!(@strong $shift_held
+                                                      => move |_window, event| {
+                    if event.get_keyval() == gdk::keys::constants::Shift_L {
+                        *$shift_held.borrow_mut() = true;
+                    }
+                    glib::signal::Inhibit(false)
+                }));
+
+                $window.connect_key_release_event(clone!(@strong $shift_held
+                                                        => move |_window, event| {
+                    if event.get_keyval() == gdk::keys::constants::Shift_L {
+                        *$shift_held.borrow_mut() = false;
+                    }
+                    glib::signal::Inhibit(false)
+                }));
+                )*
+            }
+        }
+
+        let shift_held = Rc::new(RefCell::new(false));
+        fetch_from!(self, main_window, data_window);
+        connect_shift_held!(shift_held, main_window, data_window);
+
         self.activity_insertion
             .lock()
             .unwrap()
-            .connect_mouse_events(callback);
+            .connect_mouse_events(callback, shift_held);
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {
