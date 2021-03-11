@@ -210,12 +210,12 @@ impl Data {
 
         self.queue_entities(vec![entity_name])?;
 
-        // Queue the activity because it is not included in the entity' activities anymore
         let activity = self.activity(id)?;
         if activity.entities_sorted().is_empty() {
             // Remove activity from schedule because it has no participants anymore
             self.insert_activity(id, None)?;
         } else {
+            // Queue the activity because it has one less participant
             self.queue_activity_participants(&activity)?;
         }
 
@@ -576,5 +576,14 @@ impl Data {
     pub fn clear_list_activities_removed_because_duration_increased(&mut self) {
         self.activities
             .clear_activities_removed_because_duration_increased();
+    }
+
+    /// If activities were removed because their duration increased, returns true.
+    #[must_use]
+    pub fn activities_were_uninserted_and_can_maybe_be_inserted_back(&self) -> bool {
+        !self
+            .activities
+            .get_activities_removed_because_duration_increased()
+            .is_empty()
     }
 }

@@ -8,7 +8,7 @@ use crate::app::ui::{EntitiesAndInsertionTimes, EntityToShow};
 use fetch_data_from_cursor_position::get_id_of_activity_under_cursor;
 use schedules::Schedules;
 
-use felix_backend::data::{ActivityId, Time};
+use felix_backend::data::ActivityId;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -28,7 +28,6 @@ struct MousePosition {
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
-    try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
     mouse_position: Rc<RefCell<Option<MousePosition>>>,
 }
 
@@ -43,26 +42,13 @@ impl ActivityInsertionUi {
         let activity_insertion = ActivityInsertionUi {
             builder,
             schedules_to_show: Arc::new(Mutex::new(Schedules::new())),
-            try_insert_activity_callback: Arc::new(Box::new(|_, _, _| {
-                panic!("Insert activity callback has not been initialized !")
-            })),
             mouse_position: Rc::new(RefCell::new(None)),
         };
 
         activity_insertion.connect_draw();
         activity_insertion.connect_schedule_window_scroll();
-        activity_insertion.connect_mouse_position_events();
 
         activity_insertion
-    }
-
-    pub fn set_activity_try_insert_callback(
-        &mut self,
-        callback: Arc<dyn Fn(String, ActivityId, Time)>,
-    ) {
-        self.try_insert_activity_callback = callback;
-        // Enable drop only after the callback has been set
-        self.enable_drop();
     }
 
     pub fn show_possible_activity_insertions(
@@ -181,28 +167,89 @@ impl ActivityInsertionUi {
              hours_scrolled_window.get_vadjustment().unwrap().set_value(vadjustment.get_value())));
     }
 
-    fn connect_mouse_position_events(&self) {
+    pub(super) fn connect_mouse_events(
+        &self,
+        set_activity_duration_callback: Arc<dyn Fn(ActivityId, bool)>,
+    ) {
         fetch_from!(self, schedule_scrolled_window);
-        let mouse_position = self.mouse_position.clone();
-        schedule_scrolled_window.connect_leave_notify_event(move |_window, _event| {
-            *mouse_position.borrow_mut() = None;
-            glib::signal::Inhibit(false)
-        });
+        let mouse_position = &self.mouse_position;
+        schedule_scrolled_window.connect_leave_notify_event(
+            clone!(@strong mouse_position => move |_window, _event| {
+                *mouse_position.borrow_mut() = None;
+                glib::signal::Inhibit(false)
+            }),
+        );
 
-        let mouse_position = self.mouse_position.clone();
-        schedule_scrolled_window.connect_motion_notify_event(move |scrolled_window, event| {
-            let (x_event, y_event) = event.get_position();
-            let (x_scrollbar_offset, y_scrollbar_offset) = (
-                scrolled_window.get_hadjustment().unwrap().get_value(),
-                scrolled_window.get_vadjustment().unwrap().get_value(),
-            );
-            let (x, y) = (x_event + x_scrollbar_offset, y_event + y_scrollbar_offset);
+        macro_rules! update_mouse_position {
+            ($window: ident, $event: ident, $mouse_position: ident) => {
+                let (x_event, y_event) = $event.get_position();
 
-            *mouse_position.borrow_mut() = Some(MousePosition {
-                x: x as i32,
-                y: y as i32,
-            });
-            glib::signal::Inhibit(false)
-        });
+                let (x_scrollbar_offset, y_scrollbar_offset) = (
+                    $window.get_hadjustment().unwrap().get_value(),
+                    $window.get_vadjustment().unwrap().get_value(),
+                );
+                let (x, y) = (x_event + x_scrollbar_offset, y_event + y_scrollbar_offset);
+
+                *$mouse_position.borrow_mut() = Some(MousePosition {
+                    x: x as i32,
+                    y: y as i32,
+                });
+            };
+        }
+
+        schedule_scrolled_window.connect_motion_notify_event(
+            clone!(@strong mouse_position => move |scrolled_window, event| {
+                update_mouse_position!(scrolled_window, event, mouse_position);
+                glib::signal::Inhibit(false)
+            }),
+        );
+
+        let schedules = &self.schedules_to_show;
+        schedule_scrolled_window.connect_scroll_event(
+            clone!(@strong mouse_position, @strong schedules
+                       => move |scrolled_window, event| {
+                update_mouse_position!(scrolled_window, event, mouse_position);
+                let mouse_position = mouse_position.borrow();
+                let mouse_position = mouse_position.as_ref().unwrap();
+
+                let maybe_id = get_id_of_activity_under_cursor(
+                    mouse_position.x, mouse_position.y, &schedules.lock().unwrap());
+                // Unlock
+                let inhibit =
+                    // Check first if the mouse is on an activity
+                    if let Some(id) = maybe_id {
+                    let increase_duration = match event.get_direction() {
+                        // Check if the scroll direction is vertical
+                        gdk::ScrollDirection::Up => Some(true),
+                        gdk::ScrollDirection::Down => Some(false),
+                        gdk::ScrollDirection::Smooth => {
+                            // Use x and y to deduce scroll direction
+                            let (dx, dy) = event.get_delta();
+                            if dx.abs() > dy.abs() {
+                                // Horizontal scroll
+                                None
+                            } else {
+                                Some(dy < 0.0)
+                            }
+                        },
+                        // Horizontal scroll
+                        _ => None,
+                    };
+                    if let Some(increase) = increase_duration {
+                        // Vertical scroll
+                        (set_activity_duration_callback)(id, increase);
+                        true
+                    } else {
+                        // Horizontal scroll
+                        false
+                    }
+                } else {
+                    // We are not on an activity
+                    false
+                };
+
+                glib::signal::Inhibit(inhibit)
+            }),
+        );
     }
 }

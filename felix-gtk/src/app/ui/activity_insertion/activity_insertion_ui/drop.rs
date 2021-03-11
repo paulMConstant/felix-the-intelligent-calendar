@@ -5,18 +5,21 @@ use super::{
 };
 
 use crate::app::ui::drag_config::*;
-
-use felix_backend::data::ActivityId;
+use felix_backend::data::{ActivityId, Time};
 
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
+use std::sync::Arc;
 
 impl ActivityInsertionUi {
-    pub(super) fn enable_drop(&self) {
+    pub(in super::super) fn enable_drop(
+        &self,
+        try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
+    ) {
         self.drag_dest_set();
         self.connect_drag_motion();
-        self.connect_drag_data_received();
+        self.connect_drag_data_received(try_insert_activity_callback);
     }
 
     fn drag_dest_set(&self) {
@@ -49,10 +52,12 @@ impl ActivityInsertionUi {
         );
     }
 
-    fn connect_drag_data_received(&self) {
+    fn connect_drag_data_received(
+        &self,
+        try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
+    ) {
         fetch_from!(self, schedules_drawing);
         let schedules = self.schedules_to_show.clone();
-        let try_insert_activity_callback = self.try_insert_activity_callback.clone();
 
         schedules_drawing.connect_drag_data_received(
             move |_drawing_area, _drag_context, x, y, selection_data, _info, _timestamp| {

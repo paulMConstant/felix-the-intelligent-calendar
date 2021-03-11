@@ -137,10 +137,9 @@ impl App {
 
         let data = &self.data;
         let ui = &self.ui;
-        let counter = &self.data_check_result_available_timeout_counter;
 
         macro_rules! set_duration_closure {
-            ($data:ident, $ui:ident, $counter: ident, $minutes_spin:ident, $hours_spin:ident) => {
+            ($data:ident, $ui:ident, $minutes_spin:ident, $hours_spin:ident) => {
                 safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
 
                 let id = $ui
@@ -156,16 +155,7 @@ impl App {
                     .duration();
 
                 let new_duration = wrap_duration(activity_duration, Time::new(hours, minutes));
-                let activity = data
-                    .activity(id)
-                    .expect("Getting activity which does not exist");
-
                 let set_duration_result = data.set_activity_duration(id, new_duration);
-
-                let can_start_polling_to_reinsert_activity_which_was_removed =
-                    set_duration_result.is_ok()
-                    && new_duration > activity.duration()
-                    && activity.insertion_interval().is_some();
 
                 if let Err(e) = set_duration_result {
                     notify_err(e);
@@ -175,44 +165,6 @@ impl App {
                     $hours_spin.set_value(activity_duration.hours() as f64);
                 }
 
-                // If the activity duration is longer, the activity is removed from the schedule.
-                // When Data is done calculating, we can try to insert the activity in the next
-                // spot.
-                if can_start_polling_to_reinsert_activity_which_was_removed {
-                    const FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS: u32 = 5;
-                    const TIMEOUT_CHECK_COMPUTATION_RESULT_DONE_MS: u32 = 1000;
-                    const TIMEOUT_MAX_COUNTER_VALUE: u32 = TIMEOUT_CHECK_COMPUTATION_RESULT_DONE_MS /
-                        FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS;
-
-                    if *$counter.borrow() == 0 {
-                        // The polling function is not currently running
-                        // Add one preemptively so that the function is never called twice
-                        *$counter.borrow_mut() += 1;
-
-                        let data = $data.clone();
-                        let counter = $counter.clone();
-                        // Launch polling function
-                        glib::timeout_add_local(FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS, move || {
-                            let mut counter = counter.borrow_mut();
-                            if *counter > TIMEOUT_MAX_COUNTER_VALUE {
-                                *counter = 0;
-                                data.lock()
-                                    .unwrap()
-                                    .clear_list_activities_removed_because_duration_increased();
-                                glib::Continue(false)
-                            } else {
-                                *counter += 1;
-                                data.lock()
-                                    .unwrap()
-                                    .insert_activities_removed_because_duration_increased_in_closest_spot();
-                                glib::Continue(true)
-                            }
-                        });
-                    } else {
-                        // Extend polling function duration
-                        *$counter.borrow_mut() = 0;
-                    }
-                }
             };
         }
 
@@ -222,12 +174,10 @@ impl App {
             minute_spin,
             minute_spin.connect_changed(clone!(@strong data,
                        @strong ui,
-                       @strong counter,
                        @weak activity_duration_hour_spin
                        => move |activity_duration_minute_spin| {
                 set_duration_closure!(data,
                                       ui,
-                                      counter,
                                       activity_duration_minute_spin,
                                       activity_duration_hour_spin);
             }))
@@ -238,12 +188,10 @@ impl App {
             activity_duration_hour_spin,
             activity_duration_hour_spin.connect_changed(clone!(@strong data,
                        @strong ui,
-                       @strong counter,
                        @weak activity_duration_minute_spin
                        => move |activity_duration_hour_spin| {
                 set_duration_closure!(data,
                                       ui,
-                                      counter,
                                       activity_duration_minute_spin,
                                       activity_duration_hour_spin);
             }))

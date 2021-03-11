@@ -23,7 +23,7 @@ pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;
 
-use felix_backend::data::{Activity, ActivityId, Entity, Group, Time};
+use felix_backend::data::{Activity, Entity, Group, Time};
 
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
@@ -42,7 +42,6 @@ pub struct Ui {
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
     activity_insertion: Arc<Mutex<ActivityInsertionUi>>,
-    get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
 }
 
 impl Ui {
@@ -56,9 +55,6 @@ impl Ui {
             work_hours_builder: WorkHoursBuilder::new(),
             custom_work_hours_builder: WorkHoursBuilder::new(),
             activity_insertion: Arc::new(Mutex::new(ActivityInsertionUi::new())),
-            get_possible_insertions_callback: Arc::new(|_| {
-                panic!("Get possible insertions callback was not initialized !")
-            }),
         }
     }
 

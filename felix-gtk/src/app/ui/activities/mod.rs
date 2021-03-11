@@ -10,7 +10,7 @@ use crate::app::ui::{
     Ui,
 };
 
-use felix_backend::data::{Activity, Data, Entity, Group};
+use felix_backend::data::{Activity, Data};
 
 use gtk::prelude::*;
 
@@ -19,7 +19,6 @@ impl Ui {
         self.update_current_activity(&Vec::new(), None);
         self.expand_activity_groups_tree_view_name_col();
         self.expand_activity_entities_tree_view_name_col();
-        self.enable_drag_from_activities_treeview();
         self.set_duration_spinbutton_format();
     }
 
@@ -71,7 +70,7 @@ impl Ui {
         self.update_activities_treeview(&data.activities_sorted());
     }
 
-    pub fn on_group_members_changed_update_activity(&mut self, data: &Data, _group: &Group) {
+    pub fn on_group_members_changed_update_activity(&mut self, data: &Data) {
         if let Some(current_activity) = &self.current_activity {
             let activity = data
                 .activity(current_activity.id())
@@ -88,20 +87,7 @@ impl Ui {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
     }
 
-    pub fn on_entity_in_activity_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &str) {
-        self.on_entities_or_groups_changed(data, entity);
-    }
-
-    pub fn on_entity_in_activity_removed(
-        &mut self,
-        data: &Data,
-        position_of_removed_entity: usize,
-        _name_of_removed_entity: &str,
-    ) {
-        self.on_entities_or_groups_changed(data, position_of_removed_entity);
-    }
-
-    pub fn on_entities_or_groups_changed<T>(&mut self, data: &Data, _anything: T) {
+    pub fn on_entities_or_groups_changed(&mut self, data: &Data) {
         self.update_entity_group_completion_list_store(data);
 
         if let Some(current_activity) = &self.current_activity {

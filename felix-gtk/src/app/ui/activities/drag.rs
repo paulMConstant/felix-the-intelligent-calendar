@@ -9,11 +9,15 @@ use gdk::prelude::GdkContextExt;
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
+use std::sync::Arc;
 
 impl Ui {
-    pub(super) fn enable_drag_from_activities_treeview(&self) {
+    pub(in super::super) fn enable_drag_from_activities_treeview(
+        &self,
+        callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+    ) {
         self.drag_source_set();
-        self.connect_drag_begin();
+        self.connect_drag_begin(callback);
         self.connect_drag_data_get();
         self.connect_drag_end();
     }
@@ -32,9 +36,11 @@ impl Ui {
         );
     }
 
-    fn connect_drag_begin(&self) {
+    fn connect_drag_begin(
+        &self,
+        get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+    ) {
         fetch_from!(self, activities_tree_view);
-        let get_possible_insertions_callback = self.get_possible_insertions_callback.clone();
         let activity_insertion = self.activity_insertion.clone();
 
         activities_tree_view.connect_drag_begin(move |treeview, drag_context| {

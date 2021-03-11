@@ -118,12 +118,12 @@ macro_rules! create_events_impl {
 ///         }
 ///     }
 ///
-///     pub fn do_when_renamed(&mut self,
+///     pub fn connect_renamed(&mut self,
 ///         callbacks: Vec<Box<dyn FnMut(&Data, &str, &str)>>) {
 ///         self.renamed.extend(callbacks);
 ///     }
 ///
-///     pub fn do_when_something_changed(&mut self,
+///     pub fn connect_when_something_changed(&mut self,
 ///         callbacks: Vec<Box<dyn FnMut(&Data)>>) {
 ///         self.something_changed.extend(callbacks);
 ///     }

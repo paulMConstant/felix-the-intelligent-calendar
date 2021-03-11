@@ -3,7 +3,7 @@ use crate::app::{
     ui::EntityToShow, App,
 };
 
-use felix_backend::data::{clean_string, ActivityId, Time};
+use felix_backend::data::{clean_string, ActivityId, Time, MIN_TIME_DISCRETIZATION};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
@@ -21,6 +21,7 @@ impl App {
 
         self.set_activity_try_insert_callback();
         self.set_activity_get_possible_insertions_callback();
+        self.set_activity_duration_set_callback();
 
         self.connect_clean_show_schedule_entry();
     }
@@ -93,12 +94,12 @@ impl App {
                 const LEFT_CLICK: u32 = 1;
 
                 match event.get_button() {
-                    RIGHT_CLICK => ui.lock().unwrap().on_right_click(&(data.lock().unwrap())),
-                    LEFT_CLICK => ui.lock().unwrap().on_left_click(&(data.lock().unwrap())),
+                    RIGHT_CLICK => ui.lock().unwrap().on_right_click(data.clone()),
+                    LEFT_CLICK => ui.lock().unwrap().on_left_click(data.clone()),
                     _ => { // Do nothing
                     }
                 }
-                glib::signal::Inhibit(true)
+                glib::signal::Inhibit(false)
             })
         );
     }
@@ -256,6 +257,29 @@ impl App {
             }
            })
         ));
+    }
+
+    fn set_activity_duration_set_callback(&self) {
+        let data = self.data.clone();
+
+        self.ui
+            .lock()
+            .unwrap()
+            .set_activity_duration_set_callback(Arc::new(Box::new(
+                move |id: ActivityId, increase_duration: bool| {
+                    let mut data = data.lock().unwrap();
+                    let activity_duration = data
+                        .activity(id)
+                        .expect("Setting duraion of activity which does not exist")
+                        .duration();
+                    let new_duration = if increase_duration {
+                        activity_duration + MIN_TIME_DISCRETIZATION
+                    } else {
+                        activity_duration - MIN_TIME_DISCRETIZATION
+                    };
+                    return_if_err!(data.set_activity_duration(id, new_duration));
+                },
+            )));
     }
 
     fn connect_clean_show_schedule_entry(&self) {

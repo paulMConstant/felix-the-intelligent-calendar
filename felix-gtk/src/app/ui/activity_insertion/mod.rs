@@ -4,9 +4,9 @@ pub mod entity_to_show;
 use crate::app::ui::{EntitiesAndInsertionTimes, Ui};
 use entity_to_show::EntityToShow;
 
-use felix_backend::data::{Activity, ActivityId, Data, Entity, Time};
+use felix_backend::data::{ActivityId, Data, Entity, Time};
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use gtk::prelude::*;
 
@@ -30,7 +30,7 @@ impl Ui {
         &mut self,
         callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
     ) {
-        self.get_possible_insertions_callback = callback;
+        self.enable_drag_from_activities_treeview(callback);
     }
 
     pub fn set_activity_try_insert_callback(
@@ -40,7 +40,14 @@ impl Ui {
         self.activity_insertion
             .lock()
             .unwrap()
-            .set_activity_try_insert_callback(callback);
+            .enable_drop(callback);
+    }
+
+    pub fn set_activity_duration_set_callback(&mut self, callback: Arc<dyn Fn(ActivityId, bool)>) {
+        self.activity_insertion
+            .lock()
+            .unwrap()
+            .connect_mouse_events(callback);
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {
@@ -50,19 +57,7 @@ impl Ui {
             .show_entities_schedule(vec![entity_to_show]);
     }
 
-    pub fn on_activity_removed_update_schedules(&mut self, data: &Data, _position: usize) {
-        self.update_schedules(data);
-    }
-
-    pub fn on_activity_changed_update_schedules(&mut self, data: &Data, _activity: &Activity) {
-        self.update_schedules(data);
-    }
-
-    pub fn on_work_hours_changed_update_schedules(&mut self, data: &Data) {
-        self.update_schedules(data);
-    }
-
-    fn update_schedules(&mut self, data: &Data) {
+    pub fn update_schedules(&mut self, data: &Data) {
         let activity_insertion = self.activity_insertion.lock().unwrap();
         let entities_to_show: Vec<_> = activity_insertion
             .shown_entities()
@@ -90,25 +85,21 @@ impl Ui {
         }
     }
 
-    pub fn on_entity_removed_update_schedules(
-        &mut self,
-        _data: &Data,
-        _position: usize,
-        old_name: &str,
-    ) {
+    pub fn on_entity_removed_update_schedules(&mut self, old_name: &str) {
         self.activity_insertion
             .lock()
             .unwrap()
             .remove_entity_schedule(old_name);
     }
 
-    pub fn on_left_click(&mut self, data: &Data) {
+    pub fn on_left_click(&mut self, data: Arc<Mutex<Data>>) {
         let maybe_id = self
             .activity_insertion
             .lock()
             .unwrap()
             .get_id_of_activity_under_cursor();
         if let Some(id) = maybe_id {
+            let data = data.lock().unwrap();
             let activity = data
                 .activity(id)
                 .expect("User clicked on activity which does not exist");
@@ -116,7 +107,7 @@ impl Ui {
         }
     }
 
-    pub fn on_right_click(&mut self, data: &Data) {
+    pub fn on_right_click(&mut self, data: Arc<Mutex<Data>>) {
         //println!("Got right click {:?}", self.activity_insertion
         //.lock()
         //.unwrap()

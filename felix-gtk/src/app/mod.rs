@@ -6,19 +6,17 @@ pub mod connect;
 pub mod notify;
 pub mod ui;
 
-use gtk::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::{Arc, Mutex, MutexGuard};
-
 use crate::config::APP_NAME;
 use felix_backend::data::Data;
 use ui::Ui;
 
+use gtk::prelude::*;
+use std::sync::{Arc, Mutex, MutexGuard};
+
+#[derive(Clone)]
 pub struct App {
     data: Arc<Mutex<Data>>,
     ui: Arc<Mutex<Ui>>,
-    data_check_result_available_timeout_counter: Rc<RefCell<u32>>,
 }
 
 impl App {
@@ -26,13 +24,8 @@ impl App {
     pub fn new(application: &gtk::Application) -> App {
         let data = init_data();
         let ui = init_ui(&application);
-        let data_check_result_available_timeout_counter = Rc::new(RefCell::new(0));
 
-        App {
-            data,
-            ui,
-            data_check_result_available_timeout_counter,
-        }
+        App { data, ui }
     }
 
     pub fn ui(&self) -> MutexGuard<Ui> {
@@ -41,6 +34,49 @@ impl App {
 
     pub fn data(&self) -> MutexGuard<Data> {
         self.data.lock().unwrap()
+    }
+
+    fn on_activity_duration_changed_start_polling_to_insert_it_again(
+        &self,
+        data: &Data,
+        polling_duration_counter: Arc<Mutex<u32>>,
+    ) {
+        if data.activities_were_uninserted_and_can_maybe_be_inserted_back() {
+            const FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS: u32 = 5;
+            const TIMEOUT_CHECK_COMPUTATION_RESULT_DONE_MS: u32 = 1000;
+            const TIMEOUT_MAX_COUNTER_VALUE: u32 = TIMEOUT_CHECK_COMPUTATION_RESULT_DONE_MS
+                / FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS;
+
+            let mut counter = polling_duration_counter.lock().unwrap();
+            if *counter == 0 {
+                // The polling function is not currently running
+                // Add one preemptively so that the function is never called twice
+                *counter += 1;
+
+                let data = self.data.clone();
+                let counter = polling_duration_counter.clone();
+                // Launch polling function
+                glib::timeout_add_local(FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS, move || {
+                    let mut counter = counter.lock().unwrap();
+                    if *counter > TIMEOUT_MAX_COUNTER_VALUE {
+                        *counter = 0;
+                        data.lock()
+                            .unwrap()
+                            .clear_list_activities_removed_because_duration_increased();
+                        glib::Continue(false)
+                    } else {
+                        *counter += 1;
+                        data.lock()
+                            .unwrap()
+                            .insert_activities_removed_because_duration_increased_in_closest_spot();
+                        glib::Continue(true)
+                    }
+                });
+            } else {
+                //Extend polling function duration
+                *counter = 0;
+            }
+        }
     }
 }
 

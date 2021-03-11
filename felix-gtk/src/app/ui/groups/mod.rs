@@ -3,7 +3,7 @@ mod update;
 
 use crate::app::ui::{groups_treeview_config::*, helpers::collections::get_next_element, Ui};
 
-use felix_backend::data::{Data, Entity, Group};
+use felix_backend::data::{Data, Group};
 
 use gtk::prelude::*;
 
@@ -42,20 +42,7 @@ impl Ui {
         self.update_groups_treeview(&data.groups_sorted());
     }
 
-    pub fn on_entity_in_group_renamed(&mut self, data: &Data, entity: &Entity, _old_name: &str) {
-        self.on_group_members_changed(data, entity);
-    }
-
-    pub fn on_entity_in_group_removed(
-        &mut self,
-        data: &Data,
-        position: usize,
-        _name_of_removed_entity: &str,
-    ) {
-        self.on_group_members_changed(data, position);
-    }
-
-    pub fn on_group_members_changed<T>(&mut self, data: &Data, _anything: T) {
+    pub fn on_group_members_changed(&mut self, data: &Data) {
         if let Some(group) = &self.current_group {
             let updated_group = data.group(group.name()).expect(
                 "A group with the current group name should exist if only its members changed",
