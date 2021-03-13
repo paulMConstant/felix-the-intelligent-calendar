@@ -1,4 +1,5 @@
 pub mod activity_insertion_ui;
+pub mod activity_to_display;
 pub mod entity_to_show;
 
 use crate::app::ui::{EntitiesAndInsertionTimes, Ui};
@@ -29,24 +30,34 @@ impl Ui {
         );
     }
 
-    pub fn set_activity_get_possible_insertions_callback(
+    pub fn set_activity_ui_callbacks(
         &mut self,
-        callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
     ) {
-        self.enable_drag_from_activities_treeview(callback);
+        self.enable_drag_from_activities_treeview(possible_insertions_callback.clone());
+
+        self.activity_insertion
+            .lock()
+            .unwrap()
+            .setup_drag_from_schedules_drawing(
+                possible_insertions_callback,
+                remove_activity_from_schedule_callback,
+            );
     }
 
     pub fn set_activity_try_insert_callback(
         &mut self,
-        callback: Arc<dyn Fn(String, ActivityId, Time)>,
+        try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
     ) {
         self.activity_insertion
             .lock()
             .unwrap()
-            .enable_drop(callback);
+            .enable_drop(try_insert_activity_callback);
     }
 
-    pub fn set_activity_duration_set_callback(&mut self, callback: Arc<dyn Fn(ActivityId, bool)>) {
+    pub fn init_set_activity_duration_callback(&mut self, callback: Arc<dyn Fn(ActivityId, bool)>) {
+        // Scrolling on activities with shift increases/decreases their duration
         // Connect events to check if shift is held
         macro_rules! connect_shift_held {
             ($shift_held: ident, $($window: ident),*) => {
@@ -74,10 +85,42 @@ impl Ui {
         fetch_from!(self, main_window, data_window);
         connect_shift_held!(shift_held, main_window, data_window);
 
+        // When the left button is pressed we keep the last activity that we had under cursor,
+        // this way dragging occurs even when we are on the edge of the activity
+        // (If we don't do this, we click, then leave the area of the activity, then dragging would
+        // start, but it doesn't because we left the area of the activity).
+        // Connect click detection
+        let left_mouse_button_pressed = Rc::new(RefCell::new(false));
+        fetch_from!(self, main_window);
+        fetch_from!(self.activity_insertion.lock().unwrap(), schedules_drawing);
+        const LEFT_CLICK: u32 = 1;
+        main_window.connect_button_press_event(clone!(@strong left_mouse_button_pressed
+                                                      => move |_window, event| {
+            if event.get_button() == LEFT_CLICK {
+                *left_mouse_button_pressed.borrow_mut() = true;
+            }
+            glib::signal::Inhibit(false)
+        }));
+
+        main_window.connect_button_release_event(clone!(@strong left_mouse_button_pressed
+                                                      => move |_window, event| {
+            if event.get_button() == LEFT_CLICK {
+                *left_mouse_button_pressed.borrow_mut() = false;
+            }
+            glib::signal::Inhibit(false)
+        }));
+
+        schedules_drawing.connect_drag_end(
+            clone!(@strong left_mouse_button_pressed => move |_drawing_area, _drag_context| {
+                    *left_mouse_button_pressed.borrow_mut() = false;
+                }
+            ),
+        );
+
         self.activity_insertion
             .lock()
             .unwrap()
-            .connect_mouse_events(callback, shift_held);
+            .connect_mouse_events(callback, shift_held, left_mouse_button_pressed);
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {
@@ -123,15 +166,16 @@ impl Ui {
     }
 
     pub fn on_left_click(&mut self, data: Arc<Mutex<Data>>) {
-        let maybe_id = self
+        let maybe_activity = self
             .activity_insertion
             .lock()
             .unwrap()
-            .get_id_of_activity_under_cursor();
-        if let Some(id) = maybe_id {
+            .get_activity_under_cursor();
+
+        if let Some(activity) = maybe_activity {
             let data = data.lock().unwrap();
             let activity = data
-                .activity(id)
+                .activity(activity.id())
                 .expect("User clicked on activity which does not exist");
             self.update_current_activity(&data.groups_sorted(), Some(activity));
         }

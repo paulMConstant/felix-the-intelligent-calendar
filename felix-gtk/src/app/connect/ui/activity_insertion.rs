@@ -21,7 +21,7 @@ impl App {
 
         self.set_activity_try_insert_callback();
         self.set_activity_get_possible_insertions_callback();
-        self.set_activity_duration_set_callback();
+        self.init_set_activity_duration_callback();
 
         self.connect_clean_show_schedule_entry();
     }
@@ -215,22 +215,9 @@ impl App {
                         .activity(activity_id)
                         .expect("The activity we are inserting does not exist");
 
-                    if !activity.entities_sorted().contains(&entity_name) {
-                        // Inserting activity for wrong entity
-                        return;
-                    }
-
-                    let maybe_possible_insertion_times = data
-                        .possible_insertion_times_of_activity(activity_id)
-                        .expect("Trying to insert activity which does not exist !");
-
-                    if let Some(possible_insertion_times) = maybe_possible_insertion_times {
-                        if !possible_insertion_times.contains(&insertion_time) {
-                            // Inserting activity at wrong time
-                            return;
-                        }
-                        data.insert_activity(activity_id, Some(insertion_time))
-                            .expect("Error while inserting activity, should have been checked for");
+                    if activity.entities_sorted().contains(&entity_name) {
+                        // Ignore errors - no spamming on the user when he drag drops
+                        let _ = data.insert_activity(activity_id, Some(insertion_time));
                     }
                 },
             )));
@@ -238,34 +225,47 @@ impl App {
 
     fn set_activity_get_possible_insertions_callback(&self) {
         let data = self.data.clone();
+        let possible_insertion_times_of_activity_callback =
+            Arc::new(Box::new(move |id: ActivityId| {
+                let mut data = data.lock().unwrap();
+                let activity_participants = data
+                    .activity(id)
+                    .expect(
+                        "Trying to get possible insertion times of activity which does not exist !",
+                    )
+                    .entities_sorted();
+                let maybe_possible_insertion_times =
+                    data.possible_insertion_times_of_activity(id).expect(
+                        "Trying to get possible insertion times of activity which does not exist !",
+                    );
+                EntitiesAndInsertionTimes {
+                    entities: activity_participants,
+                    insertion_times: maybe_possible_insertion_times,
+                }
+            }));
 
-        self.ui
-            .lock()
-            .unwrap()
-            .set_activity_get_possible_insertions_callback(Arc::new(Box::new(
-                        move |id: ActivityId| {
-            let mut data = data.lock().unwrap();
-            let activity_participants = data.activity(id)
-                .expect("Trying to get possible insertion times of activity which does not exist !")
-                .entities_sorted();
-            let maybe_possible_insertion_times = data
-                .possible_insertion_times_of_activity(id)
-                .expect("Trying to get possible insertion times of activity which does not exist !");
-            EntitiesAndInsertionTimes {
-                entities: activity_participants,
-                insertion_times: maybe_possible_insertion_times
-            }
-           })
-        ));
+        let data = self.data.clone();
+        let remove_activity_from_schedule_callback = Arc::new(Box::new(move |id: ActivityId| {
+            // Error should never happen here
+            data.lock()
+                .unwrap()
+                .insert_activity(id, None)
+                .expect("Could not remove activity from schedule");
+        }));
+
+        self.ui.lock().unwrap().set_activity_ui_callbacks(
+            possible_insertion_times_of_activity_callback,
+            remove_activity_from_schedule_callback,
+        );
     }
 
-    fn set_activity_duration_set_callback(&self) {
+    fn init_set_activity_duration_callback(&self) {
         let data = self.data.clone();
 
         self.ui
             .lock()
             .unwrap()
-            .set_activity_duration_set_callback(Arc::new(Box::new(
+            .init_set_activity_duration_callback(Arc::new(Box::new(
                 move |id: ActivityId, increase_duration: bool| {
                     let mut data = data.lock().unwrap();
                     let activity_duration = data

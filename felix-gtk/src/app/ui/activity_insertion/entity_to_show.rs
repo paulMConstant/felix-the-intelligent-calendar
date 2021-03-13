@@ -1,44 +1,5 @@
-use felix_backend::data::{Activity, ActivityId, Data, Rgba, Time, TimeInterval};
-
-/// Simple struct holding an activity's name and insertion interval.
-pub struct ActivityToDisplay {
-    id: ActivityId,
-    name: String,
-    insertion_interval: Option<TimeInterval>,
-    color: Rgba,
-}
-
-impl ActivityToDisplay {
-    #[must_use]
-    pub fn new(activity: &Activity) -> ActivityToDisplay {
-        ActivityToDisplay {
-            id: activity.id(),
-            name: activity.name(),
-            insertion_interval: activity.insertion_interval(),
-            color: activity.color(),
-        }
-    }
-
-    #[must_use]
-    pub fn id(&self) -> ActivityId {
-        self.id
-    }
-
-    #[must_use]
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    #[must_use]
-    pub fn insertion_interval(&self) -> &Option<TimeInterval> {
-        &self.insertion_interval
-    }
-
-    #[must_use]
-    pub fn color(&self) -> &Rgba {
-        &self.color
-    }
-}
+use crate::app::ui::ActivityToDisplay;
+use felix_backend::data::{Data, Time, TimeInterval};
 
 /// Simple struct holding an entity's name, its activities and work hours.
 pub struct EntityToShow {

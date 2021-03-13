@@ -1,5 +1,7 @@
 use super::Schedules;
-use felix_backend::data::{ActivityId, Time};
+
+use crate::app::ui::ActivityToDisplay;
+use felix_backend::data::Time;
 
 #[must_use]
 pub(super) fn get_name_of_entity_from_x(x: i32, schedules: &Schedules) -> Option<String> {
@@ -19,36 +21,31 @@ pub(super) fn get_time_on_y(y: i32, schedules: &Schedules) -> Time {
 }
 
 #[must_use]
-pub(super) fn get_id_of_activity_under_cursor(
+pub(super) fn get_activity_under_cursor(
     x: i32,
     y: i32,
     schedules: &Schedules,
-) -> Option<ActivityId> {
+) -> Option<ActivityToDisplay> {
     if let Some(entity) = get_name_of_entity_from_x(x, schedules) {
         let time = get_time_on_y(y, schedules);
         // Check if an activity has the given insertion time
         // If yes, return its id
-        for activities in schedules
+        schedules
             .entities_to_show
             .iter()
-            .filter_map(|other_entity| {
-                if other_entity.name() == &entity {
-                    Some(other_entity.activities())
-                } else {
-                    None
-                }
+            .find(|other_entity| other_entity.name() == &entity)
+            .map(|entity| {
+                entity
+                    .activities()
+                    .iter()
+                    .find(|activity| {
+                        activity.insertion_interval().is_some()
+                            && activity.insertion_interval().unwrap().contains(time)
+                    })
+                    .cloned()
             })
-        {
-            // We have got the activities of the entity
-            for activity in activities {
-                // Check if the activity is inserted a the given time
-                if let Some(insertion_interval) = activity.insertion_interval() {
-                    if insertion_interval.contains(time) {
-                        return Some(activity.id());
-                    }
-                }
-            }
-        }
+            .unwrap_or(None)
+    } else {
+        None
     }
-    None
 }

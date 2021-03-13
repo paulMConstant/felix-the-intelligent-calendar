@@ -19,6 +19,7 @@ pub use activities::activities_treeview_config;
 pub use groups::groups_treeview_config;
 
 use activity_insertion::activity_insertion_ui::ActivityInsertionUi;
+pub use activity_insertion::activity_to_display::ActivityToDisplay;
 pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;

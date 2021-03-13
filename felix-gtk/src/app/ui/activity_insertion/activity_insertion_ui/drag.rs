@@ -1,49 +1,66 @@
-use crate::app::ui::helpers::tree::get_selection_from_treeview;
-use crate::app::ui::{
-    activities_treeview_config::*, drag_config::*, EntitiesAndInsertionTimes, Ui,
-};
-
 use felix_backend::data::ActivityId;
 
+use super::ActivityInsertionUi;
+use crate::app::ui::{drag_config::*, EntitiesAndInsertionTimes};
+
 use gdk::prelude::GdkContextExt;
+use glib::clone;
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
 use std::sync::Arc;
 
-impl Ui {
-    pub(in super::super) fn enable_drag_from_activities_treeview(
-        &self,
+impl ActivityInsertionUi {
+    pub(in super::super::super) fn setup_drag_from_schedules_drawing(
+        &mut self,
         possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
     ) {
-        self.drag_source_set();
-        self.connect_drag_begin(possible_insertions_callback);
-        self.connect_drag_data_get();
-        self.connect_drag_end();
+        self.possible_insertions_callback = possible_insertions_callback;
+        self.remove_activity_from_schedule_callback = remove_activity_from_schedule_callback;
     }
 
-    fn drag_source_set(&self) {
-        fetch_from!(self, activities_tree_view);
+    pub(super) fn enable_drag_from_schedules_drawing(&self) {
+        fetch_from!(self, schedules_drawing);
         let targets = vec![gtk::TargetEntry::new(
             DRAG_TYPE,
             gtk::TargetFlags::SAME_APP,
             0,
         )];
-        activities_tree_view.drag_source_set(
+        schedules_drawing.drag_source_set(
             gdk::ModifierType::MODIFIER_MASK,
             &targets,
             gdk::DragAction::COPY,
         );
+        self.connect_drag_begin(
+            self.possible_insertions_callback.clone(),
+            self.remove_activity_from_schedule_callback.clone(),
+        );
+        self.connect_drag_data_get();
+        self.connect_drag_end();
+    }
+
+    pub(super) fn disable_drag_from_schedules_drawing(&self) {
+        fetch_from!(self, schedules_drawing);
+
+        schedules_drawing.drag_source_unset();
     }
 
     fn connect_drag_begin(
         &self,
         get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
     ) {
-        fetch_from!(self, activities_tree_view);
-        let activity_insertion = self.activity_insertion.clone();
+        fetch_from!(self, schedules_drawing);
 
-        activities_tree_view.connect_drag_begin(move |treeview, drag_context| {
+        schedules_drawing.connect_drag_begin(
+            clone!(@strong self as this => move |treeview, drag_context| {
+            let activity_under_cursor = this.get_activity_under_cursor()
+                .expect("Dragging without an activity under cursor !");
+
+            // 0. Remove the activity from the schedule
+            (remove_activity_from_schedule_callback)(activity_under_cursor.id());
+
             // 1. Initialize drag item
             // Create pixbuf
             let color = gdk_pixbuf::Colorspace::Rgb;
@@ -64,9 +81,7 @@ impl Ui {
             context.paint();
 
             // Get the name of the activity
-            let selected_activity_name =
-                get_selection_from_treeview(treeview, ACTIVITY_NAME_COLUMN)
-                    .expect("Dragging an activity when no activity is selected");
+            let selected_activity_name = activity_under_cursor.name();
 
             // Draw activity name with cairo
             // Center the text
@@ -86,30 +101,25 @@ impl Ui {
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
             // 2. Draw possible activity beginnings
-            let selected_activity_id = get_selection_from_treeview(&treeview, ACTIVITY_ID_COLUMN)
-                .expect("Dragging an activity when no activity is selected")
-                .parse::<ActivityId>()
-                .expect("Error when parsing activity ID from activities model");
+            let selected_activity_id = activity_under_cursor.id();
 
             let concerned_entities_and_possible_insertion_times =
                 get_possible_insertions_callback(selected_activity_id);
-            activity_insertion
-                .lock()
-                .unwrap()
-                .show_possible_activity_insertions(concerned_entities_and_possible_insertion_times);
-        });
+            this.show_possible_activity_insertions(concerned_entities_and_possible_insertion_times);
+        }));
     }
 
     fn connect_drag_data_get(&self) {
-        fetch_from!(self, activities_tree_view);
-        activities_tree_view.connect_drag_data_get(
-            move |treeview, _drag_context, selection_data, _info, _timestamp| {
+        fetch_from!(self, schedules_drawing);
+
+        let this = self.clone();
+        schedules_drawing.connect_drag_data_get(
+            move |_drawing, _drag_context, selection_data, _info, _timestamp| {
                 // Fetch the selected activity ID and send it.
-                let selected_activity_id =
-                    get_selection_from_treeview(treeview, ACTIVITY_ID_COLUMN)
-                        .expect("Dragging an activity when no activity is selected")
-                        .parse::<ActivityId>()
-                        .expect("Error when parsing activity ID from activities model");
+                let selected_activity_id = this
+                    .get_activity_under_cursor()
+                    .expect("Dragging without an activity under cursor !")
+                    .id();
 
                 let buffer: &mut [u8; DRAG_DATA_FORMAT] = &mut [0; DRAG_DATA_FORMAT];
                 byteorder::NativeEndian::write_u32(
@@ -126,18 +136,15 @@ impl Ui {
     }
 
     fn connect_drag_end(&self) {
-        fetch_from!(self, activities_tree_view);
-        let activity_insertion = self.activity_insertion.clone();
+        fetch_from!(self, schedules_drawing);
 
-        activities_tree_view.connect_drag_end(move |_drawing_area, _drag_context| {
+        schedules_drawing.connect_drag_end(clone!(@strong self as this =>
+                                                  move |_drawing_area, _drag_context| {
             // Clear possible insertions
-            activity_insertion
-                .lock()
-                .unwrap()
-                .show_possible_activity_insertions(EntitiesAndInsertionTimes {
+            this.show_possible_activity_insertions(EntitiesAndInsertionTimes {
                     entities: Vec::new(),
                     insertion_times: None,
                 });
-        });
+        }));
     }
 }
