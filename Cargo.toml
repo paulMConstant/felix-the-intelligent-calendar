@@ -4,5 +4,5 @@ members = [
     "felix-backend",
     "felix-gtk",
     "felix-backend/test-utils",
-    "felix-computation-api",
+    "felix-backend/felix-computation-api",
 ]
