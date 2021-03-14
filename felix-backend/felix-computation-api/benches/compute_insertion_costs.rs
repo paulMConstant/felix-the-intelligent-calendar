@@ -1,14 +1,9 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::collections::BTreeSet;
 
-use felix_computation_api::{
-    filter_insertion_times_for_conflicts::filter_insertion_times_for_conflicts,
-    structs::ActivityComputationStaticData,
-};
+use felix_computation_api::{compute_insertion_costs, structs::ActivityComputationStaticData};
 
 fn bench_filter_conflicts(c: &mut Criterion) {
-    //let activity_durations = &[20, 30, 30, 40, 50, 60, 70, 80, 90, 120];
-
     let static_data = vec![
         ActivityComputationStaticData {
             possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[
@@ -51,8 +46,8 @@ fn bench_filter_conflicts(c: &mut Criterion) {
         Some(INSERTION_BEGINNING_MINUTES4),
     ];
 
-    c.bench_function("Bench filter conflicts", |b| {
-        b.iter(|| filter_insertion_times_for_conflicts(&static_data, &insertion_data, 0))
+    c.bench_function("Bench compute insertion costs", |b| {
+        b.iter(|| compute_insertion_costs(&static_data, &insertion_data))
     });
 }
 

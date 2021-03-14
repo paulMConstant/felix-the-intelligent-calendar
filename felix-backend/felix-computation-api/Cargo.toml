@@ -18,5 +18,5 @@ name = "find_possible_beginnings"
 harness = false
 
 [[bench]]
-name = "conflicts_computation"
+name = "compute_insertion_costs"
 harness = false

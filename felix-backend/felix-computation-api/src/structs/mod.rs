@@ -1,10 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
 mod activity_computation_static_data;
+mod insertion_costs;
 mod sum_and_duration_indexes;
 mod work_hour_in_minutes;
 
 pub use activity_computation_static_data::ActivityComputationStaticData;
+pub use insertion_costs::InsertionCosts;
 pub use sum_and_duration_indexes::SumAndDurationIndexes;
 pub use work_hour_in_minutes::WorkHourInMinutes;
 

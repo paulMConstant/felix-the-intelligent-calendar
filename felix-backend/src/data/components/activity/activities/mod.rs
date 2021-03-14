@@ -16,7 +16,7 @@ use crate::data::{
 
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 use felix_computation_api::{
-    filter_insertion_times_for_conflicts,
+    compute_insertion_costs,
     structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
 };
 
@@ -336,15 +336,13 @@ impl Activities {
             let index_of_activity =
                 self.last_fetch_computation_id_to_index_map[&concerned_activity_id];
 
-            Some(filter_insertion_times_for_conflicts(
-                &static_data,
-                &insertion_data,
-                index_of_activity,
-            ))
-            .map(|set_minutes| {
-                set_minutes
-                    .iter()
-                    .map(|&minutes| Time::from_total_minutes(minutes))
+            let insertion_costs = compute_insertion_costs(&static_data, &insertion_data);
+            Some(insertion_costs[index_of_activity].clone()).map(|insertion_score| {
+                insertion_score
+                    .into_iter()
+                    .map(|insertion_score| {
+                        Time::from_total_minutes(insertion_score.beginning_minutes)
+                    })
                     .collect()
             })
         }))
