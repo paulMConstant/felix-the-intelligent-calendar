@@ -10,49 +10,10 @@
 //! 5 - The rest of the activities can be inserted in the remaining slots if their is a combination
 //!   of duration sums which fit in the remaining slots.
 
+use crate::structs::*;
+
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
-
-/// Each entity has a set of possible insertion times for every activity duration it has.
-/// Times are represented in total minutes.
-pub type ActivityBeginningsGivenDurationMinutes = HashMap<u16, HashSet<u16>>;
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct SumAndDurationIndexes {
-    pub sum_minutes: u16,
-    pub indexes: HashSet<u16>,
-}
-
-impl SumAndDurationIndexes {
-    pub fn new() -> SumAndDurationIndexes {
-        SumAndDurationIndexes {
-            sum_minutes: 0,
-            indexes: HashSet::new(),
-        }
-    }
-}
-
-impl Default for SumAndDurationIndexes {
-    fn default() -> Self {
-        SumAndDurationIndexes::new()
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct WorkHourInMinutes {
-    beginning: u16,
-    end: u16,
-}
-
-impl WorkHourInMinutes {
-    pub fn new(beginning: u16, end: u16) -> WorkHourInMinutes {
-        WorkHourInMinutes { beginning, end }
-    }
-
-    pub fn duration(&self) -> u16 {
-        self.end - self.beginning
-    }
-}
+use std::collections::HashSet;
 
 /// Given the work hour beginnings, ends and durations, and activity durations,
 /// finds every possible starting time for every activity duration so that every activity
@@ -262,6 +223,7 @@ pub fn can_fit_in_schedule(
 }
 
 /// Used to make sure that the input data is sorted.
+/// Should be replaced once there is a stable function which does this in the std.
 fn is_sorted<T>(data: &[T]) -> bool
 where
     T: Ord,

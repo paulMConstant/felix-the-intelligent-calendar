@@ -65,16 +65,15 @@ impl Activities {
         }
     }
 
-    /// Crate-local getter for activities which were removed from the schedule because their
-    /// duration increased.
-    pub(crate) fn get_activities_removed_because_duration_increased(
+    /// Getter for activities which were removed from the schedule because their duration increased.
+    pub fn get_activities_removed_because_duration_increased(
         &self,
     ) -> ActivitiesAndOldInsertionBeginnings {
         self.activities_removed_because_duration_increased.clone()
     }
 
     /// Empties the list of activities which were removed because their duration increased.
-    pub(crate) fn clear_activities_removed_because_duration_increased(&mut self) {
+    pub fn clear_activities_removed_because_duration_increased(&mut self) {
         self.activities_removed_because_duration_increased.clear();
     }
 
@@ -353,7 +352,7 @@ impl Activities {
                 .iter()
                 .copied()
                 .filter_map(|id| {
-                    self.get_by_id(id)
+                    self.activities.get(&id)
                         .expect("Checking for conflict with invalid activity ID !")
                         .insertion_interval()
                 })
@@ -474,6 +473,13 @@ impl Activities {
             data.set_incompatible_activity_ids(incompatible_indexes);
         }
         computation_data
+    }
+
+    /// TODO CONTINUE HERE
+    /// Associates each computation data to its rightful activity then overwrites it.
+    #[must_use]
+    fn overwrite_computation_data(&mut self, computation_data: Vec<ActivityComputationData>) {
+
     }
 }
 

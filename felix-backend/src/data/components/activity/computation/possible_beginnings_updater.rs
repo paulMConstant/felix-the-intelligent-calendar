@@ -3,7 +3,7 @@ use crate::data::{
     MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
-use felix_computation_api::find_possible_beginnings::find_possible_beginnings;
+use felix_computation_api::find_possible_beginnings;
 
 use super::activity_beginnings_given_duration::{
     new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
@@ -80,11 +80,14 @@ impl PossibleBeginningsUpdater {
 
                 // Launch the computation in a separate thread
                 self.thread_pool.install(|| {
-                    let result = new_activity_beginnings_given_duration(find_possible_beginnings(
+                    let activity_beginnings_given_duration_minutes = find_possible_beginnings(
                         &key.work_hours_in_minutes(),
                         &key.activity_durations_in_minutes(),
                         MIN_TIME_DISCRETIZATION_MINUTES.into(),
-                    ));
+                    );
+
+                    let result = new_activity_beginnings_given_duration(
+                        activity_beginnings_given_duration_minutes);
 
                     computation_cache
                         .lock()
