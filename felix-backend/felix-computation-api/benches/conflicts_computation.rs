@@ -14,7 +14,7 @@ fn bench_filter_conflicts(c: &mut Criterion) {
             possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[
                 0, 5, 10, 20, 35, 45, 50,
             ]),
-            indexes_of_incompatible_activities: vec![1, 2],
+            indexes_of_incompatible_activities: vec![1, 2, 3, 4],
             duration_minutes: 10,
         },
         ActivityComputationStaticData {
@@ -27,14 +27,28 @@ fn bench_filter_conflicts(c: &mut Criterion) {
             indexes_of_incompatible_activities: vec![0],
             duration_minutes: 15,
         },
+        ActivityComputationStaticData {
+            possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[]), // We don't care
+            indexes_of_incompatible_activities: vec![0],
+            duration_minutes: 10,
+        },
+        ActivityComputationStaticData {
+            possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[]), // We don't care
+            indexes_of_incompatible_activities: vec![0],
+            duration_minutes: 5,
+        },
     ];
 
-    const insertion_beginning_minutes1: u16 = 5;
-    const insertion_beginning_minutes2: u16 = 30;
+    const INSERTION_BEGINNING_MINUTES1: u16 = 5;
+    const INSERTION_BEGINNING_MINUTES2: u16 = 30;
+    const INSERTION_BEGINNING_MINUTES3: u16 = 5;
+    const INSERTION_BEGINNING_MINUTES4: u16 = 50;
     let insertion_data = vec![
         None,
-        Some(insertion_beginning_minutes1),
-        Some(insertion_beginning_minutes2),
+        Some(INSERTION_BEGINNING_MINUTES1),
+        Some(INSERTION_BEGINNING_MINUTES2),
+        Some(INSERTION_BEGINNING_MINUTES3),
+        Some(INSERTION_BEGINNING_MINUTES4),
     ];
 
     c.bench_function("Bench filter conflicts", |b| {

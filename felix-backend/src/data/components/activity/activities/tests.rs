@@ -1,6 +1,8 @@
 use super::super::super::super::Entities;
 use super::*;
 
+use std::collections::BTreeSet;
+
 #[test]
 fn incompatible_ids() {
     let mut activity_collection = Activities::new(Rc::new(
@@ -170,19 +172,39 @@ fn test_fetch_computation() {
         .set_incompatible_activity_ids(vec![1]);
 
     let activities: Vec<Activity> = activity_collection.activities.values().cloned().collect();
-    // Assuming activities.values() returns the same order twice
-    // (activities.values() called in fetch_computation)
-    let computation_data: Vec<ActivityComputationData> = activity_collection.fetch_computation();
+    let (static_data, insertion_data) = activity_collection.fetch_computation();
 
-    for (activity, computation) in activities.iter().zip(computation_data) {
+    for (activity, static_data) in activities.iter().zip(static_data) {
+        // Test that the id => index translation is right
+        // Assuming activities.values() returns the same order twice
+        // (activities.values() called in fetch_computation)
         let mut ids = activity.computation_data.incompatible_activity_ids();
-        let mut ids_from_indexes = computation
-            .incompatible_activity_ids()
+        let mut ids_from_indexes = static_data
+            .indexes_of_incompatible_activities
             .iter()
             .map(|&index| activities[index].id())
             .collect::<Vec<ActivityId>>();
         ids.sort();
         ids_from_indexes.sort();
         assert_eq!(ids, ids_from_indexes);
+
+        // Test that the duration translation is right
+        assert_eq!(activity.duration().total_minutes(), static_data.duration_minutes);
+
+        // Test that the possible insertions translation is right
+        assert_eq!(activity
+                   .computation_data
+                   .possible_insertion_times_if_no_conflict()
+                   .iter()
+                   .map(|time| time.total_minutes())
+                   .collect::<BTreeSet<_>>(),
+                   static_data.possible_insertion_beginnings_minutes_sorted);
+    }
+
+    for (activity, insertion_data) in activities.iter().zip(insertion_data) {
+        // Test that insertion is right
+        assert_eq!(activity.insertion_interval()
+                   .map(|interval| interval.beginning().total_minutes()),
+                   insertion_data);
     }
 }

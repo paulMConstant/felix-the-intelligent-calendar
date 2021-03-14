@@ -16,9 +16,10 @@ pub use components::{
     entity::Entity,
     group::Group,
     time::{
-        time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
+        time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION
     },
 };
+
 pub use data_impl::helpers::clean_string;
 pub use events::Events;
 

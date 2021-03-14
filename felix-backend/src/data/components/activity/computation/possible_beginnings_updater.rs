@@ -1,9 +1,8 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Time,
-    MIN_TIME_DISCRETIZATION_MINUTES,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Time
 };
 
-use felix_computation_api::find_possible_beginnings;
+use felix_computation_api::{MIN_TIME_DISCRETIZATION_MINUTES, find_possible_beginnings};
 
 use super::activity_beginnings_given_duration::{
     new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,

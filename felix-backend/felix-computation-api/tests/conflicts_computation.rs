@@ -27,15 +27,15 @@ fn test_filter_conflicts() {
         },
     ];
 
-    const insertion_beginning_minutes1: u16 = 5;
-    const insertion_beginning_minutes2: u16 = 30;
+    const INSERTION_BEGINNING_MINUTES1: u16 = 5;
+    const INSERTION_BEGINNING_MINUTES2: u16 = 30;
     let insertion_data = vec![
         None,
-        Some(insertion_beginning_minutes1),
-        Some(insertion_beginning_minutes2),
+        Some(INSERTION_BEGINNING_MINUTES1),
+        Some(INSERTION_BEGINNING_MINUTES2),
     ];
 
-    let expected = btreeset_from_slice(&[0, 20, 45, 50]);
+    let expected = btreeset_from_slice(&[20, 45, 50]);
     assert_eq!(
         filter_insertion_times_for_conflicts(&static_data, &insertion_data, 0),
         expected

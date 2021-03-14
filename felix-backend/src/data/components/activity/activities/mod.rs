@@ -11,9 +11,17 @@ use super::{
 
 use crate::data::{
     computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Rgba, Time,
-    MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
+    MIN_TIME_DISCRETIZATION
 };
+
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
+use felix_computation_api::{
+    MIN_TIME_DISCRETIZATION_MINUTES,
+    structs::{
+        ActivityComputationStaticData,
+        ActivityInsertionBeginningMinutes
+    }
+};
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -357,6 +365,7 @@ impl Activities {
                         .expect("Checking for conflict with invalid activity ID !")
                         .insertion_interval()
                 })
+                // Avoid overflow
                 .filter(|interval| interval.beginning() > offset_activity_duration)
             {
                 let mut current_time =
@@ -448,20 +457,19 @@ impl Activities {
     ///
     /// The ids of incompatible activities are turned into indexes.
     #[must_use]
-    fn fetch_computation(&self) -> Vec<ActivityComputationData> {
-        let activities = self.activities.values();
-        let mut computation_data: Vec<ActivityComputationData> = activities
-            .clone()
-            .map(|activity| activity.computation_data.clone())
-            .collect();
+    fn fetch_computation(&self) -> (Vec<ActivityComputationStaticData>, 
+                                    Vec<ActivityInsertionBeginningMinutes>) {
+        let mut static_data_vec = Vec::with_capacity(self.activities.len());
+        let mut insertion_data_vec = Vec::with_capacity(self.activities.len());
 
-        let ids: Vec<_> = activities.map(|other| other.metadata.id()).collect();
+        let ids = self.activities.values().map(|other| other.metadata.id()).collect::<Vec<_>>();
 
         // Translate incompatible ids into incompatible indexes
         // This is not the most efficient but this operation is not critical,
         // the computation should be optimized, not this
-        for data in &mut computation_data {
-            let incompatible_ids = data.incompatible_activity_ids();
+        for computation_data in self.activities.values().map(|activity| &activity.computation_data)
+        {
+            let incompatible_ids = computation_data.incompatible_activity_ids();
             let mut incompatible_indexes: Vec<ActivityId> =
                 Vec::with_capacity(incompatible_ids.len());
             for (index_of_other, id_of_other) in ids.iter().enumerate() {
@@ -471,9 +479,26 @@ impl Activities {
                     incompatible_indexes.push(index_of_other);
                 }
             }
-            data.set_incompatible_activity_ids(incompatible_indexes);
+
+            let static_data = ActivityComputationStaticData {
+                possible_insertion_beginnings_minutes_sorted:
+                    computation_data
+                        .possible_insertion_times_if_no_conflict()
+                        .iter()
+                        .map(|time| time.total_minutes())
+                        .collect(),
+                indexes_of_incompatible_activities: incompatible_indexes,
+                duration_minutes: computation_data.duration().total_minutes(),
+            };
+
+            let insertion_data = computation_data
+                .insertion_interval()
+                .map(|interval| interval.beginning().total_minutes());
+
+            static_data_vec.push(static_data);
+            insertion_data_vec.push(insertion_data);
         }
-        computation_data
+        (static_data_vec, insertion_data_vec)
     }
 
     /// TODO CONTINUE HERE

@@ -1,4 +1,7 @@
-use crate::structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes};
+use crate::{
+    MIN_TIME_DISCRETIZATION_MINUTES,
+    structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
+};
 
 use std::collections::BTreeSet;
 
@@ -21,6 +24,12 @@ pub fn filter_insertion_times_for_conflicts(
             .possible_insertion_beginnings_minutes_sorted
             .clone();
 
+        // Offset with the duration of the activity
+        // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
+        // at 10:50.
+        let offset_check_before_activity = activity_data.duration_minutes - 
+            MIN_TIME_DISCRETIZATION_MINUTES;
+
         for (incompatible_beginning, incompatible_end) in activity_data
             .indexes_of_incompatible_activities
             .iter()
@@ -28,7 +37,7 @@ pub fn filter_insertion_times_for_conflicts(
             .filter_map(|index| {
                 if let Some(incompatible_beginning) = insertion_data.get_unchecked(index) {
                     Some((
-                        incompatible_beginning,
+                        *incompatible_beginning,
                         incompatible_beginning + static_data.get_unchecked(index).duration_minutes,
                     ))
                 } else {
@@ -36,14 +45,14 @@ pub fn filter_insertion_times_for_conflicts(
                 }
             })
         {
-            // Need to collect for borrow checker
-            let values_to_remove = possible_beginnings
-                .range(incompatible_beginning..&incompatible_end)
-                .copied()
-                .collect::<Vec<_>>();
+            let incompatible_beginning = if incompatible_beginning < offset_check_before_activity {
+                0 
+            } else {
+                incompatible_beginning - offset_check_before_activity
+            };
 
-            for value_to_remove in values_to_remove {
-                possible_beginnings.remove(&value_to_remove);
+            for value in incompatible_beginning..incompatible_end {
+                possible_beginnings.remove(&value);
             }
         }
         possible_beginnings

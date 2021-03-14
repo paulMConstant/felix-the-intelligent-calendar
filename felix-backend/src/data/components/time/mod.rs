@@ -6,12 +6,12 @@ use std::convert::TryInto;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
+use felix_computation_api::MIN_TIME_DISCRETIZATION_MINUTES;
+
 pub const MIN_TIME_DISCRETIZATION: Time = Time {
     hours: 0,
-    minutes: 5,
+    minutes: MIN_TIME_DISCRETIZATION_MINUTES as i8,
 };
-
-pub const MIN_TIME_DISCRETIZATION_MINUTES: u16 = 5;
 
 /// Minimal time structure with minute precision.
 ///
