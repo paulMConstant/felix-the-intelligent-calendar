@@ -20,4 +20,3 @@ impl Default for SumAndDurationIndexes {
         SumAndDurationIndexes::new()
     }
 }
-

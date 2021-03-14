@@ -13,4 +13,3 @@ impl WorkHourInMinutes {
         self.end - self.beginning
     }
 }
-

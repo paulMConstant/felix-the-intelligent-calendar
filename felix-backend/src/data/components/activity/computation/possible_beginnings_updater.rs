@@ -87,7 +87,8 @@ impl PossibleBeginningsUpdater {
                     );
 
                     let result = new_activity_beginnings_given_duration(
-                        activity_beginnings_given_duration_minutes);
+                        activity_beginnings_given_duration_minutes,
+                    );
 
                     computation_cache
                         .lock()

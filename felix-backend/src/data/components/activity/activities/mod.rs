@@ -352,7 +352,8 @@ impl Activities {
                 .iter()
                 .copied()
                 .filter_map(|id| {
-                    self.activities.get(&id)
+                    self.activities
+                        .get(&id)
                         .expect("Checking for conflict with invalid activity ID !")
                         .insertion_interval()
                 })
@@ -477,10 +478,7 @@ impl Activities {
 
     /// TODO CONTINUE HERE
     /// Associates each computation data to its rightful activity then overwrites it.
-    #[must_use]
-    fn overwrite_computation_data(&mut self, computation_data: Vec<ActivityComputationData>) {
-
-    }
+    fn overwrite_computation_data(&mut self, computation_data: Vec<ActivityComputationData>) {}
 }
 
 impl Clone for Activities {

@@ -14,5 +14,9 @@ itertools = "0.4.2"
 criterion = "0.3"
 
 [[bench]]
-name = "activities_computation"
+name = "find_possible_beginnings"
+harness = false
+
+[[bench]]
+name = "conflicts_computation"
 harness = false
