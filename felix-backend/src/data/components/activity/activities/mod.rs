@@ -319,8 +319,8 @@ impl Activities {
 
             if maybe_possible_beginnings.is_some() {
                 // If the result is valid, store it into the activity computation data.
-                let result = maybe_possible_beginnings
-                    .expect("Maybe result should be some but is not");
+                let result =
+                    maybe_possible_beginnings.expect("Maybe result should be some but is not");
                 let concerned_activity = self.get_mut_by_id(concerned_activity_id)?;
                 concerned_activity
                     .computation_data

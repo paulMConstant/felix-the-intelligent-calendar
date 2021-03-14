@@ -20,7 +20,7 @@ impl App {
         self.connect_change_duration_of_inserted_activity();
 
         self.set_activity_try_insert_callback();
-        self.set_activity_get_possible_insertions_callback();
+        self.set_activity_remove_and_get_possible_insertions_callback();
         self.init_set_activity_duration_callback();
 
         self.connect_clean_show_schedule_entry();
@@ -223,7 +223,7 @@ impl App {
             )));
     }
 
-    fn set_activity_get_possible_insertions_callback(&self) {
+    fn set_activity_remove_and_get_possible_insertions_callback(&self) {
         let data = self.data.clone();
         let possible_insertion_times_of_activity_callback =
             Arc::new(Box::new(move |id: ActivityId| {

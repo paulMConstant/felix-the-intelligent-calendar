@@ -15,9 +15,13 @@ impl Ui {
     pub(in super::super) fn enable_drag_from_activities_treeview(
         &self,
         possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
     ) {
         self.drag_source_set();
-        self.connect_drag_begin(possible_insertions_callback);
+        self.connect_drag_begin(
+            possible_insertions_callback,
+            remove_activity_from_schedule_callback,
+        );
         self.connect_drag_data_get();
         self.connect_drag_end();
     }
@@ -39,6 +43,7 @@ impl Ui {
     fn connect_drag_begin(
         &self,
         get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
     ) {
         fetch_from!(self, activities_tree_view);
         let activity_insertion = self.activity_insertion.clone();
@@ -85,12 +90,15 @@ impl Ui {
             drag_context.set_hotspot(DRAG_WIDTH / 2, 0); // TODO does not work
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
-            // 2. Draw possible activity beginnings
+            // 2. Remove activity from schedule
             let selected_activity_id = get_selection_from_treeview(&treeview, ACTIVITY_ID_COLUMN)
                 .expect("Dragging an activity when no activity is selected")
                 .parse::<ActivityId>()
                 .expect("Error when parsing activity ID from activities model");
 
+            remove_activity_from_schedule_callback(selected_activity_id);
+
+            // 3. Draw possible activity beginnings
             let concerned_entities_and_possible_insertion_times =
                 get_possible_insertions_callback(selected_activity_id);
             activity_insertion

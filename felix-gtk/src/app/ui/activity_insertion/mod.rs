@@ -35,7 +35,10 @@ impl Ui {
         possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
         remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
     ) {
-        self.enable_drag_from_activities_treeview(possible_insertions_callback.clone());
+        self.enable_drag_from_activities_treeview(
+            possible_insertions_callback.clone(),
+            remove_activity_from_schedule_callback.clone(),
+        );
 
         self.activity_insertion
             .lock()
