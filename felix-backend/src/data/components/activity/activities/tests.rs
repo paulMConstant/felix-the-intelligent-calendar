@@ -174,7 +174,7 @@ fn test_fetch_computation() {
     let activities: Vec<Activity> = activity_collection.activities.values().cloned().collect();
     let (static_data, insertion_data) = activity_collection.fetch_computation();
 
-    for (activity, static_data) in activities.iter().zip(static_data) {
+    for (index, (activity, static_data)) in activities.iter().zip(static_data).enumerate() {
         // Test that the id => index translation is right
         // Assuming activities.values() returns the same order twice
         // (activities.values() called in fetch_computation)
@@ -188,23 +188,37 @@ fn test_fetch_computation() {
         ids_from_indexes.sort();
         assert_eq!(ids, ids_from_indexes);
 
+        // Test that the last_fetch_computation_id_to_index_map is updated
+        assert_eq!(
+            activity_collection.last_fetch_computation_id_to_index_map[&activity.id()],
+            index
+        );
+
         // Test that the duration translation is right
-        assert_eq!(activity.duration().total_minutes(), static_data.duration_minutes);
+        assert_eq!(
+            activity.duration().total_minutes(),
+            static_data.duration_minutes
+        );
 
         // Test that the possible insertions translation is right
-        assert_eq!(activity
-                   .computation_data
-                   .possible_insertion_times_if_no_conflict()
-                   .iter()
-                   .map(|time| time.total_minutes())
-                   .collect::<BTreeSet<_>>(),
-                   static_data.possible_insertion_beginnings_minutes_sorted);
+        assert_eq!(
+            activity
+                .computation_data
+                .possible_insertion_times_if_no_conflict()
+                .iter()
+                .map(|time| time.total_minutes())
+                .collect::<BTreeSet<_>>(),
+            static_data.possible_insertion_beginnings_minutes_sorted
+        );
     }
 
     for (activity, insertion_data) in activities.iter().zip(insertion_data) {
         // Test that insertion is right
-        assert_eq!(activity.insertion_interval()
-                   .map(|interval| interval.beginning().total_minutes()),
-                   insertion_data);
+        assert_eq!(
+            activity
+                .insertion_interval()
+                .map(|interval| interval.beginning().total_minutes()),
+            insertion_data
+        );
     }
 }

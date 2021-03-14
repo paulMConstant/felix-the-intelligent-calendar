@@ -26,12 +26,12 @@ use work_hours::WorkHoursBuilder;
 
 use felix_backend::data::{Activity, Entity, Group, Time};
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 
 pub struct EntitiesAndInsertionTimes {
     pub entities: Vec<String>,
-    pub insertion_times: Option<HashSet<Time>>,
+    pub insertion_times: Option<BTreeSet<Time>>,
 }
 
 pub struct Ui {

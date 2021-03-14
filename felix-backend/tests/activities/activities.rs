@@ -12,7 +12,7 @@
 use felix_backend::data::{Rgba, Time, TimeInterval};
 use test_utils::{Activity, DataBuilder};
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 // *** Add ***
 #[test]
@@ -561,7 +561,7 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
             // The only beginnings left are 10:00 and 12:00
             // (work hours are [10:00 - 13:00] with [11:00 - 12:00] taken by activity 1)
             assert_eq!(data.possible_insertion_times_of_activity(id2).unwrap().unwrap(),
-                       [Time::new(10, 0), Time::new(12, 0)].iter().copied().collect::<HashSet<_>>(),
+                       [Time::new(10, 0), Time::new(12, 0)].iter().copied().collect::<BTreeSet<_>>(),
                "Insertion times with conflicts with inserted activities were not calculated right.");
         }
     );
@@ -598,7 +598,7 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
             // The only beginnings is 10:00
             // Activity duration is 01:00 and intersection of work hours is [10:00 - 11:00]
             assert_eq!(data.possible_insertion_times_of_activity(id).unwrap().unwrap(),
-                      [Time::new(10, 0)].iter().copied().collect::<HashSet<_>>(),
+                      [Time::new(10, 0)].iter().copied().collect::<BTreeSet<_>>(),
               "Insertion times with conflicts with inserted activities were not calculated right.");
         }
     );

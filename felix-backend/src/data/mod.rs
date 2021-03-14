@@ -15,9 +15,7 @@ pub use components::{
     activity::{Activity, ActivityId, Rgba},
     entity::Entity,
     group::Group,
-    time::{
-        time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION
-    },
+    time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
 
 pub use data_impl::helpers::clean_string;

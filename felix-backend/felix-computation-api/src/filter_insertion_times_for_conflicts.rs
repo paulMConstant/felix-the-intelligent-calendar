@@ -1,6 +1,6 @@
 use crate::{
-    MIN_TIME_DISCRETIZATION_MINUTES,
     structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
+    MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
 use std::collections::BTreeSet;
@@ -27,8 +27,8 @@ pub fn filter_insertion_times_for_conflicts(
         // Offset with the duration of the activity
         // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
         // at 10:50.
-        let offset_check_before_activity = activity_data.duration_minutes - 
-            MIN_TIME_DISCRETIZATION_MINUTES;
+        let offset_check_before_activity =
+            activity_data.duration_minutes - MIN_TIME_DISCRETIZATION_MINUTES;
 
         for (incompatible_beginning, incompatible_end) in activity_data
             .indexes_of_incompatible_activities
@@ -46,7 +46,7 @@ pub fn filter_insertion_times_for_conflicts(
             })
         {
             let incompatible_beginning = if incompatible_beginning < offset_check_before_activity {
-                0 
+                0
             } else {
                 incompatible_beginning - offset_check_before_activity
             };

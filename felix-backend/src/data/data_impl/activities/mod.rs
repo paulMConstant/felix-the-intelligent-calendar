@@ -5,7 +5,7 @@ use super::helpers::clean_string;
 use crate::data::{Activity, ActivityId, Data, Rgba, Time};
 use crate::errors::{invalid_insertion::InvalidInsertion, Result};
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 /// Operations on activities
 impl Data {
@@ -47,7 +47,7 @@ impl Data {
     pub fn possible_insertion_times_of_activity(
         &mut self,
         id: ActivityId,
-    ) -> Result<Option<HashSet<Time>>> {
+    ) -> Result<Option<BTreeSet<Time>>> {
         let activity = self.activities.get_by_id(id)?;
         let participants = activity.entities_sorted();
 

@@ -11,19 +11,16 @@ use super::{
 
 use crate::data::{
     computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Rgba, Time,
-    MIN_TIME_DISCRETIZATION
+    MIN_TIME_DISCRETIZATION,
 };
 
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 use felix_computation_api::{
-    MIN_TIME_DISCRETIZATION_MINUTES,
-    structs::{
-        ActivityComputationStaticData,
-        ActivityInsertionBeginningMinutes
-    }
+    filter_insertion_times_for_conflicts,
+    structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
 };
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::rc::Rc;
 
 pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
@@ -35,6 +32,14 @@ pub struct Activities {
     activities: HashMap<ActivityId, Activity>,
     possible_beginnings_updater: PossibleBeginningsUpdater,
     activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings,
+    /// Keeps track of the last id to index translation done in self.fetch\_computation.
+    ///
+    /// # Context:
+    ///
+    /// When we get parallel arrays from fetch\_computation, we translate the ids of the activities
+    /// into indexes. This allows for faster access to incompatible ids for autocompletion
+    /// algorithm.
+    last_fetch_computation_id_to_index_map: HashMap<ActivityId, usize>,
 }
 
 impl Activities {
@@ -46,6 +51,7 @@ impl Activities {
             possible_beginnings_updater: PossibleBeginningsUpdater::new(thread_pool),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
+            last_fetch_computation_id_to_index_map: HashMap::new(),
         }
     }
 
@@ -298,87 +304,50 @@ impl Activities {
         &mut self,
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
         concerned_activity_id: ActivityId,
-    ) -> Result<Option<HashSet<Time>>> {
+    ) -> Result<Option<BTreeSet<Time>>> {
         let concerned_activity = self.get_by_id(concerned_activity_id)?;
 
-        let maybe_result = if self
+        let possible_beginnings_computed = if self
             .possible_beginnings_updater
             .activity_beginnings_are_up_to_date(&concerned_activity_id)
         {
-            // Result is up to date, no need to recalculate
-            Some(
-                concerned_activity
-                    .computation_data
-                    .possible_insertion_times_if_no_conflict()
-                    .clone(),
-            )
+            Some(())
         } else {
-            let maybe_result = self
+            let maybe_possible_beginnings = self
                 .possible_beginnings_updater
                 .poll_and_fuse_possible_beginnings(schedules_of_participants, &concerned_activity);
 
-            if maybe_result.is_some() {
+            if maybe_possible_beginnings.is_some() {
                 // If the result is valid, store it into the activity computation data.
-                let result = maybe_result
-                    .clone()
+                let result = maybe_possible_beginnings
                     .expect("Maybe result should be some but is not");
                 let concerned_activity = self.get_mut_by_id(concerned_activity_id)?;
                 concerned_activity
                     .computation_data
                     .set_possible_insertion_times_if_no_conflict(result);
+                Some(())
+            } else {
+                None
             }
-            maybe_result
         };
 
-        let incompatible_activity_ids = concerned_activity
-            .computation_data
-            .incompatible_activity_ids();
+        Ok(possible_beginnings_computed.and({
+            let (static_data, insertion_data) = self.fetch_computation();
+            let index_of_activity =
+                self.last_fetch_computation_id_to_index_map[&concerned_activity_id];
 
-        Ok(self.filter_insertion_times_for_conflicts(
-            maybe_result,
-            concerned_activity.duration(),
-            incompatible_activity_ids,
-        ))
-    }
-
-    /// Given the possible beginnings of an activity and the ids of incompatible activities,
-    /// checks for conflicts and finally returns the real possible beginnings.
-    #[must_use]
-    fn filter_insertion_times_for_conflicts(
-        &self,
-        possible_beginnings: Option<HashSet<Time>>,
-        activity_duration: Time,
-        incompatible_activity_ids: Vec<ActivityId>,
-    ) -> Option<HashSet<Time>> {
-        // Offset with the duration of the activity
-        // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
-        // at 10:50.
-        let offset_activity_duration = activity_duration - MIN_TIME_DISCRETIZATION;
-
-        possible_beginnings.map(|mut possible_beginnings| {
-            for incompatible_insertion_interval in incompatible_activity_ids
-                .iter()
-                .copied()
-                .filter_map(|id| {
-                    self.activities
-                        .get(&id)
-                        .expect("Checking for conflict with invalid activity ID !")
-                        .insertion_interval()
-                })
-                // Avoid overflow
-                .filter(|interval| interval.beginning() > offset_activity_duration)
-            {
-                let mut current_time =
-                    incompatible_insertion_interval.beginning() - offset_activity_duration;
-                let end = incompatible_insertion_interval.end();
-
-                while current_time < end {
-                    possible_beginnings.remove(&current_time);
-                    current_time.add_minutes(MIN_TIME_DISCRETIZATION_MINUTES as i8);
-                }
-            }
-            possible_beginnings
-        })
+            Some(filter_insertion_times_for_conflicts(
+                &static_data,
+                &insertion_data,
+                index_of_activity,
+            ))
+            .map(|set_minutes| {
+                set_minutes
+                    .iter()
+                    .map(|&minutes| Time::from_total_minutes(minutes))
+                    .collect()
+            })
+        }))
     }
 
     /// Inserts the activity with the given beginning.
@@ -425,7 +394,7 @@ impl Activities {
         &mut self,
         id: ActivityId,
         ideal_beginning: Time,
-        possible_beginnings: HashSet<Time>,
+        possible_beginnings: BTreeSet<Time>,
     ) -> Option<()> {
         // We insert the activity (or at least we try. If we fail, we will fail again).
         // Therefore, remove this activity from the list of activities to insert back
@@ -457,18 +426,27 @@ impl Activities {
     ///
     /// The ids of incompatible activities are turned into indexes.
     #[must_use]
-    fn fetch_computation(&self) -> (Vec<ActivityComputationStaticData>, 
-                                    Vec<ActivityInsertionBeginningMinutes>) {
+    fn fetch_computation(
+        &mut self,
+    ) -> (
+        Vec<ActivityComputationStaticData>,
+        Vec<ActivityInsertionBeginningMinutes>,
+    ) {
         let mut static_data_vec = Vec::with_capacity(self.activities.len());
         let mut insertion_data_vec = Vec::with_capacity(self.activities.len());
 
-        let ids = self.activities.values().map(|other| other.metadata.id()).collect::<Vec<_>>();
+        let ids = self
+            .activities
+            .values()
+            .map(|other| other.metadata.id())
+            .collect::<Vec<_>>();
+        self.last_fetch_computation_id_to_index_map.clear();
 
         // Translate incompatible ids into incompatible indexes
         // This is not the most efficient but this operation is not critical,
         // the computation should be optimized, not this
-        for computation_data in self.activities.values().map(|activity| &activity.computation_data)
-        {
+        for (index, activity) in self.activities.values().enumerate() {
+            let computation_data = &activity.computation_data;
             let incompatible_ids = computation_data.incompatible_activity_ids();
             let mut incompatible_indexes: Vec<ActivityId> =
                 Vec::with_capacity(incompatible_ids.len());
@@ -481,12 +459,11 @@ impl Activities {
             }
 
             let static_data = ActivityComputationStaticData {
-                possible_insertion_beginnings_minutes_sorted:
-                    computation_data
-                        .possible_insertion_times_if_no_conflict()
-                        .iter()
-                        .map(|time| time.total_minutes())
-                        .collect(),
+                possible_insertion_beginnings_minutes_sorted: computation_data
+                    .possible_insertion_times_if_no_conflict()
+                    .iter()
+                    .map(|time| time.total_minutes())
+                    .collect(),
                 indexes_of_incompatible_activities: incompatible_indexes,
                 duration_minutes: computation_data.duration().total_minutes(),
             };
@@ -497,6 +474,10 @@ impl Activities {
 
             static_data_vec.push(static_data);
             insertion_data_vec.push(insertion_data);
+
+            // Keep track of the id -> index translation to revert it
+            self.last_fetch_computation_id_to_index_map
+                .insert(activity.id(), index);
         }
         (static_data_vec, insertion_data_vec)
     }
@@ -517,6 +498,9 @@ impl Clone for Activities {
             )),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
+            last_fetch_computation_id_to_index_map: self
+                .last_fetch_computation_id_to_index_map
+                .clone(),
         }
     }
 }
