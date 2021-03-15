@@ -16,12 +16,11 @@ pub fn compute_insertion_costs(
     let mut scores_for_all_activities = Vec::with_capacity(static_data.len());
 
     for activity_static_data in static_data {
-        let mut possible_beginnings = Vec::new();
-        // TODO check vs Vec::with_capacity(
-            //activity_static_data
-                //.possible_insertion_beginnings_minutes_sorted
-                //.len(),
-        //);
+        let mut possible_beginnings = Vec::with_capacity(
+            activity_static_data
+                .possible_insertion_beginnings_minutes_sorted
+                .len(),
+        );
 
         // 1 - Fetch incompatible beginnings
 
