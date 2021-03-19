@@ -607,3 +607,49 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
         }
     );
 }
+
+/// This is a response to a bug in which the possible insertions of incompatible activities were
+/// not calculated.
+/// Insertion cost computation thought inserting the activity at any beginning would leave others
+/// without any possible beginning and therefore every beginning was invalid.
+#[test]
+fn possible_insertion_costs_compute_possible_insertions_of_incompatible_activities_as_well() {
+    let (name1, name2) = ("Paul", "Jeanne");
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1, name2])
+            .with_work_interval(TimeInterval::new(Time::new(9, 0), Time::new(11, 0)))
+            .with_activity(Activity {
+                entities: vec![name1, name2],
+                duration: Time::new(0, 10),
+                ..Default::default()
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.add_activity("Other activity")
+                .expect("Could not add activity");
+            let other_id = data.activities_sorted()[1].id();
+            data.set_activity_duration(other_id, Time::new(1, 0))
+                .expect("Could not set activity duration");
+            data.add_entity_to_activity(other_id, name1)
+                .expect("Could not add participant to activity");
+
+            while data
+                .possible_insertion_times_of_activity_with_associated_cost(id)
+                .expect("Could not get activity by ID")
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+
+            // Check that insertion times for activity with one entity only have been computed
+            // (if this result is empty, they haven't)
+            assert!(!data.possible_insertion_times_of_activity_with_associated_cost(id)
+                    .unwrap()
+                    .unwrap()
+                    .is_empty(),
+              "Incompatible activities beginnings were not updated and therefore possible insertion times are empty");
+        }
+    );
+}

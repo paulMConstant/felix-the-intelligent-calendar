@@ -111,25 +111,24 @@ impl PossibleBeginningsUpdater {
         let activity_duration = activity.duration();
 
         // Fetch possible beginnings
-        let maybe_all_possible_beginnings: Option<Vec<_>> = schedules_of_participants
-            .iter()
-            .map(|work_hours_and_activity_durations| {
-                if let Some(beginnings_given_duration) =
-                    computation_cache.get(work_hours_and_activity_durations)
-                {
-                    // Computation result is there.
-                    // Fetch only the possible beginnings for the specified duration.
-                    Some(
-                        beginnings_given_duration
-                        .get(&activity_duration)
-                        .expect("Activity duration not in durations calculated for participants"),
-                    )
-                } else {
-                    // Computation result is missing
-                    None
-                }
-            })
-            .collect();
+        let maybe_all_possible_beginnings: Option<Vec<_>> =
+            schedules_of_participants
+                .iter()
+                .map(|work_hours_and_activity_durations| {
+                    if let Some(beginnings_given_duration) =
+                        computation_cache.get(work_hours_and_activity_durations)
+                    {
+                        // Computation result is there.
+                        // Fetch only the possible beginnings for the specified duration.
+                        Some(beginnings_given_duration.get(&activity_duration).expect(
+                            "Activity duration not in durations calculated for participants",
+                        ))
+                    } else {
+                        // Computation result is missing
+                        None
+                    }
+                })
+                .collect();
 
         // Intersect all possible beginnings
         if let Some(mut all_possible_beginnings) = maybe_all_possible_beginnings {
