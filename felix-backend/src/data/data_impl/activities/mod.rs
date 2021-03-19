@@ -53,11 +53,42 @@ impl Data {
         let activity = self.activities.get_by_id(id)?;
         let participants = activity.entities_sorted();
 
-        self.activities
-            .possible_insertion_times_of_activity_with_associated_cost(
-                self.work_hours_and_activity_durations_from_entities(&participants)?,
-                id,
-            )
+        // Fetch possible beginnings of  every conflicting activity
+        // (we will compute insertion costs for the main activity. For this we need the
+        // data for all incompatible_activities as well)
+        let possible_beginnings_are_computed = activity
+            .incompatible_activity_ids()
+            .iter()
+            .map(|&other_id| {
+                let other_activity_participants = self
+                    .activities
+                    .get_by_id(other_id)
+                    .expect("Activity is incompatible with nonexistent activity")
+                    .entities_sorted();
+
+                // Fetch possible beginnings of this activity
+                self.activities.update_possible_insertion_times_of_activity(
+                    &self.work_hours_and_activity_durations_from_entities(
+                        &other_activity_participants,
+                    )?,
+                    other_id,
+                )
+            })
+            .collect::<Result<Vec<_>>>(); // Result<bool>>
+
+        if possible_beginnings_are_computed?
+            .iter()
+            .all(|computed| *computed)
+        {
+            // Fetch possible beginnings of this activity
+            self.activities
+                .possible_insertion_times_of_activity_with_associated_cost(
+                    &self.work_hours_and_activity_durations_from_entities(&participants)?,
+                    id,
+                )
+        } else {
+            Ok(None)
+        }
     }
 
     /// Adds an activity with the formatted given name.

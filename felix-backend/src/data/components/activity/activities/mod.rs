@@ -293,6 +293,49 @@ impl Activities {
             );
     }
 
+    /// Updates the possible insertion times of an activity.
+    /// Returns true if the possible insertion times were computed, else false.
+    /// This function must be called before
+    /// possible_insertion_times_of_activity_with_associated_cost.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the activity with given id is not found.
+    pub(crate) fn update_possible_insertion_times_of_activity(
+        &mut self,
+        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
+        concerned_activity_id: ActivityId,
+    ) -> Result<bool> {
+        let concerned_activity = self.get_by_id(concerned_activity_id)?;
+
+        let possible_beginnings_are_computed = if self
+            .possible_beginnings_updater
+            .activity_beginnings_are_up_to_date(&concerned_activity_id)
+        {
+            true
+        } else {
+            let maybe_possible_beginnings = self
+                .possible_beginnings_updater
+                .poll_and_fuse_possible_beginnings(&schedules_of_participants, &concerned_activity);
+
+            if maybe_possible_beginnings.is_some() {
+                // If the result is valid, store it into the activity computation data.
+                let result =
+                    maybe_possible_beginnings.expect("Maybe result should be some but is not");
+                let activity = self
+                    .get_mut_by_id(concerned_activity_id)
+                    .expect("Getting activity which does not exist");
+                activity
+                    .computation_data
+                    .set_possible_insertion_times_if_no_conflict(result);
+                true
+            } else {
+                false
+            }
+        };
+        Ok(possible_beginnings_are_computed)
+    }
+
     /// Returns the possible beginnings of an activity if it is up to date or if
     /// the computation results are up.
     /// If neither is the case, returns None.
@@ -302,48 +345,13 @@ impl Activities {
     /// Returns Err if the activity with given id is not found.
     pub fn possible_insertion_times_of_activity_with_associated_cost(
         &mut self,
-        schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
+        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
         concerned_activity_id: ActivityId,
     ) -> Result<Option<BTreeSet<InsertionCost>>> {
-        let concerned_activity = self.get_by_id(concerned_activity_id)?;
-
-        // Fetch possible beginnings of this activity
-        // and every conflicting activity (we will compute insertion costs for which we need the
-        // data for all incompatible_activities as well)
-        let mut ids_to_check = concerned_activity.incompatible_activity_ids();
-        ids_to_check.push(concerned_activity_id);
-
-        // Fetch possible beginnings without conflict for all concerned activities
-        let possible_beginnings_are_computed = ids_to_check.iter().all(|id| {
-            if self
-                .possible_beginnings_updater
-                .activity_beginnings_are_up_to_date(&id)
-            {
-                true
-            } else {
-                let activity = self
-                    .get_by_id(*id)
-                    .expect("Getting activity which does not exist");
-                let maybe_possible_beginnings = self
-                    .possible_beginnings_updater
-                    .poll_and_fuse_possible_beginnings(&schedules_of_participants, &activity);
-
-                if maybe_possible_beginnings.is_some() {
-                    // If the result is valid, store it into the activity computation data.
-                    let result =
-                        maybe_possible_beginnings.expect("Maybe result should be some but is not");
-                    let activity = self
-                        .get_mut_by_id(*id)
-                        .expect("Getting activity which does not exist");
-                    activity
-                        .computation_data
-                        .set_possible_insertion_times_if_no_conflict(result);
-                    true
-                } else {
-                    false
-                }
-            }
-        });
+        let possible_beginnings_are_computed = self.update_possible_insertion_times_of_activity(
+            schedules_of_participants,
+            concerned_activity_id,
+        )?;
 
         let possible_beginnings = if possible_beginnings_are_computed {
             // Filter & compute the cost of each possible beginning

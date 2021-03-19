@@ -104,23 +104,25 @@ impl PossibleBeginningsUpdater {
     #[must_use]
     pub fn poll_and_fuse_possible_beginnings(
         &mut self,
-        work_hours_and_activity_durations: &[WorkHoursAndActivityDurationsSorted],
+        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
         activity: &Activity,
     ) -> Option<HashSet<Time>> {
         let computation_cache = self.computation_cache.lock().unwrap();
         let activity_duration = activity.duration();
 
         // Fetch possible beginnings
-        let maybe_all_possible_beginnings: Option<Vec<_>> = work_hours_and_activity_durations
+        let maybe_all_possible_beginnings: Option<Vec<_>> = schedules_of_participants
             .iter()
-            .map(|key| {
-                if let Some(beginnings_given_duration) = computation_cache.get(key) {
+            .map(|work_hours_and_activity_durations| {
+                if let Some(beginnings_given_duration) =
+                    computation_cache.get(work_hours_and_activity_durations)
+                {
                     // Computation result is there.
                     // Fetch only the possible beginnings for the specified duration.
                     Some(
                         beginnings_given_duration
-                            .get(&activity_duration)
-                            .expect("Mismatch between computed beginnings and activity duration"),
+                        .get(&activity_duration)
+                        .expect("Activity duration not in durations calculated for participants"),
                     )
                 } else {
                     // Computation result is missing
