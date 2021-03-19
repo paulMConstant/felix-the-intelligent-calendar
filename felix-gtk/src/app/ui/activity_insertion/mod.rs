@@ -1,5 +1,5 @@
 pub mod activity_insertion_ui;
-pub mod activity_to_display;
+pub mod activity_to_show;
 pub mod entity_to_show;
 
 use crate::app::ui::{EntitiesAndInsertionTimes, Ui};
@@ -185,7 +185,7 @@ impl Ui {
     }
 
     pub fn on_right_click(&mut self, data: Arc<Mutex<Data>>) {
-        //println!("Got right click {:?}", self.activity_insertion
+        //self.activity_insertion
         //.lock()
         //.unwrap()
         //.get_id_of_activity_under_cursor());

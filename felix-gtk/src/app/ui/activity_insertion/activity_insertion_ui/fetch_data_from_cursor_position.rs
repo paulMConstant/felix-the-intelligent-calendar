@@ -1,6 +1,6 @@
 use super::Schedules;
 
-use crate::app::ui::ActivityToDisplay;
+use crate::app::ui::ActivityToShow;
 use felix_backend::data::Time;
 
 #[must_use]
@@ -25,7 +25,7 @@ pub(super) fn get_activity_under_cursor(
     x: i32,
     y: i32,
     schedules: &Schedules,
-) -> Option<ActivityToDisplay> {
+) -> Option<ActivityToShow> {
     if let Some(entity) = get_name_of_entity_from_x(x, schedules) {
         let time = get_time_on_y(y, schedules);
         // Check if an activity has the given insertion time

@@ -234,8 +234,9 @@ impl App {
                         "Trying to get possible insertion times of activity which does not exist !",
                     )
                     .entities_sorted();
-                let maybe_possible_insertion_times =
-                    data.possible_insertion_times_of_activity(id).expect(
+                let maybe_possible_insertion_times = data
+                    .possible_insertion_times_of_activity_with_associated_cost(id)
+                    .expect(
                         "Trying to get possible insertion times of activity which does not exist !",
                     );
                 EntitiesAndInsertionTimes {

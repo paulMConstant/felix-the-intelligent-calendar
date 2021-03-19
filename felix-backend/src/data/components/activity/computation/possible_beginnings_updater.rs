@@ -61,7 +61,7 @@ impl PossibleBeginningsUpdater {
     /// Invalidates the concerned activities.
     pub fn queue_work_hours_and_activity_durations(
         &mut self,
-        work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
+        work_hours_and_activity_durations: &[WorkHoursAndActivityDurationsSorted],
         out_of_date_activities: HashSet<ActivityId>,
     ) {
         if out_of_date_activities.is_empty() {
@@ -104,7 +104,7 @@ impl PossibleBeginningsUpdater {
     #[must_use]
     pub fn poll_and_fuse_possible_beginnings(
         &mut self,
-        work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
+        work_hours_and_activity_durations: &[WorkHoursAndActivityDurationsSorted],
         activity: &Activity,
     ) -> Option<HashSet<Time>> {
         let computation_cache = self.computation_cache.lock().unwrap();

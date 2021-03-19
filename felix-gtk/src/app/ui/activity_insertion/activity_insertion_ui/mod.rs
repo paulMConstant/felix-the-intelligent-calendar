@@ -1,3 +1,4 @@
+mod costs_to_rgb;
 mod drag;
 mod drawing;
 mod drop;
@@ -6,7 +7,7 @@ mod fetch_activity_insertion_ui;
 mod fetch_data_from_cursor_position;
 mod schedules;
 
-use crate::app::ui::{ActivityToDisplay, EntitiesAndInsertionTimes, EntityToShow};
+use crate::app::ui::{ActivityToShow, EntitiesAndInsertionTimes, EntityToShow};
 use event_helpers::increase_duration_on_scroll;
 use fetch_data_from_cursor_position::get_activity_under_cursor;
 use schedules::Schedules;
@@ -26,7 +27,7 @@ const NUM_HOURS_IN_DAY: i32 = 24;
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Arc<Mutex<Schedules>>,
-    activity_under_cursor: Rc<RefCell<Option<ActivityToDisplay>>>,
+    activity_under_cursor: Rc<RefCell<Option<ActivityToShow>>>,
     possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
     remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
 }
@@ -78,7 +79,7 @@ impl ActivityInsertionUi {
     }
 
     #[must_use]
-    pub(super) fn get_activity_under_cursor(&self) -> Option<ActivityToDisplay> {
+    pub(super) fn get_activity_under_cursor(&self) -> Option<ActivityToShow> {
         self.activity_under_cursor.borrow().clone()
     }
 
@@ -254,7 +255,7 @@ impl ActivityInsertionUi {
 
     /// Sets the activity under cursor and enables/disable drag if the activity_under_cursor is
     /// some.
-    fn set_activity_under_cursor(&self, activity: Option<ActivityToDisplay>) {
+    fn set_activity_under_cursor(&self, activity: Option<ActivityToShow>) {
         match activity {
             Some(_) => self.enable_drag_from_schedules_drawing(),
             None => self.disable_drag_from_schedules_drawing(),

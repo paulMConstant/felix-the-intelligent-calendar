@@ -6,12 +6,12 @@ use super::{
         id_computation::{compute_incompatible_ids, generate_next_id},
         possible_beginnings_updater::PossibleBeginningsUpdater,
     },
-    ActivityComputationData, ActivityMetadata,
+    ActivityMetadata,
 };
 
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Rgba, Time,
-    MIN_TIME_DISCRETIZATION,
+    computation_structs::{InsertionCost, WorkHoursAndActivityDurationsSorted},
+    Activity, ActivityId, Rgba, Time, MIN_TIME_DISCRETIZATION,
 };
 
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
@@ -283,7 +283,7 @@ impl Activities {
     /// Triggers the computation of new possible beginnings for the given activities.
     pub fn trigger_update_possible_activity_beginnings(
         &mut self,
-        schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
+        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
         concerned_activity_ids: HashSet<ActivityId>,
     ) {
         self.possible_beginnings_updater
@@ -300,52 +300,76 @@ impl Activities {
     /// # Errors
     ///
     /// Returns Err if the activity with given id is not found.
-    pub fn possible_insertion_times_of_activity(
+    pub fn possible_insertion_times_of_activity_with_associated_cost(
         &mut self,
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
         concerned_activity_id: ActivityId,
-    ) -> Result<Option<BTreeSet<Time>>> {
+    ) -> Result<Option<BTreeSet<InsertionCost>>> {
         let concerned_activity = self.get_by_id(concerned_activity_id)?;
 
-        let possible_beginnings_computed = if self
-            .possible_beginnings_updater
-            .activity_beginnings_are_up_to_date(&concerned_activity_id)
-        {
-            Some(())
-        } else {
-            let maybe_possible_beginnings = self
+        // Fetch possible beginnings of this activity
+        // and every conflicting activity (we will compute insertion costs for which we need the
+        // data for all incompatible_activities as well)
+        let mut ids_to_check = concerned_activity.incompatible_activity_ids();
+        ids_to_check.push(concerned_activity_id);
+
+        // Fetch possible beginnings without conflict for all concerned activities
+        let possible_beginnings_are_computed = ids_to_check.iter().all(|id| {
+            if self
                 .possible_beginnings_updater
-                .poll_and_fuse_possible_beginnings(schedules_of_participants, &concerned_activity);
-
-            if maybe_possible_beginnings.is_some() {
-                // If the result is valid, store it into the activity computation data.
-                let result =
-                    maybe_possible_beginnings.expect("Maybe result should be some but is not");
-                let concerned_activity = self.get_mut_by_id(concerned_activity_id)?;
-                concerned_activity
-                    .computation_data
-                    .set_possible_insertion_times_if_no_conflict(result);
-                Some(())
+                .activity_beginnings_are_up_to_date(&id)
+            {
+                true
             } else {
-                None
-            }
-        };
+                let activity = self
+                    .get_by_id(*id)
+                    .expect("Getting activity which does not exist");
+                let maybe_possible_beginnings = self
+                    .possible_beginnings_updater
+                    .poll_and_fuse_possible_beginnings(&schedules_of_participants, &activity);
 
-        Ok(possible_beginnings_computed.and({
+                if maybe_possible_beginnings.is_some() {
+                    // If the result is valid, store it into the activity computation data.
+                    let result =
+                        maybe_possible_beginnings.expect("Maybe result should be some but is not");
+                    let activity = self
+                        .get_mut_by_id(*id)
+                        .expect("Getting activity which does not exist");
+                    activity
+                        .computation_data
+                        .set_possible_insertion_times_if_no_conflict(result);
+                    true
+                } else {
+                    false
+                }
+            }
+        });
+
+        let possible_beginnings = if possible_beginnings_are_computed {
+            // Filter & compute the cost of each possible beginning
             let (static_data, insertion_data) = self.fetch_computation();
+
             let index_of_activity =
                 self.last_fetch_computation_id_to_index_map[&concerned_activity_id];
 
-            let insertion_costs = compute_insertion_costs(&static_data, &insertion_data);
-            Some(insertion_costs[index_of_activity].clone()).map(|insertion_score| {
-                insertion_score
-                    .into_iter()
-                    .map(|insertion_score| {
-                        Time::from_total_minutes(insertion_score.beginning_minutes)
+            let insertion_costs_of_activity =
+                &compute_insertion_costs(&static_data, &insertion_data)[index_of_activity];
+
+            Some(
+                insertion_costs_of_activity
+                    .iter()
+                    .map(|insertion_cost_minutes| InsertionCost {
+                        beginning: Time::from_total_minutes(
+                            insertion_cost_minutes.beginning_minutes,
+                        ),
+                        cost: insertion_cost_minutes.cost,
                     })
-                    .collect()
-            })
-        }))
+                    .collect::<BTreeSet<_>>(),
+            )
+        } else {
+            None
+        };
+        Ok(possible_beginnings)
     }
 
     /// Inserts the activity with the given beginning.
@@ -392,7 +416,7 @@ impl Activities {
         &mut self,
         id: ActivityId,
         ideal_beginning: Time,
-        possible_beginnings: BTreeSet<Time>,
+        possible_beginnings: BTreeSet<InsertionCost>,
     ) -> Option<()> {
         // We insert the activity (or at least we try. If we fail, we will fail again).
         // Therefore, remove this activity from the list of activities to insert back
@@ -402,7 +426,8 @@ impl Activities {
         if let Some(closest_spot) = possible_beginnings
             .into_iter()
             // Map into (time_distance, beginning) tuples
-            .map(|beginning| {
+            .map(|insertion_cost| {
+                let beginning = insertion_cost.beginning;
                 if beginning > ideal_beginning {
                     (beginning - ideal_beginning, beginning)
                 } else {
@@ -441,7 +466,7 @@ impl Activities {
         self.last_fetch_computation_id_to_index_map.clear();
 
         // Translate incompatible ids into incompatible indexes
-        // This is not the most efficient but this operation is not critical,
+        // This is not the most efficient but this operation is not critical:
         // the computation should be optimized, not this
         for (index, activity) in self.activities.values().enumerate() {
             let computation_data = &activity.computation_data;
@@ -480,9 +505,9 @@ impl Activities {
         (static_data_vec, insertion_data_vec)
     }
 
-    /// TODO CONTINUE HERE
+    /// TODO
     /// Associates each computation data to its rightful activity then overwrites it.
-    fn overwrite_computation_data(&mut self, computation_data: Vec<ActivityComputationData>) {}
+    fn overwrite_insertion_data(&mut self) {}
 }
 
 impl Clone for Activities {

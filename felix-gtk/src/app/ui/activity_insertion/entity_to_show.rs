@@ -1,10 +1,10 @@
-use crate::app::ui::ActivityToDisplay;
+use crate::app::ui::ActivityToShow;
 use felix_backend::data::{Data, Time, TimeInterval};
 
 /// Simple struct holding an entity's name, its activities and work hours.
 pub struct EntityToShow {
     name: String,
-    activities: Vec<ActivityToDisplay>,
+    activities: Vec<ActivityToShow>,
     work_hours: Vec<TimeInterval>,
     free_time: Time,
 }
@@ -17,7 +17,7 @@ impl EntityToShow {
                 .activities_of(&entity_name)
                 .expect("Every entity to show should exist in Data when created")
                 .iter()
-                .map(|activity| ActivityToDisplay::new(activity))
+                .map(|activity| ActivityToShow::new(activity))
                 .collect(),
             work_hours: data
                 .work_hours_of(&entity_name)
@@ -35,7 +35,7 @@ impl EntityToShow {
     }
 
     #[must_use]
-    pub fn activities(&self) -> &Vec<ActivityToDisplay> {
+    pub fn activities(&self) -> &Vec<ActivityToShow> {
         &self.activities
     }
 

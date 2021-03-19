@@ -14,6 +14,7 @@ notify-rust = "4.0.0"
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 cairo-rs = "0.9"
 gdk = "0.13.0"
+bracket-color = "0.8.2"
 gdk-pixbuf = "0.9.0"
 byteorder = "1"
 

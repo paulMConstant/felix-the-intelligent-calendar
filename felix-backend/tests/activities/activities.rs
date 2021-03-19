@@ -365,7 +365,7 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
 
             // Wait for computation result
             while data
-                .possible_insertion_times_of_activity(id)
+                .possible_insertion_times_of_activity_with_associated_cost(id)
                 .unwrap()
                 .is_none()
             {
@@ -426,7 +426,7 @@ fn basic_insert_activity() {
         {
             let id = data.activities_sorted()[0].id();
             while data
-                .possible_insertion_times_of_activity(id)
+                .possible_insertion_times_of_activity_with_associated_cost(id)
                 .expect("Could not get activity by ID")
                 .is_none()
             {
@@ -466,7 +466,7 @@ fn basic_insert_activity_invalid_time() {
         {
             let id = data.activities_sorted()[0].id();
             while data
-                .possible_insertion_times_of_activity(id)
+                .possible_insertion_times_of_activity_with_associated_cost(id)
                 .expect("Could not get activity by ID")
                 .is_none()
             {
@@ -510,7 +510,7 @@ fn insert_activity_invalid_time_overlaps() {
         {
             let id = data.activities_sorted()[0].id();
             while data
-                .possible_insertion_times_of_activity(id)
+                .possible_insertion_times_of_activity_with_associated_cost(id)
                 .expect("Could not get activity by ID")
                 .is_none()
             {
@@ -552,7 +552,7 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
         {
             let id2 = data.activities_sorted()[1].id();
             while data
-                .possible_insertion_times_of_activity(id2)
+                .possible_insertion_times_of_activity_with_associated_cost(id2)
                 .expect("Could not get activity by ID")
                 .is_none()
             {
@@ -560,7 +560,9 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
             }
             // The only beginnings left are 10:00 and 12:00
             // (work hours are [10:00 - 13:00] with [11:00 - 12:00] taken by activity 1)
-            assert_eq!(data.possible_insertion_times_of_activity(id2).unwrap().unwrap(),
+            assert_eq!(data.possible_insertion_times_of_activity_with_associated_cost(id2)
+                        .unwrap().unwrap().iter().map(|insertion_cost| insertion_cost.beginning)
+                        .collect::<BTreeSet<_>>(),
                        [Time::new(10, 0), Time::new(12, 0)].iter().copied().collect::<BTreeSet<_>>(),
                "Insertion times with conflicts with inserted activities were not calculated right.");
         }
@@ -589,7 +591,7 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
         {
             let id = data.activities_sorted()[0].id();
             while data
-                .possible_insertion_times_of_activity(id)
+                .possible_insertion_times_of_activity_with_associated_cost(id)
                 .expect("Could not get activity by ID")
                 .is_none()
             {
@@ -597,7 +599,9 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
             }
             // The only beginnings is 10:00
             // Activity duration is 01:00 and intersection of work hours is [10:00 - 11:00]
-            assert_eq!(data.possible_insertion_times_of_activity(id).unwrap().unwrap(),
+            assert_eq!(data.possible_insertion_times_of_activity_with_associated_cost(id)
+                       .unwrap().unwrap().iter().map(|insertion_cost| insertion_cost.beginning)
+                       .collect::<BTreeSet<_>>(),
                       [Time::new(10, 0)].iter().copied().collect::<BTreeSet<_>>(),
               "Insertion times with conflicts with inserted activities were not calculated right.");
         }

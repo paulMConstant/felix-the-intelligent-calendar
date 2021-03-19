@@ -2,8 +2,10 @@ mod error_checks;
 mod inner;
 
 use super::helpers::clean_string;
-use crate::data::{Activity, ActivityId, Data, Rgba, Time};
-use crate::errors::{invalid_insertion::InvalidInsertion, Result};
+use crate::{
+    data::{Activity, ActivityId, Data, InsertionCost, Rgba, Time},
+    errors::{invalid_insertion::InvalidInsertion, Result},
+};
 
 use std::collections::BTreeSet;
 
@@ -44,17 +46,18 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the activity is not found.
-    pub fn possible_insertion_times_of_activity(
+    pub fn possible_insertion_times_of_activity_with_associated_cost(
         &mut self,
         id: ActivityId,
-    ) -> Result<Option<BTreeSet<Time>>> {
+    ) -> Result<Option<BTreeSet<InsertionCost>>> {
         let activity = self.activities.get_by_id(id)?;
         let participants = activity.entities_sorted();
 
-        self.activities.possible_insertion_times_of_activity(
-            self.work_hours_and_activity_durations_from_entities(&participants)?,
-            id,
-        )
+        self.activities
+            .possible_insertion_times_of_activity_with_associated_cost(
+                self.work_hours_and_activity_durations_from_entities(&participants)?,
+                id,
+            )
     }
 
     /// Adds an activity with the formatted given name.
@@ -210,10 +213,13 @@ impl Data {
 
         self.queue_entities(vec![entity_name])?;
 
-        let activity = self.activity(id)?;
+        let mut activity = self.activity(id)?;
         if activity.entities_sorted().is_empty() {
             // Remove activity from schedule because it has no participants anymore
             self.insert_activity(id, None)?;
+
+            // Update activity value
+            activity = self.activity(id)?;
         } else {
             // Queue the activity because it has one less participant
             self.queue_activity_participants(&activity)?;
@@ -443,7 +449,7 @@ impl Data {
     /// let work_hours = data.add_work_interval(work_interval).unwrap();
     /// data.add_entity_to_activity(activity_id, entity).unwrap();
     ///
-    /// while data.possible_insertion_times_of_activity(activity_id).unwrap().is_none() {
+    /// while data.possible_insertion_times_of_activity_with_associated_cost(activity_id).unwrap().is_none() {
     /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
     /// }
     ///
@@ -458,8 +464,15 @@ impl Data {
     pub fn insert_activity(&mut self, id: ActivityId, insertion_time: Option<Time>) -> Result<()> {
         if let Some(insertion_time) = insertion_time {
             // We want to insert the activity
-            if let Some(possible_insertion_times) = self.possible_insertion_times_of_activity(id)? {
-                if possible_insertion_times.contains(&insertion_time) {
+            if let Some(possible_insertion_costs) =
+                self.possible_insertion_times_of_activity_with_associated_cost(id)?
+            {
+                if possible_insertion_costs
+                    .iter()
+                    .map(|insertion_cost| insertion_cost.beginning)
+                    .collect::<BTreeSet<_>>()
+                    .contains(&insertion_time)
+                {
                     self.activities.insert_activity(id, Some(insertion_time))?;
                     self.events()
                         .borrow_mut()
@@ -533,7 +546,7 @@ impl Data {
     /// assert_eq!(data.activity(id_will_move).unwrap().insertion_interval(), None);
     ///
     /// // Wait for computation result...
-    /// while data.possible_insertion_times_of_activity(id_will_move).unwrap().is_none() {
+    /// while data.possible_insertion_times_of_activity_with_associated_cost(id_will_move).unwrap().is_none() {
     /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
     /// }
     ///
@@ -551,7 +564,7 @@ impl Data {
 
         for (id, old_beginning) in activity_ids_and_old_beginnings {
             if let Some(possible_insertion_times) = self
-                .possible_insertion_times_of_activity(id)
+                .possible_insertion_times_of_activity_with_associated_cost(id)
                 .expect("Asking for possible times of activity which does not exist")
             {
                 if self

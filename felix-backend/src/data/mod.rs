@@ -18,6 +18,8 @@ pub use components::{
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
 
+pub use computation_structs::InsertionCost;
+
 pub use data_impl::helpers::clean_string;
 pub use events::Events;
 

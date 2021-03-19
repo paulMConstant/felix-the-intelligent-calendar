@@ -1,4 +1,4 @@
-use super::{ActivityInsertionUi, Schedules, NUM_HOURS_IN_DAY};
+use super::{costs_to_rgb::costs_to_rgb, ActivityInsertionUi, Schedules, NUM_HOURS_IN_DAY};
 
 use felix_backend::data::{Rgba, Time};
 
@@ -380,19 +380,21 @@ fn foreground_color_depending_on_background_color(bg: Rgba) -> Rgba {
     // Magic values from
     // https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
     if (bg.red * 0.299 + bg.green * 0.587 + bg.blue * 0.114) > 0.73 {
-        Rgba {
+        const WHITE: Rgba = Rgba {
             red: 0.0,
             green: 0.0,
             blue: 0.0,
             alpha: 1.0,
-        }
+        };
+        WHITE
     } else {
-        Rgba {
+        const BLACK: Rgba = Rgba {
             red: 0.9,
             green: 0.9,
             blue: 0.9,
             alpha: 1.0,
-        }
+        };
+        BLACK
     }
 }
 
@@ -407,6 +409,7 @@ fn draw_possible_insertions_background(
     // Calculating again here is safer.
     schedules.compute_height_for_min_discretization(height);
     if let Some(possible_insertion_times) = &schedules.possible_activity_insertion_times {
+        let colors_associated_to_beginnings = costs_to_rgb(&possible_insertion_times);
         // TODO check for insertion scores
         // Just draw green for now
         c.set_source_rgb(0.0, 1.0, 0.0);
@@ -422,10 +425,11 @@ fn draw_possible_insertions_background(
                         .contains(entity.name())
                 })
         {
-            for insertion_time in possible_insertion_times {
-                let height_begin = insertion_time.n_times_min_discretization() as f64
+            for (beginning, color) in &colors_associated_to_beginnings {
+                let height_begin = beginning.n_times_min_discretization() as f64
                     * schedules.height_per_min_discretization;
                 let heigh_to_paint = schedules.height_per_min_discretization;
+                c.set_source_rgb(color.red, color.green, color.blue);
                 c.rectangle(
                     index as f64 * schedules.width_per_schedule,
                     height_begin,

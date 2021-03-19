@@ -1,7 +1,9 @@
-/// A simple struct holding the beginning of an activity and the cost it gets.
+use crate::structs::{ActivityBeginningMinutes, Cost};
+
+/// A simple struct holding the beginning of an activity in minutes and its cost.
 /// The higher the cost, the more the activtiy blocks other activities.
 #[derive(Debug, Clone, Copy)]
-pub struct InsertionCosts {
-    pub beginning_minutes: u16,
-    pub cost: u16,
+pub struct InsertionCostsMinutes {
+    pub beginning_minutes: ActivityBeginningMinutes,
+    pub cost: Cost,
 }

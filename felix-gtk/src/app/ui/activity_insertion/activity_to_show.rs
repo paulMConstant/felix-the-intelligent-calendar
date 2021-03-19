@@ -2,17 +2,17 @@ use felix_backend::data::{Activity, ActivityId, Rgba, TimeInterval};
 
 /// Simple struct holding an activity's name and insertion interval.
 #[derive(Clone, Debug)]
-pub struct ActivityToDisplay {
+pub struct ActivityToShow {
     id: ActivityId,
     name: String,
     insertion_interval: Option<TimeInterval>,
     color: Rgba,
 }
 
-impl ActivityToDisplay {
+impl ActivityToShow {
     #[must_use]
-    pub fn new(activity: &Activity) -> ActivityToDisplay {
-        ActivityToDisplay {
+    pub fn new(activity: &Activity) -> ActivityToShow {
+        ActivityToShow {
             id: activity.id(),
             name: activity.name(),
             insertion_interval: activity.insertion_interval(),
