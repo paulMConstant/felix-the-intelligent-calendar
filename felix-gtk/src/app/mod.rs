@@ -11,12 +11,13 @@ use felix_backend::data::Data;
 use ui::Ui;
 
 use gtk::prelude::*;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct App {
-    data: Arc<Mutex<Data>>,
-    ui: Arc<Mutex<Ui>>,
+    data: Rc<RefCell<Data>>,
+    ui: Rc<RefCell<Ui>>,
 }
 
 impl App {
@@ -28,18 +29,10 @@ impl App {
         App { data, ui }
     }
 
-    pub fn ui(&self) -> MutexGuard<Ui> {
-        self.ui.lock().unwrap()
-    }
-
-    pub fn data(&self) -> MutexGuard<Data> {
-        self.data.lock().unwrap()
-    }
-
     fn on_activity_duration_changed_start_polling_to_insert_it_again(
         &self,
         data: &Data,
-        polling_duration_counter: Arc<Mutex<u32>>,
+        polling_duration_counter: Rc<RefCell<u32>>,
     ) {
         if data.activities_were_uninserted_and_can_maybe_be_inserted_back() {
             const FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS: u32 = 5;
@@ -47,7 +40,7 @@ impl App {
             const TIMEOUT_MAX_COUNTER_VALUE: u32 = TIMEOUT_CHECK_COMPUTATION_RESULT_DONE_MS
                 / FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS;
 
-            let mut counter = polling_duration_counter.lock().unwrap();
+            let mut counter = polling_duration_counter.borrow_mut();
             if *counter == 0 {
                 // The polling function is not currently running
                 // Add one preemptively so that the function is never called twice
@@ -57,17 +50,15 @@ impl App {
                 let counter = polling_duration_counter.clone();
                 // Launch polling function
                 glib::timeout_add_local(FREQUENCY_CHECK_COMPUTATION_RESULT_DONE_MS, move || {
-                    let mut counter = counter.lock().unwrap();
+                    let mut counter = counter.borrow_mut();
                     if *counter > TIMEOUT_MAX_COUNTER_VALUE {
                         *counter = 0;
-                        data.lock()
-                            .unwrap()
+                        data.borrow_mut()
                             .clear_list_activities_removed_because_duration_increased();
                         glib::Continue(false)
                     } else {
                         *counter += 1;
-                        data.lock()
-                            .unwrap()
+                        data.borrow_mut()
                             .insert_activities_removed_because_duration_increased_in_closest_spot();
                         glib::Continue(true)
                     }
@@ -80,11 +71,11 @@ impl App {
     }
 }
 
-fn init_data() -> Arc<Mutex<Data>> {
-    Arc::new(Mutex::new(Data::new()))
+fn init_data() -> Rc<RefCell<Data>> {
+    Rc::new(RefCell::new(Data::new()))
 }
 
-fn init_ui(application: &gtk::Application) -> Arc<Mutex<Ui>> {
+fn init_ui(application: &gtk::Application) -> Rc<RefCell<Ui>> {
     // Initialize UI
     let builder = gtk::Builder::new();
     builder
@@ -95,9 +86,9 @@ fn init_ui(application: &gtk::Application) -> Arc<Mutex<Ui>> {
         .add_from_resource("/com/github/paulmconstant/felix/ui/data_window.ui")
         .expect("Could not load ui file: data_window.ui");
 
-    let ui = Arc::new(Mutex::new(Ui::new(builder)));
+    let ui = Rc::new(RefCell::new(Ui::new(builder)));
 
-    fetch_from!(ui.lock().unwrap(), main_window);
+    fetch_from!(ui.borrow(), main_window);
     main_window.set_application(Some(application));
     main_window.set_title(APP_NAME);
     ui

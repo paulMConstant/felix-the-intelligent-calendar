@@ -23,7 +23,7 @@ impl App {
     }
 
     fn connect_add_group(&self) {
-        fetch_from!(self.ui(), group_add_button, group_add_entry);
+        fetch_from!(self.ui.borrow(), group_add_button, group_add_entry);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -31,13 +31,15 @@ impl App {
         app_register_signal!(
             self,
             group_add_button,
-            group_add_button.connect_clicked(clone!(@strong ui, @strong data, @weak group_add_entry => move |_| {
-        let group_to_add = group_add_entry.get_text();
-        with_blocked_signals!(ui.lock().unwrap(), group_add_entry.set_text(""), group_add_entry);
+            group_add_button.connect_clicked(
+                clone!(@strong ui, @strong data, @weak group_add_entry => move |_| {
+                let group_to_add = group_add_entry.get_text();
+                with_blocked_signals!(ui.borrow(), group_add_entry.set_text(""), group_add_entry);
 
-        no_notify_assign_or_return!(group_to_add, clean_string(group_to_add));
-        return_if_err!(data.lock().unwrap().add_group(group_to_add));
-            }))
+                no_notify_assign_or_return!(group_to_add, clean_string(group_to_add));
+                return_if_err!(data.borrow_mut().add_group(group_to_add));
+                    })
+            )
         );
 
         let data = self.data.clone();
@@ -49,16 +51,16 @@ impl App {
             group_add_entry.connect_activate(move |entry| {
                 let group_to_add = entry.get_text();
                 let entry = entry.clone();
-                with_blocked_signals!(ui.lock().unwrap(), entry.set_text(""), entry);
+                with_blocked_signals!(ui.borrow_mut(), entry.set_text(""), entry);
 
                 no_notify_assign_or_return!(group_to_add, clean_string(group_to_add));
-                return_if_err!(data.lock().unwrap().add_group(group_to_add));
+                return_if_err!(data.borrow_mut().add_group(group_to_add));
             })
         );
     }
 
     fn connect_group_selected(&self) {
-        fetch_from!(self.ui(), groups_tree_view);
+        fetch_from!(self.ui.borrow(), groups_tree_view);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -68,15 +70,15 @@ impl App {
             groups_tree_view.connect_cursor_changed(move |tree_view| {
                 let selected_group = get_selection_from_treeview(&tree_view, GROUP_NAME_COLUMN);
                 if let Some(group_name) = selected_group {
-                    assign_or_return!(group, data.lock().unwrap().group(group_name));
-                    ui.lock().unwrap().on_group_selected(group);
+                    assign_or_return!(group, data.borrow().group(group_name));
+                    ui.borrow_mut().on_group_selected(group);
                 }
             })
         );
     }
 
     fn connect_remove_group(&self) {
-        fetch_from!(self.ui(), group_remove_button);
+        fetch_from!(self.ui.borrow(), group_remove_button);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -85,21 +87,20 @@ impl App {
             group_remove_button,
             group_remove_button.connect_clicked(move |_| {
                 let group_to_remove = ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_group()
                     .as_ref()
                     .expect(
                         "Current group should be selected before accessing any group-related filed",
                     )
                     .name();
-                return_if_err!(data.lock().unwrap().remove_group(group_to_remove));
+                return_if_err!(data.borrow_mut().remove_group(group_to_remove));
             })
         );
     }
 
     fn connect_rename_group(&self) {
-        fetch_from!(self.ui(), group_name_entry);
+        fetch_from!(self.ui.borrow(), group_name_entry);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -108,8 +109,7 @@ impl App {
             group_name_entry,
             group_name_entry.connect_changed(move |entry| {
                 let group_to_rename = ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_group()
                     .as_ref()
                     .expect(
@@ -121,10 +121,7 @@ impl App {
                 if cleaned_input(&new_name) == group_to_rename {
                     return;
                 }
-                return_if_err!(data
-                    .lock()
-                    .unwrap()
-                    .set_group_name(group_to_rename, new_name));
+                return_if_err!(data.borrow_mut().set_group_name(group_to_rename, new_name));
             })
         );
     }
@@ -137,13 +134,13 @@ impl App {
                        @strong $data,
                        @weak $entity_into_group_name_entry,
                        @weak $create_entity_before_adding_to_group_switch => move |_| {
-                let mut data = $data.lock().unwrap();
-                let group_in_which_to_add = $ui.lock().unwrap().current_group().as_ref()
+                let mut data = $data.borrow_mut();
+                let group_in_which_to_add = $ui.borrow().current_group().as_ref()
                     .expect("Current group should be selected before accessing any group-related filed")
                     .name();
                 let entity_name = $entity_into_group_name_entry.get_text();
                 with_blocked_signals!(
-                    $ui.lock().unwrap(),
+                    $ui.borrow_mut(),
                     $entity_into_group_name_entry.set_text(""),
                     $entity_into_group_name_entry
                 );
@@ -165,7 +162,7 @@ impl App {
         let ui = self.ui.clone();
 
         fetch_from!(
-            self.ui(),
+            self.ui.borrow(),
             entity_into_group_name_entry,
             add_to_group_button,
             create_entity_before_adding_to_group_switch
@@ -196,7 +193,11 @@ impl App {
     }
 
     fn connect_remove_entity_from_group(&self) {
-        fetch_from!(self.ui(), group_members_tree_view, group_members_list_store);
+        fetch_from!(
+            self.ui.borrow(),
+            group_members_tree_view,
+            group_members_list_store
+        );
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -217,8 +218,8 @@ impl App {
                 .expect("Value should be gchararray")
                 .expect("Value should be gchararray");
 
-            let current_group_name = ui.lock().unwrap().current_group().as_ref().expect("Current group should be set before performing any action on a group").name();
-            return_if_err!(data.lock().unwrap()
+            let current_group_name = ui.borrow().current_group().as_ref().expect("Current group should be set before performing any action on a group").name();
+            return_if_err!(data.borrow_mut()
                 .remove_entity_from_group(current_group_name, entity_to_remove));
         }
             }));

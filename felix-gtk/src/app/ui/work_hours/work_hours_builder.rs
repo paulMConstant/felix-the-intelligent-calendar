@@ -5,13 +5,14 @@ use felix_backend::data::TimeInterval;
 use glib::clone;
 use gtk::prelude::*;
 
-use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 // Macro placed first because order matters with macros
 macro_rules! start_editing_callback {
     ($work_interval_builders:ident, $position_of_interval: ident, $editing_done_callback: ident) => {
         move |_| {
-            for (index, builder) in $work_interval_builders.lock().unwrap().iter().enumerate() {
+            for (index, builder) in $work_interval_builders.borrow().iter().enumerate() {
                 if index == $position_of_interval {
                     fetch_from_builder!(builder, edit_button=gtk::Button:"TimeIntervalEditButton");
                     // This button ends the editing of current interval
@@ -38,20 +39,20 @@ macro_rules! start_editing_callback {
 
 pub struct WorkHoursBuilder {
     work_hours_scrolled_window: Option<gtk::ScrolledWindow>,
-    work_interval_builders: Arc<Mutex<Vec<gtk::Builder>>>,
-    work_interval_editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
-    work_interval_remove_callback: Arc<dyn Fn(usize)>,
+    work_interval_builders: Rc<RefCell<Vec<gtk::Builder>>>,
+    work_interval_editing_done_callback: Rc<dyn Fn(usize, gtk::Builder)>,
+    work_interval_remove_callback: Rc<dyn Fn(usize)>,
 }
 
 impl WorkHoursBuilder {
     pub fn new() -> WorkHoursBuilder {
         WorkHoursBuilder {
             work_hours_scrolled_window: None,
-            work_interval_builders: Arc::new(Mutex::new(Vec::new())),
-            work_interval_editing_done_callback: Arc::new(Box::new(|_, _| {
+            work_interval_builders: Rc::new(RefCell::new(Vec::new())),
+            work_interval_editing_done_callback: Rc::new(Box::new(|_, _| {
                 panic!("Work interval editing done callback was called before being set")
             })),
-            work_interval_remove_callback: Arc::new(Box::new(|_| {
+            work_interval_remove_callback: Rc::new(Box::new(|_| {
                 panic!("Work interval remove callback was called before being set")
             })),
         }
@@ -66,14 +67,14 @@ impl WorkHoursBuilder {
 
     pub fn set_work_interval_editing_done_callback(
         &mut self,
-        work_interval_editing_done_callback: Arc<dyn Fn(usize, gtk::Builder)>,
+        work_interval_editing_done_callback: Rc<dyn Fn(usize, gtk::Builder)>,
     ) {
         self.work_interval_editing_done_callback = work_interval_editing_done_callback;
     }
 
     pub fn set_work_interval_remove_callback(
         &mut self,
-        work_interval_remove_callback: Arc<dyn Fn(usize)>,
+        work_interval_remove_callback: Rc<dyn Fn(usize)>,
     ) {
         self.work_interval_remove_callback = work_interval_remove_callback;
     }
@@ -112,7 +113,7 @@ impl WorkHoursBuilder {
     ) -> gtk::Box {
         let work_intervals_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let mut work_intervals: Vec<gtk::Box> = Vec::with_capacity(current_work_hours.len() + 1);
-        self.work_interval_builders.lock().unwrap().clear();
+        self.work_interval_builders.borrow_mut().clear();
 
         // Add the current work hours and a new one
         for (index, interval) in current_work_hours.iter().enumerate() {
@@ -157,7 +158,7 @@ impl WorkHoursBuilder {
             .get_object("TimeIntervalBox")
             .expect("Could not load TimeIntervalBox");
 
-        self.work_interval_builders.lock().unwrap().push(builder);
+        self.work_interval_builders.borrow_mut().push(builder);
 
         time_interval
     }
@@ -207,13 +208,7 @@ impl WorkHoursBuilder {
     }
 
     fn make_other_buttons_insensitive(&self, position_of_sensitive_button: usize) {
-        for (index, builder) in self
-            .work_interval_builders
-            .lock()
-            .unwrap()
-            .iter()
-            .enumerate()
-        {
+        for (index, builder) in self.work_interval_builders.borrow().iter().enumerate() {
             if index == position_of_sensitive_button {
                 continue;
             }

@@ -33,15 +33,15 @@ impl App {
             ($data: ident, $ui: ident, $activity_add_entry: ident) => {
                 clone!(@strong $data, @strong $ui, @weak $activity_add_entry => move |_| {
                     let activity_name = $activity_add_entry.get_text();
-                    with_blocked_signals!($ui.lock().unwrap(), $activity_add_entry.set_text(""), $activity_add_entry);
+                    with_blocked_signals!($ui.borrow_mut(), $activity_add_entry.set_text(""), $activity_add_entry);
 
                     no_notify_assign_or_return!(activity_name, clean_string(activity_name));
-                    return_if_err!($data.lock().unwrap().add_activity(activity_name));
+                    return_if_err!($data.borrow_mut().add_activity(activity_name));
                 })
             };
         }
 
-        fetch_from!(self.ui(), activity_add_button, activity_add_entry);
+        fetch_from!(self.ui.borrow(), activity_add_button, activity_add_entry);
 
         let data = &self.data;
         let ui = &self.ui;
@@ -68,7 +68,7 @@ impl App {
     }
 
     fn connect_activity_selected(&self) {
-        fetch_from!(self.ui(), activities_tree_view);
+        fetch_from!(self.ui.borrow(), activities_tree_view);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -83,16 +83,16 @@ impl App {
                         .parse::<ActivityId>()
                         .expect("Error when parsing activity ID from model");
 
-                    let data = data.lock().unwrap();
+                    let data = data.borrow();
                     assign_or_return!(activity, data.activity(activity_id));
-                    ui.lock().unwrap().on_activity_selected(&data, activity);
+                    ui.borrow_mut().on_activity_selected(&data, activity);
                 }
             })
         );
     }
 
     fn connect_remove_activity(&self) {
-        fetch_from!(self.ui(), activity_remove_button);
+        fetch_from!(self.ui.borrow(), activity_remove_button);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -100,16 +100,16 @@ impl App {
             self,
             activity_remove_button,
             activity_remove_button.connect_clicked(move |_| {
-                let id = ui.lock().unwrap().current_activity().expect(
+                let id = ui.borrow().current_activity().expect(
                     "Current activity should be selected before accessing the remove activity button",
                 ).id();
-                return_if_err!(data.lock().unwrap().remove_activity(id));
+                return_if_err!(data.borrow_mut().remove_activity(id));
             })
         );
     }
 
     fn connect_rename_activity(&self) {
-        fetch_from!(self.ui(), activity_name_entry);
+        fetch_from!(self.ui.borrow(), activity_name_entry);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -117,20 +117,20 @@ impl App {
             self,
             activity_name_entry,
             activity_name_entry.connect_changed(move |entry| {
-            let activity_to_rename_id = ui.lock().unwrap()
+            let activity_to_rename_id = ui.borrow()
                 .current_activity()
                 .expect("Current activity should be selected before accessing the activity name entry")
                 .id();
             let new_name = entry.get_text();
             no_notify_assign_or_return!(new_name, clean_string(new_name));
-            return_if_err!(data.lock().unwrap().set_activity_name(activity_to_rename_id, new_name));
+            return_if_err!(data.borrow_mut().set_activity_name(activity_to_rename_id, new_name));
             })
         );
     }
 
     fn connect_set_activity_duration(&self) {
         fetch_from!(
-            self.ui(),
+            self.ui.borrow(),
             activity_duration_minute_spin,
             activity_duration_hour_spin
         );
@@ -143,12 +143,11 @@ impl App {
                 safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
 
                 let id = $ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_activity()
                     .expect("Current activity should be set before setting duration")
                     .id();
-                let mut data = $data.lock().unwrap();
+                let mut data = $data.borrow_mut();
                 let activity_duration = data
                     .activity(id)
                     .expect("Setting duration of activity which does not exist")
@@ -199,7 +198,7 @@ impl App {
     }
 
     fn connect_add_to_activity(&self) {
-        fetch_from!(self.ui(), activity_add_to_entry);
+        fetch_from!(self.ui.borrow(), activity_add_to_entry);
 
         let data = &self.data;
         let ui = &self.ui;
@@ -208,20 +207,19 @@ impl App {
             ($data: ident, $ui: ident, $entry: ident) => {
             clone!(@strong $data, @strong $ui, @weak $entry => move |_| {
                 let activity_id = $ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_activity()
                     .expect("Current activity should be set before adding into it")
                     .id();
                 let entity_or_group_to_add = $entry.get_text();
-                with_blocked_signals!($ui.lock().unwrap(), $entry.set_text(""), $entry);
+                with_blocked_signals!($ui.borrow_mut(), $entry.set_text(""), $entry);
 
                 no_notify_assign_or_return!(
                     entity_or_group_to_add,
                     clean_string(entity_or_group_to_add)
                 );
 
-                let mut data = $data.lock().unwrap();
+                let mut data = $data.borrow_mut();
                 if let Ok(entity) = data.entity(&entity_or_group_to_add) {
                     let entity_name = entity.name();
                     return_if_err!(data.add_entity_to_activity(activity_id, entity_name));
@@ -246,7 +244,11 @@ impl App {
             ))
         );
 
-        fetch_from!(self.ui(), activity_add_to_entry, activity_add_to_button);
+        fetch_from!(
+            self.ui.borrow(),
+            activity_add_to_entry,
+            activity_add_to_button
+        );
 
         app_register_signal!(
             self,
@@ -261,7 +263,7 @@ impl App {
 
     fn connect_remove_group_from_activity(&self) {
         fetch_from!(
-            self.ui(),
+            self.ui.borrow(),
             activity_groups_tree_view,
             activity_groups_list_store
         );
@@ -286,9 +288,9 @@ impl App {
                 .expect("Value should be gchararray")
                 .expect("Value should be gchararray");
 
-            let current_activity_id = ui.lock().unwrap().current_activity().as_ref()
+            let current_activity_id = ui.borrow().current_activity().as_ref()
                 .expect("Current activity should be set before performing any action on a group").id();
-            return_if_err!(data.lock().unwrap()
+            return_if_err!(data.borrow_mut()
                 .remove_group_from_activity(current_activity_id, group_to_remove));
         }
             }));
@@ -296,7 +298,7 @@ impl App {
 
     fn connect_remove_entity_from_activity(&self) {
         fetch_from!(
-            self.ui(),
+            self.ui.borrow(),
             activity_entities_tree_view,
             activity_entities_list_store
         );
@@ -321,10 +323,10 @@ impl App {
                 .expect("Value should be gchararray")
                 .expect("Value should be gchararray");
 
-            let current_activity_id = ui.lock().unwrap().current_activity().as_ref()
+            let current_activity_id = ui.borrow().current_activity().as_ref()
                 .expect("Current activity should be set before performing any action on a group").id();
 
-            let mut data = data.lock().unwrap();
+            let mut data = data.borrow_mut();
             assign_or_return!(activity, data.activity(current_activity_id));
             let activity_entities = activity.entities_sorted();
 
@@ -339,7 +341,7 @@ impl App {
     }
 
     fn connect_set_activity_color(&self) {
-        fetch_from!(self.ui(), activity_color_button);
+        fetch_from!(self.ui.borrow(), activity_color_button);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -350,15 +352,13 @@ impl App {
             activity_color_button.connect_color_set(move |activity_color_button| {
                 let color = activity_color_button.get_rgba();
                 let current_activity_id = ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_activity()
                     .as_ref()
                     .expect("Current activity should be set before performing any action")
                     .id();
 
-                data.lock()
-                    .unwrap()
+                data.borrow_mut()
                     .set_activity_color(
                         current_activity_id,
                         Rgba {

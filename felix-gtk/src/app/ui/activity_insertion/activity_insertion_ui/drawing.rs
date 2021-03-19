@@ -4,7 +4,8 @@ use felix_backend::data::{Rgba, Time};
 
 use gtk::prelude::*;
 
-use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 // Cairo calculates from the half of a pixel. This is used as an offset.
 const HALF_PIXEL: f64 = 0.5;
@@ -151,7 +152,7 @@ fn draw_corner(c: &cairo::Context, width: f64, height: f64) {
     c.stroke();
 }
 
-fn draw_schedules(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex<Schedules>>) {
+fn draw_schedules(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Rc<RefCell<Schedules>>) {
     let width = w.get_allocated_width() as f64;
     let height = w.get_allocated_height() as f64;
     paint_background_uniform(c, OUTSIDE_WORK_HOURS_RGB);
@@ -162,7 +163,7 @@ fn draw_schedules(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex
     // Hence the order 1. Draw inserted activities 2. draw possible insertions.
     draw_possible_insertions_background(c, height, &schedules);
 
-    let schedules = schedules.lock().unwrap();
+    let schedules = schedules.borrow();
     draw_hour_lines(c, width, height);
     let nb_schedules = schedules.entities_to_show.len();
     // Draw schedule separators
@@ -180,14 +181,14 @@ fn draw_schedules(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex
 
 /// If the schedule size is good, returns true, else resizes the draw area and returns false
 fn schedule_size_ok_or_resize(
-    schedules: Arc<Mutex<Schedules>>,
+    schedules: Rc<RefCell<Schedules>>,
     w: &gtk::DrawingArea,
     visible_width: f64,
 ) -> bool {
     let width = w.get_allocated_width() as f64;
     let height = w.get_allocated_height() as f64;
 
-    let mut schedules = schedules.lock().unwrap();
+    let mut schedules = schedules.borrow_mut();
     let nb_schedules = schedules.entities_to_show.len();
     schedules.compute_schedule_width(visible_width);
 
@@ -209,11 +210,11 @@ fn schedule_size_ok_or_resize(
     }
 }
 
-fn draw_header(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Arc<Mutex<Schedules>>) {
+fn draw_header(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Rc<RefCell<Schedules>>) {
     // Get schedules width
     let height = w.get_allocated_height() as f64;
 
-    let schedules = schedules.lock().unwrap();
+    let schedules = schedules.borrow();
     let nb_schedules = schedules.entities_to_show.len();
 
     paint_background_uniform(c, IN_WORK_HOURS_RGB);
@@ -294,9 +295,9 @@ pub fn get_height_for_one_hour(total_height: f64) -> f64 {
 fn draw_inside_work_hours_background(
     c: &cairo::Context,
     height: f64,
-    schedules: &Arc<Mutex<Schedules>>,
+    schedules: &Rc<RefCell<Schedules>>,
 ) {
-    let mut schedules = schedules.lock().unwrap();
+    let mut schedules = schedules.borrow_mut();
     schedules.compute_height_for_min_discretization(height);
 
     c.set_source_rgb(IN_WORK_HOURS_RGB, IN_WORK_HOURS_RGB, IN_WORK_HOURS_RGB);
@@ -323,8 +324,8 @@ fn draw_inside_work_hours_background(
     }
 }
 
-fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Arc<Mutex<Schedules>>) {
-    let mut schedules = schedules.lock().unwrap();
+fn draw_inserted_activities(c: &cairo::Context, height: f64, schedules: &Rc<RefCell<Schedules>>) {
+    let mut schedules = schedules.borrow_mut();
 
     // This may be called in a function above. It does not matter as the calculation is not heavy.
     // Calculating again here is safer.
@@ -401,9 +402,9 @@ fn foreground_color_depending_on_background_color(bg: Rgba) -> Rgba {
 fn draw_possible_insertions_background(
     c: &cairo::Context,
     height: f64,
-    schedules: &Arc<Mutex<Schedules>>,
+    schedules: &Rc<RefCell<Schedules>>,
 ) {
-    let mut schedules = schedules.lock().unwrap();
+    let mut schedules = schedules.borrow_mut();
 
     // This may be called in a function above. It does not matter as the calculation is not heavy.
     // Calculating again here is safer.
@@ -442,8 +443,8 @@ fn draw_possible_insertions_background(
     }
 }
 
-fn draw_time_tooltip(c: &cairo::Context, schedules: Arc<Mutex<Schedules>>) {
-    let mut schedules = schedules.lock().unwrap();
+fn draw_time_tooltip(c: &cairo::Context, schedules: Rc<RefCell<Schedules>>) {
+    let mut schedules = schedules.borrow_mut();
     if let Some(time_tooltip_to_draw) = &schedules.time_tooltip_to_draw {
         let x = time_tooltip_to_draw.x_cursor;
         let y = time_tooltip_to_draw.y_cursor - TIME_TOOLTIP_HEIGHT as f64;

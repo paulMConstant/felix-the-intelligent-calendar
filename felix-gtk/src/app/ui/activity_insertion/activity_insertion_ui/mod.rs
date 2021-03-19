@@ -19,17 +19,16 @@ use gtk::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 
 const NUM_HOURS_IN_DAY: i32 = 24;
 
 #[derive(Clone)]
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
-    schedules_to_show: Arc<Mutex<Schedules>>,
+    schedules_to_show: Rc<RefCell<Schedules>>,
     activity_under_cursor: Rc<RefCell<Option<ActivityToShow>>>,
-    possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
-    remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
+    possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+    remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
 }
 
 impl ActivityInsertionUi {
@@ -42,12 +41,12 @@ impl ActivityInsertionUi {
 
         let activity_insertion = ActivityInsertionUi {
             builder,
-            schedules_to_show: Arc::new(Mutex::new(Schedules::new())),
+            schedules_to_show: Rc::new(RefCell::new(Schedules::new())),
             activity_under_cursor: Rc::new(RefCell::new(None)),
-            possible_insertions_callback: Arc::new(Box::new(|_| {
+            possible_insertions_callback: Rc::new(Box::new(|_| {
                 panic!("possible_insertions_callback was not initialized")
             })),
-            remove_activity_from_schedule_callback: Arc::new(Box::new(|_| {
+            remove_activity_from_schedule_callback: Rc::new(Box::new(|_| {
                 panic!("remove_activity_from_schedule_callback was not initialized")
             })),
         };
@@ -62,7 +61,7 @@ impl ActivityInsertionUi {
         &self,
         concerned_entities_and_possible_insertion_times: EntitiesAndInsertionTimes,
     ) {
-        let mut schedules = self.schedules_to_show.lock().unwrap();
+        let mut schedules = self.schedules_to_show.borrow_mut();
         schedules.possible_activity_insertion_times =
             concerned_entities_and_possible_insertion_times.insertion_times;
         schedules.activity_insertion_concerned_entities =
@@ -86,8 +85,7 @@ impl ActivityInsertionUi {
     #[must_use]
     pub(super) fn shown_entities(&self) -> Vec<String> {
         self.schedules_to_show
-            .lock()
-            .unwrap()
+            .borrow()
             .entities_to_show
             .iter()
             .map(|entity| entity.name().clone())
@@ -95,7 +93,7 @@ impl ActivityInsertionUi {
     }
 
     pub(super) fn show_entities_schedule(&self, entities_to_show: Vec<EntityToShow>) {
-        let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
+        let mut schedules_to_show = self.schedules_to_show.borrow_mut();
         // First push all entities
         for entity_to_show in entities_to_show {
             if let Some(index) = schedules_to_show
@@ -115,7 +113,7 @@ impl ActivityInsertionUi {
     }
 
     pub(super) fn remove_entity_schedule(&self, name_of_entity_to_remove: &str) {
-        let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
+        let mut schedules_to_show = self.schedules_to_show.borrow_mut();
         if let Some(position) = schedules_to_show
             .entities_to_show
             .iter()
@@ -128,7 +126,7 @@ impl ActivityInsertionUi {
     }
 
     fn draw_schedules_sorted(&self) {
-        let mut schedules_to_show = self.schedules_to_show.lock().unwrap();
+        let mut schedules_to_show = self.schedules_to_show.borrow_mut();
 
         schedules_to_show
             .entities_to_show
@@ -173,7 +171,7 @@ impl ActivityInsertionUi {
 
     pub(super) fn connect_mouse_events(
         &self,
-        set_activity_duration_callback: Arc<dyn Fn(ActivityId, bool)>,
+        set_activity_duration_callback: Rc<dyn Fn(ActivityId, bool)>,
         shift_held: Rc<RefCell<bool>>,
         left_mouse_button_pressed: Rc<RefCell<bool>>,
     ) {
@@ -235,7 +233,7 @@ impl ActivityInsertionUi {
         let (x, y) = (x_event + x_scrollbar_offset, y_event + y_scrollbar_offset);
 
         let new_activity =
-            get_activity_under_cursor(x as i32, y as i32, &self.schedules_to_show.lock().unwrap());
+            get_activity_under_cursor(x as i32, y as i32, &self.schedules_to_show.borrow());
 
         let current_activity = self.activity_under_cursor.borrow();
 

@@ -4,7 +4,7 @@ use crate::app::App;
 
 impl App {
     pub fn connect_header_buttons(&self) {
-        fetch_from!(self.ui(), data_window, data_button);
+        fetch_from!(self.ui.borrow(), data_window, data_button);
 
         data_window.resize(800, 600);
         data_window.connect_delete_event(move |window, _| {

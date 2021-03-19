@@ -8,13 +8,13 @@ use glib::clone;
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
-use std::sync::Arc;
+use std::rc::Rc;
 
 impl ActivityInsertionUi {
     pub(in super::super::super) fn setup_drag_from_schedules_drawing(
         &mut self,
-        possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
-        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
+        possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
         self.possible_insertions_callback = possible_insertions_callback;
         self.remove_activity_from_schedule_callback = remove_activity_from_schedule_callback;
@@ -48,8 +48,8 @@ impl ActivityInsertionUi {
 
     fn connect_drag_begin(
         &self,
-        get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
-        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
+        get_possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
         fetch_from!(self, schedules_drawing);
 

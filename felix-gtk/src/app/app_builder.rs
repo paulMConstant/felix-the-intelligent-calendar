@@ -9,7 +9,7 @@ pub fn build_app(app: &gtk::Application) {
 
     app.connect_ui();
     app.connect_data();
-    app.ui().show_mainwindow();
+    app.ui.borrow_mut().show_mainwindow();
 }
 
 fn build_resources(app: &gtk::Application) {

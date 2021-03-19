@@ -7,12 +7,12 @@
 /// macro_rules! app_register_signal {
 /// ($self: ident, $widget: ident, $connection: expr) => {
 ///     let signal = $connection;
-///     $self.app\_data.lock().unwrap().register\_signal($widget, signal);
+///     $self.ui.borrow_mut().register\_signal($widget, signal);
 /// };
 macro_rules! app_register_signal {
     ($self: expr, $widget: ident, $connection: expr) => {
         let signal = $connection;
-        $self.ui().register_signal($widget, signal);
+        $self.ui.borrow_mut().register_signal($widget, signal);
     };
 }
 
@@ -22,7 +22,7 @@ macro_rules! app_register_signal {
 /// $entry: gtk::Entry to clean
 macro_rules! connect_clean {
     ($self: expr, $entry: ident) => {
-        fetch_from!($self.ui(), $entry);
+        fetch_from!($self.ui.borrow(), $entry);
 
         let ui = $self.ui.clone();
         app_register_signal!(
@@ -30,7 +30,7 @@ macro_rules! connect_clean {
             $entry,
             $entry.connect_changed(
                 clone!(@strong ui, @weak $entry => move |_| {
-                    ui.lock().unwrap().event_clean_entry_content($entry);
+                    ui.borrow().event_clean_entry_content($entry);
                 })));
     };
 

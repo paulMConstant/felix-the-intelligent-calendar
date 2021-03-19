@@ -73,9 +73,9 @@ fn test_insertion_costs_simplest() {
 
     let insertion_costs0 = &insertion_costs[0];
     assert_eq!(insertion_costs0[0], 1000); // 0 Blocks 0, 5
-                                          // -> 2 blocked * 1 incompatible activities / 2 remaining spots
+                                           // -> 2 blocked * 1 incompatible activities / 2 remaining spots
     assert_eq!(insertion_costs0[1], 3000); // 5 Blocks 0, 5, 10
-                                          // -> 3 blocked * 1 incompatible activities / 1 remaining spots
+                                           // -> 3 blocked * 1 incompatible activities / 1 remaining spots
     assert_eq!(insertion_costs0[2], 3000); // 10 Blocks 0, 5, 10
     assert_eq!(insertion_costs0[3], 3000); // 15 Blocks 5, 10 20
     assert_eq!(insertion_costs0[4], 1000); // 20 Blocks 10, 20
@@ -85,12 +85,12 @@ fn test_insertion_costs_simplest() {
 
     let insertion_costs1 = &insertion_costs[1];
     assert_eq!(insertion_costs1[0], 600); // 0 Blocks 0, 5, 10
-                                         // -> 3 blocked * 1 incompatible activities / 5 remaining spots
+                                          // -> 3 blocked * 1 incompatible activities / 5 remaining spots
     assert_eq!(insertion_costs1[1], 1000); // 5 Blocks 0, 5, 10, 15
-                                          // -> 4 blocked * 1 incompatible activities / 4 remaining spots
+                                           // -> 4 blocked * 1 incompatible activities / 4 remaining spots
     assert_eq!(insertion_costs1[2], 1000); // 10 Blocks 5, 10, 15, 20
     assert_eq!(insertion_costs1[3], 333); // 15 Blocks 10, 20
-                                         // -> 2 blocked * 1 incompatible activities / 6 remaining spots
+                                          // -> 2 blocked * 1 incompatible activities / 6 remaining spots
 }
 
 fn btreeset_from_slice(slice: &[u16]) -> BTreeSet<u16> {

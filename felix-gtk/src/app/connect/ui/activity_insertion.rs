@@ -7,7 +7,7 @@ use felix_backend::data::{clean_string, ActivityId, Time, MIN_TIME_DISCRETIZATIO
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
-use std::sync::Arc;
+use std::rc::Rc;
 
 use glib::clone;
 use gtk::prelude::*;
@@ -31,7 +31,7 @@ impl App {
             ($data: ident, $ui: ident, $entry: ident) => {
                 clone!(@strong $data, @strong $ui, @weak $entry => move |_| {
                 let entity_or_group_to_show = $entry.get_text();
-                let mut ui = $ui.lock().unwrap();
+                let mut ui = $ui.borrow_mut();
                 with_blocked_signals!(ui, $entry.set_text(""), $entry);
 
                 no_notify_assign_or_return!(
@@ -39,7 +39,7 @@ impl App {
                     clean_string(entity_or_group_to_show)
                 );
 
-                let data = $data.lock().unwrap();
+                let data = $data.borrow();
                 if let Ok(entity) = data.entity(&entity_or_group_to_show) {
                     ui.on_show_entity_schedule(EntityToShow::new(entity.name(), &data));
                 } else if let Ok(group) = data.group(&entity_or_group_to_show) {
@@ -54,7 +54,7 @@ impl App {
             };
         }
 
-        fetch_from!(self.ui(), show_schedule_entry, show_schedule_button);
+        fetch_from!(self.ui.borrow(), show_schedule_entry, show_schedule_button);
 
         let ui = &self.ui;
         let data = &self.data;
@@ -81,7 +81,7 @@ impl App {
     }
 
     fn connect_activity_clicked(&self) {
-        fetch_from!(self.ui(), main_window);
+        fetch_from!(self.ui.borrow(), main_window);
 
         let ui = self.ui.clone();
         let data = self.data.clone();
@@ -94,8 +94,8 @@ impl App {
                 const LEFT_CLICK: u32 = 1;
 
                 match event.get_button() {
-                    RIGHT_CLICK => ui.lock().unwrap().on_right_click(data.clone()),
-                    LEFT_CLICK => ui.lock().unwrap().on_left_click(data.clone()),
+                    RIGHT_CLICK => ui.borrow_mut().on_right_click(data.clone()),
+                    LEFT_CLICK => ui.borrow_mut().on_left_click(data.clone()),
                     _ => { // Do nothing
                     }
                 }
@@ -105,7 +105,7 @@ impl App {
     }
 
     fn connect_insert_activity_switch(&self) {
-        fetch_from!(self.ui(), activity_inserted_switch);
+        fetch_from!(self.ui.borrow(), activity_inserted_switch);
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -116,15 +116,14 @@ impl App {
             activity_inserted_switch.connect_property_active_notify(move |switch| {
                 let insert_activity = switch.get_active();
                 let id = ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_activity()
                     .expect("Current activity does not exist")
                     .id();
                 if insert_activity {
                     // TODO data.insert_activity_in_best_spot(id) ;
                 } else {
-                    return_if_err!(data.lock().unwrap().insert_activity(id, None));
+                    return_if_err!(data.borrow_mut().insert_activity(id, None));
                 }
             })
         );
@@ -132,7 +131,7 @@ impl App {
 
     fn connect_change_duration_of_inserted_activity(&self) {
         fetch_from!(
-            self.ui(),
+            self.ui.borrow(),
             activity_beginning_hour_spin,
             activity_beginning_minute_spin
         );
@@ -145,13 +144,12 @@ impl App {
                 safe_spinbutton_to_i8!($minutes_spin => minutes, $hours_spin => hours);
 
                 let id = $ui
-                    .lock()
-                    .unwrap()
+                    .borrow()
                     .current_activity()
                     .expect("Current activity should be set before setting duration")
                     .id();
 
-                let mut data = $data.lock().unwrap();
+                let mut data = $data.borrow_mut();
 
                 let activity_beginning = data
                     .activity(id)
@@ -206,11 +204,10 @@ impl App {
         let data = self.data.clone();
 
         self.ui
-            .lock()
-            .unwrap()
-            .set_activity_try_insert_callback(Arc::new(Box::new(
+            .borrow_mut()
+            .set_activity_try_insert_callback(Rc::new(Box::new(
                 move |entity_name: String, activity_id: ActivityId, insertion_time: Time| {
-                    let mut data = data.lock().unwrap();
+                    let mut data = data.borrow_mut();
                     let activity = data
                         .activity(activity_id)
                         .expect("The activity we are inserting does not exist");
@@ -226,8 +223,8 @@ impl App {
     fn set_activity_remove_and_get_possible_insertions_callback(&self) {
         let data = self.data.clone();
         let possible_insertion_times_of_activity_callback =
-            Arc::new(Box::new(move |id: ActivityId| {
-                let mut data = data.lock().unwrap();
+            Rc::new(Box::new(move |id: ActivityId| {
+                let mut data = data.borrow_mut();
                 let activity_participants = data
                     .activity(id)
                     .expect(
@@ -246,15 +243,14 @@ impl App {
             }));
 
         let data = self.data.clone();
-        let remove_activity_from_schedule_callback = Arc::new(Box::new(move |id: ActivityId| {
+        let remove_activity_from_schedule_callback = Rc::new(Box::new(move |id: ActivityId| {
             // Error should never happen here
-            data.lock()
-                .unwrap()
+            data.borrow_mut()
                 .insert_activity(id, None)
                 .expect("Could not remove activity from schedule");
         }));
 
-        self.ui.lock().unwrap().set_activity_ui_callbacks(
+        self.ui.borrow_mut().set_activity_ui_callbacks(
             possible_insertion_times_of_activity_callback,
             remove_activity_from_schedule_callback,
         );
@@ -264,11 +260,10 @@ impl App {
         let data = self.data.clone();
 
         self.ui
-            .lock()
-            .unwrap()
-            .init_set_activity_duration_callback(Arc::new(Box::new(
+            .borrow_mut()
+            .init_set_activity_duration_callback(Rc::new(Box::new(
                 move |id: ActivityId, increase_duration: bool| {
-                    let mut data = data.lock().unwrap();
+                    let mut data = data.borrow_mut();
                     let activity_duration = data
                         .activity(id)
                         .expect("Setting duraion of activity which does not exist")

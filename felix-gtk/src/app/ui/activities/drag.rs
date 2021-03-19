@@ -9,13 +9,13 @@ use gdk::prelude::GdkContextExt;
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
-use std::sync::Arc;
+use std::rc::Rc;
 
 impl Ui {
     pub(in super::super) fn enable_drag_from_activities_treeview(
         &self,
-        possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
-        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
+        possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
         self.drag_source_set();
         self.connect_drag_begin(
@@ -42,8 +42,8 @@ impl Ui {
 
     fn connect_drag_begin(
         &self,
-        get_possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
-        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
+        get_possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
         fetch_from!(self, activities_tree_view);
         let activity_insertion = self.activity_insertion.clone();
@@ -102,8 +102,7 @@ impl Ui {
             let concerned_entities_and_possible_insertion_times =
                 get_possible_insertions_callback(selected_activity_id);
             activity_insertion
-                .lock()
-                .unwrap()
+                .borrow()
                 .show_possible_activity_insertions(concerned_entities_and_possible_insertion_times);
         });
     }
@@ -140,8 +139,7 @@ impl Ui {
         activities_tree_view.connect_drag_end(move |_drawing_area, _drag_context| {
             // Clear possible insertions
             activity_insertion
-                .lock()
-                .unwrap()
+                .borrow()
                 .show_possible_activity_insertions(EntitiesAndInsertionTimes {
                     entities: Vec::new(),
                     insertion_times: None,

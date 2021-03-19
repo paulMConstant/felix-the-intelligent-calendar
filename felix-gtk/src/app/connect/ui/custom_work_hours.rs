@@ -4,7 +4,7 @@ use crate::app::App;
 use gtk::prelude::*;
 
 use std::convert::TryFrom;
-use std::sync::Arc;
+use std::rc::Rc;
 
 use felix_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 use felix_backend::errors::invalid_interval::InvalidInterval;
@@ -33,24 +33,23 @@ impl App {
     }
 
     fn init_custom_work_hours_builder(&self) {
-        fetch_from!(self.ui(), custom_work_hours_scrolled_window);
+        fetch_from!(self.ui.borrow(), custom_work_hours_scrolled_window);
 
         self.ui
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .custom_work_hours_builder()
             .set_work_hours_scrolled_window(custom_work_hours_scrolled_window);
     }
 
     fn connect_add_custom_work_hour(&self) {
-        fetch_from!(self.ui(), custom_work_hours_add_button);
+        fetch_from!(self.ui.borrow(), custom_work_hours_add_button);
 
         let ui = self.ui.clone();
         app_register_signal!(
             self,
             custom_work_hours_add_button,
             custom_work_hours_add_button.connect_clicked(move |_| {
-                let ui = ui.lock().unwrap();
+                let ui = ui.borrow_mut();
                 let current_entity = ui
                     .current_entity()
                     .expect("Current entity should be set before adding custom work hours");
@@ -63,7 +62,7 @@ impl App {
         let data = self.data.clone();
         let ui = self.ui.clone();
 
-        let work_hour_editing_done_callback = Arc::new(move |position, builder: gtk::Builder| {
+        let work_hour_editing_done_callback = Rc::new(move |position, builder: gtk::Builder| {
             fetch_from_builder!(builder,
              interval_begin_hours=gtk::SpinButton:"IntervalBeginHourSpin",
              interval_begin_minutes=gtk::SpinButton:"IntervalBeginMinuteSpin",
@@ -76,7 +75,7 @@ impl App {
                                        interval_end_hours => end_hours,
                                        interval_end_minutes => end_minutes);
 
-            let mut data = data.lock().unwrap();
+            let mut data = data.borrow_mut();
 
             let beginning = Time::new(begin_hours, begin_minutes);
             let end = Time::new(end_hours, end_minutes);
@@ -87,8 +86,7 @@ impl App {
             }
 
             let current_entity = ui
-                .lock()
-                .unwrap()
+                .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = current_entity.custom_work_hours();
@@ -112,8 +110,7 @@ impl App {
         });
 
         self.ui
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .custom_work_hours_builder()
             .set_work_interval_editing_done_callback(work_hour_editing_done_callback);
     }
@@ -121,11 +118,10 @@ impl App {
     fn set_custom_work_hour_remove_callback(&self) {
         let ui = self.ui.clone();
         let data = self.data.clone();
-        let work_hour_editing_done_callback = Arc::new(move |position| {
-            let mut data = data.lock().unwrap();
+        let work_hour_editing_done_callback = Rc::new(move |position| {
+            let mut data = data.borrow_mut();
             let current_entity = ui
-                .lock()
-                .unwrap()
+                .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = current_entity.custom_work_hours();
@@ -146,8 +142,7 @@ impl App {
         });
 
         self.ui
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .custom_work_hours_builder()
             .set_work_interval_remove_callback(work_hour_editing_done_callback);
     }

@@ -12,7 +12,6 @@ use gtk::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 
 impl Ui {
     pub(super) fn on_init_activity_insertion(&self) {
@@ -21,8 +20,7 @@ impl Ui {
         insertion_box.pack_end(
             &self
                 .activity_insertion
-                .lock()
-                .unwrap()
+                .borrow()
                 .get_activity_insertion_box(),
             true,
             true,
@@ -32,8 +30,8 @@ impl Ui {
 
     pub fn set_activity_ui_callbacks(
         &mut self,
-        possible_insertions_callback: Arc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
-        remove_activity_from_schedule_callback: Arc<dyn Fn(ActivityId)>,
+        possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
+        remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
         self.enable_drag_from_activities_treeview(
             possible_insertions_callback.clone(),
@@ -41,8 +39,7 @@ impl Ui {
         );
 
         self.activity_insertion
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .setup_drag_from_schedules_drawing(
                 possible_insertions_callback,
                 remove_activity_from_schedule_callback,
@@ -51,15 +48,14 @@ impl Ui {
 
     pub fn set_activity_try_insert_callback(
         &mut self,
-        try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
+        try_insert_activity_callback: Rc<dyn Fn(String, ActivityId, Time)>,
     ) {
         self.activity_insertion
-            .lock()
-            .unwrap()
+            .borrow()
             .enable_drop(try_insert_activity_callback);
     }
 
-    pub fn init_set_activity_duration_callback(&mut self, callback: Arc<dyn Fn(ActivityId, bool)>) {
+    pub fn init_set_activity_duration_callback(&mut self, callback: Rc<dyn Fn(ActivityId, bool)>) {
         // Scrolling on activities with shift increases/decreases their duration
         // Connect events to check if shift is held
         macro_rules! connect_shift_held {
@@ -95,7 +91,7 @@ impl Ui {
         // Connect click detection
         let left_mouse_button_pressed = Rc::new(RefCell::new(false));
         fetch_from!(self, main_window);
-        fetch_from!(self.activity_insertion.lock().unwrap(), schedules_drawing);
+        fetch_from!(self.activity_insertion.borrow(), schedules_drawing);
         const LEFT_CLICK: u32 = 1;
         main_window.connect_button_press_event(clone!(@strong left_mouse_button_pressed
                                                       => move |_window, event| {
@@ -120,21 +116,21 @@ impl Ui {
             ),
         );
 
-        self.activity_insertion
-            .lock()
-            .unwrap()
-            .connect_mouse_events(callback, shift_held, left_mouse_button_pressed);
+        self.activity_insertion.borrow().connect_mouse_events(
+            callback,
+            shift_held,
+            left_mouse_button_pressed,
+        );
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {
         self.activity_insertion
-            .lock()
-            .unwrap()
+            .borrow()
             .show_entities_schedule(vec![entity_to_show]);
     }
 
     pub fn update_schedules(&mut self, data: &Data) {
-        let activity_insertion = self.activity_insertion.lock().unwrap();
+        let activity_insertion = self.activity_insertion.borrow();
         let entities_to_show: Vec<_> = activity_insertion
             .shown_entities()
             .iter()
@@ -150,7 +146,7 @@ impl Ui {
         entity: &Entity,
         old_name: &str,
     ) {
-        let activity_insertion = self.activity_insertion.lock().unwrap();
+        let activity_insertion = self.activity_insertion.borrow();
         if activity_insertion
             .shown_entities()
             .contains(&old_name.into())
@@ -163,20 +159,16 @@ impl Ui {
 
     pub fn on_entity_removed_update_schedules(&mut self, old_name: &str) {
         self.activity_insertion
-            .lock()
-            .unwrap()
+            .borrow()
             .remove_entity_schedule(old_name);
     }
 
-    pub fn on_left_click(&mut self, data: Arc<Mutex<Data>>) {
-        let maybe_activity = self
-            .activity_insertion
-            .lock()
-            .unwrap()
-            .get_activity_under_cursor();
+    pub fn on_left_click(&mut self, data: Rc<RefCell<Data>>) {
+        // TODO HERE update activity under cursor !
+        let maybe_activity = self.activity_insertion.borrow().get_activity_under_cursor();
 
         if let Some(activity) = maybe_activity {
-            let data = data.lock().unwrap();
+            let data = data.borrow();
             let activity = data
                 .activity(activity.id())
                 .expect("User clicked on activity which does not exist");
@@ -184,7 +176,7 @@ impl Ui {
         }
     }
 
-    pub fn on_right_click(&mut self, data: Arc<Mutex<Data>>) {
+    pub fn on_right_click(&mut self, data: Rc<RefCell<Data>>) {
         //self.activity_insertion
         //.lock()
         //.unwrap()

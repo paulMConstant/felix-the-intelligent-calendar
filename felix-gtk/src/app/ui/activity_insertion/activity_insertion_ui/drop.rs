@@ -10,12 +10,12 @@ use felix_backend::data::{ActivityId, Time};
 use gtk::prelude::*;
 
 use byteorder::ByteOrder;
-use std::sync::Arc;
+use std::rc::Rc;
 
 impl ActivityInsertionUi {
     pub(in super::super) fn enable_drop(
         &self,
-        try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
+        try_insert_activity_callback: Rc<dyn Fn(String, ActivityId, Time)>,
     ) {
         self.drag_dest_set();
         self.connect_drag_motion();
@@ -38,7 +38,7 @@ impl ActivityInsertionUi {
 
         schedules_drawing.connect_drag_motion(
             move |drawing_area, _drag_context, x, y, _timestamp| {
-                let mut schedules = schedules.lock().unwrap();
+                let mut schedules = schedules.borrow_mut();
                 let time = get_time_on_y(y, &schedules);
                 let tooltip = TimeTooltipToDraw {
                     x_cursor: x as f64,
@@ -54,7 +54,7 @@ impl ActivityInsertionUi {
 
     fn connect_drag_data_received(
         &self,
-        try_insert_activity_callback: Arc<dyn Fn(String, ActivityId, Time)>,
+        try_insert_activity_callback: Rc<dyn Fn(String, ActivityId, Time)>,
     ) {
         fetch_from!(self, schedules_drawing);
         let schedules = self.schedules_to_show.clone();
@@ -64,7 +64,7 @@ impl ActivityInsertionUi {
                 if selection_data.get_data_type().name() != DRAG_TYPE {
                     return;
                 }
-                let schedules = schedules.lock().unwrap();
+                let schedules = schedules.borrow();
                 if let Some(entity_name) = get_name_of_entity_from_x(x, &schedules) {
                     let activity_id: ActivityId =
                         byteorder::NativeEndian::read_u32(&selection_data.get_data()) as ActivityId;

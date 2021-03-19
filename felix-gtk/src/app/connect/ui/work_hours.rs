@@ -4,7 +4,7 @@ use crate::app::App;
 use gtk::prelude::*;
 
 use std::convert::TryFrom;
-use std::sync::Arc;
+use std::rc::Rc;
 
 use felix_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 use felix_backend::errors::invalid_interval::InvalidInterval;
@@ -29,17 +29,16 @@ impl App {
     }
 
     fn init_work_hours_builder(&self) {
-        fetch_from!(self.ui(), work_hours_scrolled_window);
+        fetch_from!(self.ui.borrow(), work_hours_scrolled_window);
 
         self.ui
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .work_hours_builder()
             .set_work_hours_scrolled_window(work_hours_scrolled_window);
     }
 
     fn connect_add_work_hour(&self) {
-        fetch_from!(self.ui(), work_hour_add_button);
+        fetch_from!(self.ui.borrow(), work_hour_add_button);
 
         let ui = self.ui.clone();
         let data = self.data.clone();
@@ -47,16 +46,16 @@ impl App {
             self,
             work_hour_add_button,
             work_hour_add_button.connect_clicked(move |_| {
-                let current_work_hours = data.lock().unwrap().work_hours();
-                ui.lock().unwrap().on_add_work_hour(current_work_hours);
+                let current_work_hours = data.borrow().work_hours();
+                ui.borrow_mut().on_add_work_hour(current_work_hours);
             })
         );
     }
 
     fn set_work_hour_editing_done_callback(&self) {
         let data = self.data.clone();
-        let work_hour_editing_done_callback = Arc::new(move |position, builder: gtk::Builder| {
-            let mut data = data.lock().unwrap();
+        let work_hour_editing_done_callback = Rc::new(move |position, builder: gtk::Builder| {
+            let mut data = data.borrow_mut();
             let work_hours = data.work_hours();
 
             fetch_from_builder!(builder,
@@ -91,16 +90,15 @@ impl App {
         });
 
         self.ui
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .work_hours_builder()
             .set_work_interval_editing_done_callback(work_hour_editing_done_callback);
     }
 
     fn set_work_hour_remove_callback(&self) {
         let data = self.data.clone();
-        let work_hour_editing_done_callback = Arc::new(move |position| {
-            let mut data = data.lock().unwrap();
+        let work_hour_editing_done_callback = Rc::new(move |position| {
+            let mut data = data.borrow_mut();
             let work_hours = data.work_hours();
 
             if position < work_hours.len() {
@@ -111,8 +109,7 @@ impl App {
         });
 
         self.ui
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .work_hours_builder()
             .set_work_interval_remove_callback(work_hour_editing_done_callback);
     }

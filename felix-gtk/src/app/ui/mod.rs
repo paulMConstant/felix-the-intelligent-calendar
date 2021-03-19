@@ -26,8 +26,9 @@ use work_hours::WorkHoursBuilder;
 
 use felix_backend::data::{Activity, Entity, Group, InsertionCost};
 
+use std::cell::RefCell;
 use std::collections::BTreeSet;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 pub struct EntitiesAndInsertionTimes {
     pub entities: Vec<String>,
@@ -42,7 +43,7 @@ pub struct Ui {
     current_activity: Option<Activity>,
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
-    activity_insertion: Arc<Mutex<ActivityInsertionUi>>,
+    activity_insertion: Rc<RefCell<ActivityInsertionUi>>,
 }
 
 impl Ui {
@@ -55,7 +56,7 @@ impl Ui {
             current_activity: None,
             work_hours_builder: WorkHoursBuilder::new(),
             custom_work_hours_builder: WorkHoursBuilder::new(),
-            activity_insertion: Arc::new(Mutex::new(ActivityInsertionUi::new())),
+            activity_insertion: Rc::new(RefCell::new(ActivityInsertionUi::new())),
         }
     }
 
