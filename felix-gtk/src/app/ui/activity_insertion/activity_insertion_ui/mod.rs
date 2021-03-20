@@ -26,7 +26,7 @@ const NUM_HOURS_IN_DAY: i32 = 24;
 pub struct ActivityInsertionUi {
     builder: gtk::Builder,
     schedules_to_show: Rc<RefCell<Schedules>>,
-    activity_under_cursor: Rc<RefCell<Option<ActivityToShow>>>,
+    last_activity_under_cursor: Rc<RefCell<Option<ActivityToShow>>>,
     possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
     remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
 }
@@ -42,7 +42,7 @@ impl ActivityInsertionUi {
         let activity_insertion = ActivityInsertionUi {
             builder,
             schedules_to_show: Rc::new(RefCell::new(Schedules::new())),
-            activity_under_cursor: Rc::new(RefCell::new(None)),
+            last_activity_under_cursor: Rc::new(RefCell::new(None)),
             possible_insertions_callback: Rc::new(Box::new(|_| {
                 panic!("possible_insertions_callback was not initialized")
             })),
@@ -79,7 +79,7 @@ impl ActivityInsertionUi {
 
     #[must_use]
     pub(super) fn get_activity_under_cursor(&self) -> Option<ActivityToShow> {
-        self.activity_under_cursor.borrow().clone()
+        self.last_activity_under_cursor.borrow().clone()
     }
 
     #[must_use]
@@ -169,38 +169,26 @@ impl ActivityInsertionUi {
              hours_scrolled_window.get_vadjustment().unwrap().set_value(vadjustment.get_value())));
     }
 
-    pub(super) fn connect_mouse_events(
+    pub(super) fn connect_scroll_event(
         &self,
         set_activity_duration_callback: Rc<dyn Fn(ActivityId, bool)>,
         shift_held: Rc<RefCell<bool>>,
-        left_mouse_button_pressed: Rc<RefCell<bool>>,
     ) {
         fetch_from!(self, schedule_scrolled_window);
 
-        schedule_scrolled_window.connect_motion_notify_event(
-            clone!(@strong left_mouse_button_pressed,
-                   @strong self as this
-                   => move |scrolled_window, event| {
-               this.maybe_update_activity_under_cursor(scrolled_window,
-                                                 event.get_position(),
-                                                 &left_mouse_button_pressed);
-                glib::signal::Inhibit(false)
-            }),
-        );
+        schedule_scrolled_window.connect_scroll_event(
+            clone!(@strong self as this => move |_scrolled_window, event| 
+        {
+            let (x, y) = event.get_position();
 
-        schedule_scrolled_window.connect_scroll_event(clone!(@strong self as this,
-               @strong left_mouse_button_pressed
-                   => move |scrolled_window, event| {
-           this.maybe_update_activity_under_cursor(scrolled_window,
-                                             event.get_position(),
-                                             &left_mouse_button_pressed);
+            this.update_activity_under_cursor(x, y);
 
-           let scroll_captured = if !*shift_held.borrow() {
+            let scroll_captured = if !*shift_held.borrow() {
                 // Shift is not held, pretend nothing happened
                 false
             } else {
                 // Check first if the mouse is on an activity
-                if let Some(activity) = &*this.activity_under_cursor.borrow() {
+                if let Some(activity) = &*this.last_activity_under_cursor.borrow() {
                     // Check if the scroll direction is vertical
                     if let Some(increase) = increase_duration_on_scroll(event) {
                         // Vertical scroll
@@ -219,45 +207,28 @@ impl ActivityInsertionUi {
         }));
     }
 
-    fn maybe_update_activity_under_cursor(
+    pub(super) fn update_activity_under_cursor(
         &self,
-        window: &gtk::ScrolledWindow,
-        event_position: (f64, f64),
-        left_mouse_button_pressed: &Rc<RefCell<bool>>,
+        x: f64,
+        y: f64,
     ) {
-        let (x_event, y_event) = event_position;
-        let (x_scrollbar_offset, y_scrollbar_offset) = (
-            window.get_hadjustment().unwrap().get_value(),
-            window.get_vadjustment().unwrap().get_value(),
-        );
-        let (x, y) = (x_event + x_scrollbar_offset, y_event + y_scrollbar_offset);
-
         let new_activity =
             get_activity_under_cursor(x as i32, y as i32, &self.schedules_to_show.borrow());
 
-        let current_activity = self.activity_under_cursor.borrow();
-
-        let update_activity_to_some = current_activity.is_none() && new_activity.is_some();
-        let update_activity_to_none = current_activity.is_some()
-            && new_activity.is_none()
-            // Do not invalidate current activity while the mouse is held - otherwise some
-            // drag & drop operations are hard to do
-            && !*left_mouse_button_pressed.borrow();
-
-        let update_activity = update_activity_to_some || update_activity_to_none;
-        if update_activity {
-            drop(current_activity);
-            self.set_activity_under_cursor(new_activity);
-        }
+        self.set_activity_under_cursor(new_activity);
     }
 
     /// Sets the activity under cursor and enables/disable drag if the activity_under_cursor is
     /// some.
-    fn set_activity_under_cursor(&self, activity: Option<ActivityToShow>) {
-        match activity {
-            Some(_) => self.enable_drag_from_schedules_drawing(),
-            None => self.disable_drag_from_schedules_drawing(),
-        };
-        *self.activity_under_cursor.borrow_mut() = activity;
+    fn set_activity_under_cursor(&self, new_activity: Option<ActivityToShow>) {
+        let mut current_activity = self.last_activity_under_cursor.borrow_mut();
+
+        // Make sure we will not drag without an activity under cursor
+        // Drag is enabled automatically on left click release or enter event
+        if new_activity.is_none() {
+            self.disable_drag_from_schedules_drawing();
+        }
+
+        *current_activity = new_activity;
     }
 }

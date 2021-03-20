@@ -15,7 +15,8 @@ use gtk::prelude::*;
 impl App {
     pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
-        self.connect_activity_clicked();
+        self.connect_clicks();
+        self.connect_drag_enable();
         self.connect_insert_activity_switch();
         self.connect_change_duration_of_inserted_activity();
 
@@ -80,25 +81,66 @@ impl App {
         );
     }
 
-    fn connect_activity_clicked(&self) {
-        fetch_from!(self.ui.borrow(), main_window);
+    fn connect_clicks(&self) {
+        fetch_from!(self.ui.borrow().activity_insertion().borrow(), schedule_scrolled_window);
 
-        let ui = self.ui.clone();
         let data = self.data.clone();
+        let ui = self.ui.clone();
 
         app_register_signal!(
             self,
-            main_window,
-            main_window.connect_button_press_event(move |_window, event| {
+            schedule_scrolled_window,
+            schedule_scrolled_window.connect_button_press_event(move |_window, event| {
+
+                let (x, y) = event.get_position();
+
                 const RIGHT_CLICK: u32 = 3;
                 const LEFT_CLICK: u32 = 1;
-
                 match event.get_button() {
-                    RIGHT_CLICK => ui.borrow_mut().on_right_click(data.clone()),
-                    LEFT_CLICK => ui.borrow_mut().on_left_click(data.clone()),
+                    RIGHT_CLICK => ui.borrow_mut().on_right_click(data.clone(), x, y),
+                    LEFT_CLICK => ui.borrow_mut().on_left_click(data.clone(), x, y),
                     _ => { // Do nothing
                     }
                 }
+                glib::signal::Inhibit(false)
+            })
+        );
+    }
+
+    /// Enables drag on schedule\_scrolled\_window when clicking is done or when we enter the
+    /// window.
+    /// Drag is disabled automatically if we click on nothing.
+    /// If we wanted to add drag on click, we would need to click twice on an activity to trigger
+    /// the drag (once to enable it, one to trigger). 
+    /// Using this method, one click triggers the drag.
+    fn connect_drag_enable(&self) {
+        let activity_insertion = self.ui.borrow().activity_insertion();
+        fetch_from!(activity_insertion.borrow(), schedule_scrolled_window);
+
+        let schedule_scrolled_window_clone = schedule_scrolled_window.clone();
+        app_register_signal!(
+            self,
+            schedule_scrolled_window_clone,
+            schedule_scrolled_window_clone.connect_button_release_event(
+                clone!(@strong activity_insertion => move |_, event| {
+
+                const LEFT_CLICK: u32 = 1;
+                if event.get_button() == LEFT_CLICK {
+                    // Left click released => Prepare drag drop for next click
+                    activity_insertion.borrow().enable_drag_from_schedules_drawing();
+                }
+                glib::signal::Inhibit(false)
+            })
+        ));
+
+        app_register_signal!(
+            self,
+            schedule_scrolled_window,
+            schedule_scrolled_window.connect_enter_notify_event(move |_window, _event| {
+                // Enter the window => Prepare drag drop for next click
+                activity_insertion
+                    .borrow()
+                    .enable_drag_from_schedules_drawing();
                 glib::signal::Inhibit(false)
             })
         );

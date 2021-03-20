@@ -18,9 +18,19 @@ impl ActivityInsertionUi {
     ) {
         self.possible_insertions_callback = possible_insertions_callback;
         self.remove_activity_from_schedule_callback = remove_activity_from_schedule_callback;
+
+        self.enable_click_events();
     }
 
-    pub(super) fn enable_drag_from_schedules_drawing(&self) {
+    fn enable_click_events(&self) {
+        // Enabling then disabling drag allows catching button_press events.
+        // If we don't do this, we don't detect left clicks on schedule_scrolled_window.
+        self.enable_drag_from_schedules_drawing();
+        self.disable_drag_from_schedules_drawing();
+    }
+
+    // Public so that connect module can access it
+    pub fn enable_drag_from_schedules_drawing(&self) {
         fetch_from!(self, schedules_drawing);
         let targets = vec![gtk::TargetEntry::new(
             DRAG_TYPE,
@@ -54,7 +64,7 @@ impl ActivityInsertionUi {
         fetch_from!(self, schedules_drawing);
 
         schedules_drawing.connect_drag_begin(
-            clone!(@strong self as this => move |treeview, drag_context| {
+            clone!(@strong self as this => move |treeview, _drag_context| {
             let activity_under_cursor = this.get_activity_under_cursor()
                 .expect("Dragging without an activity under cursor !");
 
@@ -97,7 +107,6 @@ impl ActivityInsertionUi {
             let pixbuf = gdk::pixbuf_get_from_surface(&surface, 0, 0, DRAG_WIDTH, DRAG_HEIGHT)
                 .expect("Could not get pixbuf from surface");
 
-            drag_context.set_hotspot(DRAG_WIDTH / 2, 0); // TODO does not work
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
             // 2. Draw possible activity beginnings

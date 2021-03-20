@@ -84,42 +84,9 @@ impl Ui {
         fetch_from!(self, main_window, data_window);
         connect_shift_held!(shift_held, main_window, data_window);
 
-        // When the left button is pressed we keep the last activity that we had under cursor,
-        // this way dragging occurs even when we are on the edge of the activity
-        // (If we don't do this, we click, then leave the area of the activity, then dragging would
-        // start, but it doesn't because we left the area of the activity).
-        // Connect click detection
-        let left_mouse_button_pressed = Rc::new(RefCell::new(false));
-        fetch_from!(self, main_window);
-        fetch_from!(self.activity_insertion.borrow(), schedules_drawing);
-        const LEFT_CLICK: u32 = 1;
-        main_window.connect_button_press_event(clone!(@strong left_mouse_button_pressed
-                                                      => move |_window, event| {
-            if event.get_button() == LEFT_CLICK {
-                *left_mouse_button_pressed.borrow_mut() = true;
-            }
-            glib::signal::Inhibit(false)
-        }));
-
-        main_window.connect_button_release_event(clone!(@strong left_mouse_button_pressed
-                                                      => move |_window, event| {
-            if event.get_button() == LEFT_CLICK {
-                *left_mouse_button_pressed.borrow_mut() = false;
-            }
-            glib::signal::Inhibit(false)
-        }));
-
-        schedules_drawing.connect_drag_end(
-            clone!(@strong left_mouse_button_pressed => move |_drawing_area, _drag_context| {
-                    *left_mouse_button_pressed.borrow_mut() = false;
-                }
-            ),
-        );
-
-        self.activity_insertion.borrow().connect_mouse_events(
+        self.activity_insertion.borrow().connect_scroll_event(
             callback,
             shift_held,
-            left_mouse_button_pressed,
         );
     }
 
@@ -163,10 +130,18 @@ impl Ui {
             .remove_entity_schedule(old_name);
     }
 
-    pub fn on_left_click(&mut self, data: Rc<RefCell<Data>>) {
-        // TODO HERE update activity under cursor !
+    pub fn on_left_click(&mut self,
+                         data: Rc<RefCell<Data>>,
+                         x: f64,
+                         y: f64)
+    {
+        let activity_insertion = self.activity_insertion.borrow();
+
+        activity_insertion.update_activity_under_cursor(x, y);
+
         let maybe_activity = self.activity_insertion.borrow().get_activity_under_cursor();
 
+        drop(activity_insertion);
         if let Some(activity) = maybe_activity {
             let data = data.borrow();
             let activity = data
@@ -176,7 +151,10 @@ impl Ui {
         }
     }
 
-    pub fn on_right_click(&mut self, data: Rc<RefCell<Data>>) {
+    pub fn on_right_click(&mut self, 
+                          data: Rc<RefCell<Data>>,
+                          x: f64,
+                          y: f64) {
         //self.activity_insertion
         //.lock()
         //.unwrap()

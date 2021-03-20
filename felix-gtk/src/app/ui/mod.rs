@@ -97,4 +97,9 @@ impl Ui {
         main_window.show_all();
         self.init_ui_state();
     }
+
+    #[must_use]
+    pub(super) fn activity_insertion(&self) -> Rc<RefCell<ActivityInsertionUi>> {
+        self.activity_insertion.clone()
+    }
 }

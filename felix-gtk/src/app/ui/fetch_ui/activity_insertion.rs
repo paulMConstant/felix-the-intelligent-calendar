@@ -17,4 +17,9 @@ impl Ui {
     pub fn show_schedule_button(&self) -> gtk::Button {
         fetch_ui_from_builder!(self, "ShowScheduleButton")
     }
+
+    #[must_use]
+    pub fn schedules_top_box(&self) -> gtk::Box {
+        fetch_ui_from_builder!(self, "SchedulesTopBox")
+    }
 }
