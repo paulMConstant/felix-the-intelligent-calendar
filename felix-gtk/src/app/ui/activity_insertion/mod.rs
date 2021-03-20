@@ -84,10 +84,9 @@ impl Ui {
         fetch_from!(self, main_window, data_window);
         connect_shift_held!(shift_held, main_window, data_window);
 
-        self.activity_insertion.borrow().connect_scroll_event(
-            callback,
-            shift_held,
-        );
+        self.activity_insertion
+            .borrow()
+            .connect_scroll_event(callback, shift_held);
     }
 
     pub fn on_show_entity_schedule(&mut self, entity_to_show: EntityToShow) {
@@ -130,11 +129,7 @@ impl Ui {
             .remove_entity_schedule(old_name);
     }
 
-    pub fn on_left_click(&mut self,
-                         data: Rc<RefCell<Data>>,
-                         x: f64,
-                         y: f64)
-    {
+    pub fn on_left_click(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
         let activity_insertion = self.activity_insertion.borrow();
 
         activity_insertion.update_activity_under_cursor(x, y);
@@ -151,10 +146,7 @@ impl Ui {
         }
     }
 
-    pub fn on_right_click(&mut self, 
-                          data: Rc<RefCell<Data>>,
-                          x: f64,
-                          y: f64) {
+    pub fn on_right_click(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
         //self.activity_insertion
         //.lock()
         //.unwrap()

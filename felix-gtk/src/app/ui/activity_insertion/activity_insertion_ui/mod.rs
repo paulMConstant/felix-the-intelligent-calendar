@@ -174,44 +174,50 @@ impl ActivityInsertionUi {
         set_activity_duration_callback: Rc<dyn Fn(ActivityId, bool)>,
         shift_held: Rc<RefCell<bool>>,
     ) {
-        fetch_from!(self, schedule_scrolled_window);
+        fetch_from!(
+            self,
+            schedule_scrolled_window,
+            hours_scrolled_window,
+            header_scrolled_window
+        );
 
         schedule_scrolled_window.connect_scroll_event(
-            clone!(@strong self as this => move |_scrolled_window, event| 
-        {
-            let (x, y) = event.get_position();
+            clone!(@strong self as this => move |_scrolled_window, event|
+            {
+                let (x, y) = event.get_position();
+                let (x_scrollbar_offset, y_scrollbar_offset) = (
+                    header_scrolled_window.get_hadjustment().unwrap().get_value(),
+                    hours_scrolled_window.get_vadjustment().unwrap().get_value(),
+                );
 
-            this.update_activity_under_cursor(x, y);
+                this.update_activity_under_cursor(x + x_scrollbar_offset, y + y_scrollbar_offset);
 
-            let scroll_captured = if !*shift_held.borrow() {
-                // Shift is not held, pretend nothing happened
-                false
-            } else {
-                // Check first if the mouse is on an activity
-                if let Some(activity) = &*this.last_activity_under_cursor.borrow() {
-                    // Check if the scroll direction is vertical
-                    if let Some(increase) = increase_duration_on_scroll(event) {
-                        // Vertical scroll
-                        (set_activity_duration_callback)(activity.id(), increase);
-                        true
+                let scroll_captured = if !*shift_held.borrow() {
+                    // Shift is not held, pretend nothing happened
+                    false
+                } else {
+                    // Check first if the mouse is on an activity
+                    if let Some(activity) = &*this.last_activity_under_cursor.borrow() {
+                        // Check if the scroll direction is vertical
+                        if let Some(increase) = increase_duration_on_scroll(event) {
+                            // Vertical scroll
+                            (set_activity_duration_callback)(activity.id(), increase);
+                            true
+                        } else {
+                            // Horizontal scroll
+                            false
+                        }
                     } else {
-                        // Horizontal scroll
+                        // We are not on an activity
                         false
                     }
-                } else {
-                    // We are not on an activity
-                    false
-                }
-            };
-            glib::signal::Inhibit(scroll_captured)
-        }));
+                };
+                glib::signal::Inhibit(scroll_captured)
+            }),
+        );
     }
 
-    pub(super) fn update_activity_under_cursor(
-        &self,
-        x: f64,
-        y: f64,
-    ) {
+    pub(super) fn update_activity_under_cursor(&self, x: f64, y: f64) {
         let new_activity =
             get_activity_under_cursor(x as i32, y as i32, &self.schedules_to_show.borrow());
 

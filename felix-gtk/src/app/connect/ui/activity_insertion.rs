@@ -82,7 +82,10 @@ impl App {
     }
 
     fn connect_clicks(&self) {
-        fetch_from!(self.ui.borrow().activity_insertion().borrow(), schedule_scrolled_window);
+        fetch_from!(
+            self.ui.borrow().activity_insertion().borrow(),
+            schedule_scrolled_window
+        );
 
         let data = self.data.clone();
         let ui = self.ui.clone();
@@ -91,7 +94,6 @@ impl App {
             self,
             schedule_scrolled_window,
             schedule_scrolled_window.connect_button_press_event(move |_window, event| {
-
                 let (x, y) = event.get_position();
 
                 const RIGHT_CLICK: u32 = 3;
@@ -111,7 +113,7 @@ impl App {
     /// window.
     /// Drag is disabled automatically if we click on nothing.
     /// If we wanted to add drag on click, we would need to click twice on an activity to trigger
-    /// the drag (once to enable it, one to trigger). 
+    /// the drag (once to enable it, one to trigger).
     /// Using this method, one click triggers the drag.
     fn connect_drag_enable(&self) {
         let activity_insertion = self.ui.borrow().activity_insertion();
@@ -124,14 +126,15 @@ impl App {
             schedule_scrolled_window_clone.connect_button_release_event(
                 clone!(@strong activity_insertion => move |_, event| {
 
-                const LEFT_CLICK: u32 = 1;
-                if event.get_button() == LEFT_CLICK {
-                    // Left click released => Prepare drag drop for next click
-                    activity_insertion.borrow().enable_drag_from_schedules_drawing();
-                }
-                glib::signal::Inhibit(false)
-            })
-        ));
+                    const LEFT_CLICK: u32 = 1;
+                    if event.get_button() == LEFT_CLICK {
+                        // Left click released => Prepare drag drop for next click
+                        activity_insertion.borrow().enable_drag_from_schedules_drawing();
+                    }
+                    glib::signal::Inhibit(false)
+                })
+            )
+        );
 
         app_register_signal!(
             self,
@@ -163,8 +166,29 @@ impl App {
                     .expect("Current activity does not exist")
                     .id();
                 if insert_activity {
-                    // TODO data.insert_activity_in_best_spot(id) ;
+                    // Try to insert the activity in the best spot
+                    let mut data = data.borrow_mut();
+                    assign_or_return!(
+                        insertion_costs,
+                        data.possible_insertion_times_of_activity_with_associated_cost(id)
+                    );
+
+                    if let Some(insertion_costs) = insertion_costs {
+                        if let Some(best_spot) = insertion_costs
+                            .iter()
+                            .min_by_key(|insertion_cost| insertion_cost.cost)
+                        {
+                            return_if_err!(data.insert_activity(id, Some(best_spot.beginning)));
+                        } else {
+                            // Insertion costs is empty
+                            return_if_err!(data.insert_activity(id, None));
+                        }
+                    } else {
+                        // Insertion costs not computed yet
+                        return_if_err!(data.insert_activity(id, None));
+                    }
                 } else {
+                    // Remove the activity from the schedule
                     return_if_err!(data.borrow_mut().insert_activity(id, None));
                 }
             })

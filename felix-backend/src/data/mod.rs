@@ -111,7 +111,6 @@ pub struct Data {
 
 impl Data {
     /// Creates a new data object.
-    /// Use this if you don't care about waiting for computation results.
     pub fn new() -> Data {
         // Keep computation notifier inside
         let thread_pool = Rc::new(
