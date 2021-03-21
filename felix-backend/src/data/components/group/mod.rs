@@ -2,8 +2,8 @@ mod group_inner;
 pub mod groups;
 
 use group_inner::GroupInner;
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
-use serde::{Serialize, Deserialize};
 
 /// A group is an aggregation of entities.
 ///

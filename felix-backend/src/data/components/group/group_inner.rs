@@ -1,6 +1,6 @@
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GroupInner {

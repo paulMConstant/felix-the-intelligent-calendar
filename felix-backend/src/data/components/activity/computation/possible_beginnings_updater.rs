@@ -1,8 +1,5 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, 
-    Activity, 
-    ActivityId, 
-    ThreadPool,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, ThreadPool,
     Time,
 };
 
@@ -12,10 +9,10 @@ use super::activity_beginnings_given_duration::{
     new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
 };
 
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
-use serde::{Serialize, Deserialize};
 
 type WorkHoursAndActivityDurationsSortedCache =
     HashMap<WorkHoursAndActivityDurationsSorted, ActivityBeginningsGivenDuration>;

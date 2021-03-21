@@ -1,6 +1,6 @@
 use crate::data::{ActivityId, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use serde::{Serialize, Deserialize};
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.

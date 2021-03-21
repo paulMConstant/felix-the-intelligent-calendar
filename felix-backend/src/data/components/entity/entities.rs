@@ -1,7 +1,7 @@
 use crate::data::{Entity, TimeInterval};
 use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::{Entry, HashMap};
-use serde::{Serialize, Deserialize};
 
 /// Manages the entities. Makes sure there are no duplicates.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

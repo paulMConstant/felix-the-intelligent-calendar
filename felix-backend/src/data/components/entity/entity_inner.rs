@@ -1,7 +1,7 @@
 use super::super::super::WorkHours;
 use crate::data::TimeInterval;
 use crate::errors::Result;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EntityInner {

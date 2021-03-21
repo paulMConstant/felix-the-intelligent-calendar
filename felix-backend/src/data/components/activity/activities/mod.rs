@@ -20,8 +20,8 @@ use felix_computation_api::{
     structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
 };
 
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
-use serde::{Serialize, Deserialize};
 
 pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
 

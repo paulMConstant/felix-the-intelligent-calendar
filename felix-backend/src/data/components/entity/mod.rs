@@ -3,8 +3,8 @@ mod entity_inner;
 
 use crate::data::TimeInterval;
 use entity_inner::EntityInner;
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
-use serde::{Serialize, Deserialize};
 
 /// Represents any entity which can be used by an activity.
 ///

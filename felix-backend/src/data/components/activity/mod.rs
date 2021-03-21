@@ -8,7 +8,7 @@ use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
 pub use activity_metadata::Rgba;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 pub type ActivityId = usize;
 

@@ -1,7 +1,7 @@
 use crate::data::ActivityId;
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use serde::{Serialize, Deserialize};
 
 /// Represents a color. Each field should be kept in [0.0; 1.0].
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

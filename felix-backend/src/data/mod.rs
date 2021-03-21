@@ -23,7 +23,7 @@ pub use computation_structs::InsertionCost;
 pub use data_impl::helpers::clean_string;
 pub use events::Events;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -103,7 +103,7 @@ use std::rc::Rc;
 /// data.set_activity_duration(activity_id, Time::new(1, 0));
 /// data.add_entity_to_activity(activity_id, entity_name);
 /// ```
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Data {
     work_hours: WorkHours,
     entities: Entities,
