@@ -112,6 +112,25 @@ impl TimeInterval {
     pub fn contains(&self, time: Time) -> bool {
         self.beginning <= time && self.end > time
     }
+
+    /// Returns true if the time interval contains the other time interval.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use felix_backend::data::{Time, TimeInterval};
+    ///
+    /// let interval1 = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
+    /// let interval2 = TimeInterval::new(Time::new(8, 0), Time::new(8, 30));
+    ///
+    /// assert!(interval1.contains_interval(interval2));
+    /// assert!(interval1.contains_interval(interval1));
+    /// assert_eq!(interval2.contains_interval(interval1), false);
+    /// ```
+    #[must_use]
+    pub fn contains_interval(&self, interval: TimeInterval) -> bool {
+        self.beginning <= interval.beginning && self.end >= interval.end
+    }
 }
 
 impl Ord for TimeInterval {

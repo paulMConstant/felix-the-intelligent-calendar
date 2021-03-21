@@ -39,6 +39,16 @@ fn contains() {
 }
 
 #[test]
+fn contains_interval() {
+    let interval1 = TimeInterval::new(Time::new(8, 0), Time::new(9, 0));
+    let interval2 = TimeInterval::new(Time::new(8, 0), Time::new(8, 30));
+
+    assert!(interval1.contains_interval(interval2));
+    assert!(interval1.contains_interval(interval1));
+    assert_eq!(interval2.contains_interval(interval1), false);
+}
+
+#[test]
 fn invalid_new() {
     catch_unwind(|| TimeInterval::new(Time::new(10, 0), Time::new(9, 0)))
         .expect_err("Created TimeInterval with beginning > end");

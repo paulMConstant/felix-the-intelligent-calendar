@@ -135,7 +135,7 @@ fn add_entity_does_not_exist() {
 }
 
 #[test]
-fn add_entity_to_inserted_activity_spot_taken() {
+fn add_entity_to_inserted_activity_invalid_spot() {
     let (entity1, entity2) = ("Entity1", "Entity2");
     let (activity1, activity2) = ("Activity1", "Activity2");
     let beginning = Time::new(9, 0);
@@ -170,6 +170,42 @@ fn add_entity_to_inserted_activity_spot_taken() {
             data.add_entity_to_activity(id1, entity2)
         },
         "Entity2 cannot be added to 'Activity1' because it would overlap with 'Activity2'.",
+        "Could add entity to activity which is inserted in an unavailable spot"
+    );
+}
+
+#[test]
+fn add_entity_to_inserted_activity_spot_not_in_work_hours() {
+    let (entity1, entity2) = ("Entity1", "Entity2");
+    let activity1 = "Activity1";
+    let beginning1 = Time::new(9, 0);
+    let end1 = Time::new(13, 0);
+    let time_interval1 = TimeInterval::new(beginning1, end1);
+
+    let beginning2 = Time::new(11, 0);
+    let end2 = Time::new(13, 0);
+    let time_interval2 = TimeInterval::new(beginning2, end2);
+
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_work_interval(time_interval1)
+            .with_entities(vec![entity1, entity2])
+            .with_custom_work_interval_for(entity2, time_interval2)
+            .with_activity(Activity {
+                name: activity1,
+                entities: vec![entity1],
+                duration: Time::new(1, 0),
+                groups: Vec::new(),
+                insertion_time: Some(beginning1),
+            },),
+        {
+            let id1 = data.activities_sorted()[0].id();
+
+            // Try to add entity2 to activity1 which is inserted in the same spot as activity2
+            data.add_entity_to_activity(id1, entity2)
+        },
+        "Entity2 cannot be added to 'Activity1' because it would be outside of their work hours.",
         "Could add entity to activity which is inserted in an unavailable spot"
     );
 }

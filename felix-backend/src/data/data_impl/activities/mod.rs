@@ -200,6 +200,8 @@ impl Data {
         let entity_name = clean_string(entity_name)?;
         self.check_has_enough_time_for_activity(id, &entity_name)?;
         self.check_no_activity_of_the_entity_is_overlapping(id, &entity_name)?;
+        self.check_activity_inside_of_work_hours(id, &entity_name)?;
+
         self.activities.add_entity(id, entity_name.clone())?;
         self.queue_entities(vec![entity_name])?;
 

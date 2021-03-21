@@ -2,7 +2,7 @@
 
 use crate::data::{ActivityId, Data, Time};
 use crate::errors::{
-    add_entity_to_inserted_activity_spot_taken::AddEntityToInsertedActivitySpotTaken,
+    add_entity_to_inserted_activity_invalid_spot::AddEntityToInsertedActivityInvalidSpot,
     not_enough_time::NotEnoughTime, Result,
 };
 
@@ -100,13 +100,54 @@ impl Data {
                     )
                 })
             {
-                Err(AddEntityToInsertedActivitySpotTaken::new(
+                Err(AddEntityToInsertedActivityInvalidSpot::blocking_activity(
                     entity_name,
                     activity_name,
                     blocking_activity.name(),
                 ))
             } else {
                 Ok(())
+            }
+        } else {
+            // The activity is not inserted
+            Ok(())
+        }
+    }
+
+    /// Checks that the activity, if inserted, fits into the entity's work hours.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err:
+    /// if the activity does not exist,
+    /// if the entity does not exist,
+    /// if the activity is inserted and does not fit in the entity's work hours.
+    pub(super) fn check_activity_inside_of_work_hours(
+        &self,
+        activity_id: ActivityId,
+        entity_name: &str,
+    ) -> Result<()> {
+        let activity = self.activity(activity_id)?;
+        let maybe_insertion_interval = activity.insertion_interval();
+        let activity_name = activity.name();
+
+        if let Some(insertion_interval) = maybe_insertion_interval {
+            let work_hours = self.work_hours_of(entity_name)?;
+            // Check if the activity can fit inside the work hours
+            if work_hours
+                .iter()
+                .any(|time_interval| time_interval.contains_interval(insertion_interval))
+            {
+                // The activity is inserted inside the work hours of the entity
+                Ok(())
+            } else {
+                // The activity is inserted at least partly outside of the work hours of the entity
+                Err(
+                    AddEntityToInsertedActivityInvalidSpot::outside_of_work_hours(
+                        entity_name,
+                        activity_name,
+                    ),
+                )
             }
         } else {
             // The activity is not inserted
