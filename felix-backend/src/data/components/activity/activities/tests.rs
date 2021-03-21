@@ -5,11 +5,7 @@ use std::collections::BTreeSet;
 
 #[test]
 fn incompatible_ids() {
-    let mut activity_collection = Activities::new(Rc::new(
-        rayon::ThreadPoolBuilder::new()
-            .build()
-            .expect("Could not build rayon::ThreadPool"),
-    ));
+    let mut activity_collection = Activities::new();
     let id_a = activity_collection.add("a".to_owned()).id();
     let id_b = activity_collection.add("b".to_owned()).id();
 
@@ -141,11 +137,7 @@ fn incompatible_ids() {
 
 #[test]
 fn test_fetch_computation() {
-    let mut activity_collection = Activities::new(Rc::new(
-        rayon::ThreadPoolBuilder::new()
-            .build()
-            .expect("Could not build rayon::ThreadPool"),
-    ));
+    let mut activity_collection = Activities::new();
     activity_collection.add("0".to_owned());
     activity_collection.add("1".to_owned());
     activity_collection.add("2".to_owned());

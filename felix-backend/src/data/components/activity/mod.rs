@@ -8,12 +8,14 @@ use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
 pub use activity_metadata::Rgba;
 
+use serde::{Serialize, Deserialize};
+
 pub type ActivityId = usize;
 
 /// An activity represents a group of entities which must meet during a defined period of time.
 ///
 /// This structure is read-only. To modify an activity, use the Data structure.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Activity {
     metadata: ActivityMetadata,
     computation_data: ActivityComputationData,

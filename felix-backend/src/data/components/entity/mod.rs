@@ -4,6 +4,7 @@ mod entity_inner;
 use crate::data::TimeInterval;
 use entity_inner::EntityInner;
 use std::cmp::Ordering;
+use serde::{Serialize, Deserialize};
 
 /// Represents any entity which can be used by an activity.
 ///
@@ -14,7 +15,7 @@ use std::cmp::Ordering;
 /// Entities have unique names. An entity may not have the same name as a group.
 ///
 /// This structure is read-only. If you wish to create or modify an entity, use the Data object.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Entity {
     inner: EntityInner,
 }

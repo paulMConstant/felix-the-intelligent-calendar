@@ -1,5 +1,9 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Time,
+    computation_structs::WorkHoursAndActivityDurationsSorted, 
+    Activity, 
+    ActivityId, 
+    ThreadPool,
+    Time,
 };
 
 use felix_computation_api::{find_possible_beginnings, MIN_TIME_DISCRETIZATION_MINUTES};
@@ -11,6 +15,7 @@ use super::activity_beginnings_given_duration::{
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
+use serde::{Serialize, Deserialize};
 
 type WorkHoursAndActivityDurationsSortedCache =
     HashMap<WorkHoursAndActivityDurationsSorted, ActivityBeginningsGivenDuration>;
@@ -19,22 +24,23 @@ type WorkHoursAndActivityDurationsSortedCache =
 /// and handles the computation.
 ///
 /// This class is NOT thread-safe, it only runs the computations in a separate thread pool.
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityId, bool>,
     // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
-    thread_pool: Rc<rayon::ThreadPool>,
+    #[serde(skip)]
+    thread_pool: Rc<ThreadPool>,
 }
 
 impl PossibleBeginningsUpdater {
-    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> PossibleBeginningsUpdater {
+    pub fn new() -> PossibleBeginningsUpdater {
         PossibleBeginningsUpdater {
             possible_beginnings_up_to_date: HashMap::new(),
             computation_cache: Arc::new(
                 Mutex::new(WorkHoursAndActivityDurationsSortedCache::new()),
             ),
-            thread_pool,
+            thread_pool: Rc::new(ThreadPool::new()),
         }
     }
 

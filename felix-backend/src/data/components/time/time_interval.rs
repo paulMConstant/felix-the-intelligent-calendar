@@ -1,4 +1,5 @@
 use crate::data::{Time, MIN_TIME_DISCRETIZATION};
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
 /// Time interval represented as {beginning, end}.
@@ -11,7 +12,7 @@ use std::cmp::Ordering;
 /// use std::mem::size_of;
 /// assert_eq!(size_of::<TimeInterval>(), 4);
 /// ```
-#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct TimeInterval {
     beginning: Time,
     end: Time,

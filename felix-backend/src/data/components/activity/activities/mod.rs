@@ -21,13 +21,13 @@ use felix_computation_api::{
 };
 
 use std::collections::{BTreeSet, HashMap, HashSet};
-use std::rc::Rc;
+use serde::{Serialize, Deserialize};
 
 pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Activities {
     activities: HashMap<ActivityId, Activity>,
     possible_beginnings_updater: PossibleBeginningsUpdater,
@@ -45,10 +45,10 @@ pub struct Activities {
 impl Activities {
     /// Initializes the Activity collection.
     #[must_use]
-    pub fn new(thread_pool: Rc<rayon::ThreadPool>) -> Activities {
+    pub fn new() -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(thread_pool),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
             last_fetch_computation_id_to_index_map: HashMap::new(),
@@ -518,15 +518,12 @@ impl Activities {
     fn overwrite_insertion_data(&mut self) {}
 }
 
+/// Used only for testing.
 impl Clone for Activities {
     fn clone(&self) -> Self {
         Activities {
             activities: self.activities.clone(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(Rc::new(
-                rayon::ThreadPoolBuilder::new()
-                    .build()
-                    .expect("Could not build rayon::ThreadPool"),
-            )),
+            possible_beginnings_updater: PossibleBeginningsUpdater::new(),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
             last_fetch_computation_id_to_index_map: self

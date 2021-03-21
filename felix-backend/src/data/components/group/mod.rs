@@ -3,13 +3,14 @@ pub mod groups;
 
 use group_inner::GroupInner;
 use std::cmp::Ordering;
+use serde::{Serialize, Deserialize};
 
 /// A group is an aggregation of entities.
 ///
 /// Groups have unique names. A group may not have the same name as an entity.
 ///
 /// This structure is read-only. If you wish to create or modify a group, use the Data object.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Group {
     inner: GroupInner,
 }

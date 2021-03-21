@@ -1,8 +1,9 @@
 use super::super::super::WorkHours;
 use crate::data::TimeInterval;
 use crate::errors::Result;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EntityInner {
     name: String,
     mail: String,

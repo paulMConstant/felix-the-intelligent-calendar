@@ -1,9 +1,10 @@
 use crate::data::{ActivityId, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 use std::collections::HashSet;
+use serde::{Serialize, Deserialize};
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,

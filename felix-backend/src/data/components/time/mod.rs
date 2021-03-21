@@ -1,12 +1,13 @@
 pub mod time_interval;
 pub mod work_hours;
 
+use felix_computation_api::MIN_TIME_DISCRETIZATION_MINUTES;
+
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::convert::TryInto;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
-
-use felix_computation_api::MIN_TIME_DISCRETIZATION_MINUTES;
 
 pub const MIN_TIME_DISCRETIZATION: Time = Time {
     hours: 0,
@@ -25,7 +26,7 @@ pub const MIN_TIME_DISCRETIZATION: Time = Time {
 /// use std::mem::size_of;
 /// assert_eq!(size_of::<Time>(), 2);
 /// ```
-#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct Time {
     hours: i8,
     minutes: i8,

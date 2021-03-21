@@ -2,7 +2,8 @@ use crate::data::{Time, TimeInterval};
 
 use felix_computation_api::structs::WorkHourInMinutes;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+use serde::{Serialize, Deserialize};
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct WorkHoursAndActivityDurationsSorted {
     work_hours: Vec<TimeInterval>,
     activity_durations: Vec<Time>,

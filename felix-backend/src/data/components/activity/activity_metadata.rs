@@ -1,9 +1,10 @@
 use crate::data::ActivityId;
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
+use serde::{Serialize, Deserialize};
 
 /// Represents a color. Each field should be kept in [0.0; 1.0].
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Rgba {
     pub red: f64,
     pub green: f64,
@@ -15,7 +16,7 @@ pub struct Rgba {
 ///
 /// We directly store incompatible activities in the ActivityComputationData which is why
 /// the entities are not directly computation-related.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ActivityMetadata {
     id: ActivityId,
     name: String,

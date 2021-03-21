@@ -2,9 +2,7 @@ mod components;
 pub(crate) mod computation_structs;
 mod data_impl;
 mod events;
-
-use std::cell::RefCell;
-use std::rc::Rc;
+mod thread_pool;
 
 use components::{
     activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
@@ -18,10 +16,16 @@ pub use components::{
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
 
+pub(crate) use thread_pool::ThreadPool;
+
 pub use computation_structs::InsertionCost;
 
 pub use data_impl::helpers::clean_string;
 pub use events::Events;
+
+use serde::Deserialize;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 /// Stores, calculates and maintains coherency between entities, work hours and activities.
 ///
@@ -99,33 +103,25 @@ pub use events::Events;
 /// data.set_activity_duration(activity_id, Time::new(1, 0));
 /// data.add_entity_to_activity(activity_id, entity_name);
 /// ```
-#[derive(Debug)]
+#[derive(Deserialize, Debug)]
 pub struct Data {
     work_hours: WorkHours,
     entities: Entities,
     groups: Groups,
     activities: Activities,
+    #[serde(skip)]
     events: Rc<RefCell<Events>>,
-    thread_pool: Rc<rayon::ThreadPool>,
 }
 
 impl Data {
     /// Creates a new data object.
     pub fn new() -> Data {
-        // Keep computation notifier inside
-        let thread_pool = Rc::new(
-            rayon::ThreadPoolBuilder::new()
-                .num_threads((num_cpus::get() - 1).max(1))
-                .build()
-                .expect("Could not initialize rayon ThreadPool"),
-        );
         Data {
             work_hours: WorkHours::new(),
             entities: Entities::new(),
             groups: Groups::new(),
-            activities: Activities::new(thread_pool.clone()),
+            activities: Activities::new(),
             events: Rc::new(RefCell::new(Events::new())),
-            thread_pool,
         }
     }
 }
@@ -156,11 +152,6 @@ impl Clone for Data {
 
             // We don't care about these, they don't hold actual data
             events: Rc::new(RefCell::new(Events::new())),
-            thread_pool: Rc::new(
-                rayon::ThreadPoolBuilder::new()
-                    .build()
-                    .expect("Could not build rayon::ThreadPool"),
-            ),
         }
     }
 }

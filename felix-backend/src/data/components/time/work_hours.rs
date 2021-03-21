@@ -1,9 +1,11 @@
 use crate::data::TimeInterval;
 use crate::errors::{does_not_exist::DoesNotExist, interval_overlaps::IntervalOverlaps, Result};
 
+use serde::{Deserialize, Serialize};
+
 /// Contains work hours represented as time intervals.
 /// Stays sorted by ascending order and prevents work intervals from overlapping.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct WorkHours {
     work_intervals: Vec<TimeInterval>,
 }

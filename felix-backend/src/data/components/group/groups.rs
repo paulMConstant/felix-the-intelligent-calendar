@@ -2,12 +2,13 @@ use super::Group;
 use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 /// Manages groups.
 ///
 /// A group has a unique name and contains entities.
 /// A group may not have the same name as an entity.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Groups {
     groups: HashMap<String, Group>,
 }

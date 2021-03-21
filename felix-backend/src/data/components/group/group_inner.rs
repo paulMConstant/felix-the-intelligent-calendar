@@ -1,7 +1,8 @@
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use std::collections::HashSet;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GroupInner {
     name: String,
     entities: HashSet<String>,
