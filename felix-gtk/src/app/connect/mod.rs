@@ -15,6 +15,9 @@ impl App {
     }
 
     pub fn connect_data(&mut self) {
-        self.connect_data_events();
+        self.connect_entity_events();
+        self.connect_group_events();
+        self.connect_activity_events();
+        self.connect_work_hour_events();
     }
 }

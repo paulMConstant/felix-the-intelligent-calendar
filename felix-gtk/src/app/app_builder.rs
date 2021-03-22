@@ -2,14 +2,15 @@ use gio::prelude::*;
 
 use crate::app::App;
 
-pub fn build_app(app: &gtk::Application) {
-    build_resources(app);
+pub fn build_app(application: &gtk::Application) {
+    build_resources(application);
 
-    let mut app = App::new(app);
+    let mut app = App::new(application);
 
     app.connect_ui();
     app.connect_data();
     app.ui.borrow_mut().show_mainwindow();
+    app.init_ui_with_existing_data();
 }
 
 fn build_resources(app: &gtk::Application) {

@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 impl App {
-    pub(super) fn connect_activity_events(&self) {
+    pub(in super::super) fn connect_activity_events(&self) {
         let events = self.data.borrow().events();
         let mut events = events.borrow_mut();
 

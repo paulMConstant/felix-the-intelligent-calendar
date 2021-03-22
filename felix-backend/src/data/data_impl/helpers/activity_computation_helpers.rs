@@ -7,6 +7,20 @@ use std::collections::HashSet;
 
 /// Helper functions to trigger & update activity insertion computation
 impl Data {
+    /// Queues up every entity to compute the possible beginnings of their entities.
+    /// Must be called on startup if data is not created from stratch (i.e. instantiated without
+    /// new(), with serde for example).
+    pub fn queue_every_activity_for_beginning_computation(&mut self) {
+        let entity_names = self
+            .entities_sorted()
+            .iter()
+            .map(|entity| entity.name())
+            .collect::<Vec<_>>();
+
+        self.queue_entities(entity_names)
+            .expect("Could not queue existing entities for computation");
+    }
+
     /// Starts the computation of the possible beginnings of activities of entities whose work
     /// hours were modified.
     pub(crate) fn queue_entities_on_global_work_hour_change(&mut self) -> Result<()> {

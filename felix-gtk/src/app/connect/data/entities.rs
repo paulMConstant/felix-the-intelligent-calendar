@@ -3,7 +3,7 @@ use crate::app::App;
 use glib::clone;
 
 impl App {
-    pub(super) fn connect_entity_events(&self) {
+    pub(in super::super) fn connect_entity_events(&self) {
         let events = self.data.borrow().events();
         let mut events = events.borrow_mut();
 

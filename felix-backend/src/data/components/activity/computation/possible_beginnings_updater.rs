@@ -9,7 +9,6 @@ use super::activity_beginnings_given_duration::{
     new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
 };
 
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
@@ -21,12 +20,11 @@ type WorkHoursAndActivityDurationsSortedCache =
 /// and handles the computation.
 ///
 /// This class is NOT thread-safe, it only runs the computations in a separate thread pool.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityId, bool>,
     // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
-    #[serde(skip)]
     thread_pool: Rc<ThreadPool>,
 }
 
@@ -54,10 +52,10 @@ impl PossibleBeginningsUpdater {
     /// Returns true if the activity possible beginnings are up to date.
     #[must_use]
     pub fn activity_beginnings_are_up_to_date(&self, id: &ActivityId) -> bool {
-        *self
-            .possible_beginnings_up_to_date
-            .get(id)
-            .expect("Querying invalid activity ID !")
+        match self.possible_beginnings_up_to_date.get(id) {
+            None => false,
+            Some(result) => *result,
+        }
     }
 
     /// For the given work hours and activity durations, computes the possible activity beginnings.
@@ -138,17 +136,30 @@ impl PossibleBeginningsUpdater {
             // Sort sets by ascending size so that fewer checks are done for intersections
             all_possible_beginnings.sort_by_key(|a| a.len());
 
-            let first_set = all_possible_beginnings[0];
-            let intersection = first_set
-                .iter()
-                .filter(|k| all_possible_beginnings[1..].iter().all(|s| s.contains(k)));
-
             self.possible_beginnings_up_to_date
                 .insert(activity.id(), true);
-            Some(intersection.copied().collect())
+
+            let first_set = all_possible_beginnings.first();
+
+            if let Some(first_set) = first_set {
+                let intersection = first_set
+                    .iter()
+                    .filter(|k| all_possible_beginnings[1..].iter().all(|s| s.contains(k)));
+
+                Some(intersection.copied().collect())
+            } else {
+                // No possible beginnings
+                Some(HashSet::new())
+            }
         } else {
             // At least one computation result was missing
             None
         }
+    }
+}
+
+impl Default for PossibleBeginningsUpdater {
+    fn default() -> Self {
+        PossibleBeginningsUpdater::new()
     }
 }

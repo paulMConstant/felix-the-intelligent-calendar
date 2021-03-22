@@ -7,5 +7,6 @@ mod custom_work_hours;
 mod entities;
 mod groups;
 mod header;
+mod init_ui_with_existing_data;
 mod work_hours;
 mod wrap_duration;

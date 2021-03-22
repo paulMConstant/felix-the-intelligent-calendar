@@ -21,16 +21,22 @@ use felix_computation_api::{
 };
 
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
 
 /// Manages the collection of activities.
 /// Makes sures there are no id duplicates.
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Activities {
+    // Cannot serialize with non string keys => turn into vec
+    #[serde_as(as = "Vec<(_, _)>")]
     activities: HashMap<ActivityId, Activity>,
+    #[serde(skip)]
     possible_beginnings_updater: PossibleBeginningsUpdater,
+    #[serde(skip)]
     activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings,
     /// Keeps track of the last id to index translation done in self.fetch\_computation.
     ///
@@ -39,6 +45,7 @@ pub struct Activities {
     /// When we get parallel arrays from fetch\_computation, we translate the ids of the activities
     /// into indexes. This allows for faster access to incompatible ids for autocompletion
     /// algorithm.
+    #[serde(skip)]
     last_fetch_computation_id_to_index_map: HashMap<ActivityId, usize>,
 }
 
