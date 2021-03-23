@@ -14,7 +14,8 @@ use std::collections::BTreeSet;
 pub fn compute_insertion_costs(
     static_data: &[ActivityComputationStaticData],
     insertion_data: &[ActivityInsertionBeginningMinutes],
-) -> Vec<Vec<InsertionCostsMinutes>> {
+    index_of_activity: usize,
+) -> Vec<InsertionCostsMinutes> {
     let activity_beginnings_with_conflicts =
         get_activity_beginnings_with_conflicts(static_data, insertion_data);
 
@@ -22,6 +23,7 @@ pub fn compute_insertion_costs(
         static_data,
         insertion_data,
         activity_beginnings_with_conflicts,
+        index_of_activity,
     )
 }
 
@@ -89,87 +91,86 @@ pub fn get_activity_insertion_costs(
     static_data: &[ActivityComputationStaticData],
     insertion_data: &[ActivityInsertionBeginningMinutes],
     possible_insertions_with_conflicts: Vec<BTreeSet<ActivityBeginningMinutes>>,
-) -> Vec<Vec<InsertionCostsMinutes>> {
-    // Preallocate data
-    let mut costs_for_all_activities = Vec::with_capacity(static_data.len());
+    index_of_activity: usize,
+) -> Vec<InsertionCostsMinutes> {
 
-    for (possible_beginnings, activity_static_data) in possible_insertions_with_conflicts
-        .iter()
-        .zip(static_data.iter())
-    {
-        // 1 - Calculate scores for the remaining beginnings
-        let mut cost_for_all_beginnings = Vec::with_capacity(possible_beginnings.len());
+    let possible_beginnings = (|| unsafe {
+            possible_insertions_with_conflicts.get_unchecked(index_of_activity)
+    })();
+    let activity_static_data = (|| unsafe {
+        static_data.get_unchecked(index_of_activity)
+    })();
 
-        // Copy u16
-        for beginning in possible_beginnings.iter().copied() {
-            let end = beginning + activity_static_data.duration_minutes;
+    // 1 - Calculate scores for the remaining beginnings
+    let mut cost_for_all_beginnings = Vec::with_capacity(possible_beginnings.len());
 
-            // The cost is the number of possible beginnings removed from other activities
-            let mut cost = 0;
-            let mut beginning_will_block_other_activities = false;
+    // Copy u16
+    for beginning in possible_beginnings.iter().copied() {
+        let end = beginning + activity_static_data.duration_minutes;
 
-            for (
-                incompatible_activities_static_data,
-                incompatible_activities_insertions_with_conflict,
-            ) in activity_static_data
-                .indexes_of_incompatible_activities
-                .iter()
-                .copied()
-                .filter_map(|index| unsafe {
-                    if insertion_data.get_unchecked(index).is_some() {
-                        // The activity is inserted, don't count it (we won't block it)
-                        None
-                    } else {
-                        Some((
-                            static_data.get_unchecked(index),
-                            possible_insertions_with_conflicts.get_unchecked(index),
-                        ))
-                    }
-                })
-            {
-                let offset_check_before_activity = incompatible_activities_static_data
-                    .duration_minutes
-                    - MIN_TIME_DISCRETIZATION_MINUTES;
+        let mut cost = 0;
+        let mut beginning_will_block_other_activities = false;
 
-                let beginning_with_duration_offset = if beginning < offset_check_before_activity {
-                    0
+        for (
+            incompatible_activities_static_data,
+            incompatible_activities_insertions_with_conflict,
+        ) in activity_static_data
+            .indexes_of_incompatible_activities
+            .iter()
+            .copied()
+            .filter_map(|index| unsafe {
+                if insertion_data.get_unchecked(index).is_some() {
+                    // The activity is inserted, don't count it (we won't block it)
+                    None
                 } else {
-                    beginning - offset_check_before_activity
-                };
-
-                let nb_beginnings_blocked = incompatible_activities_insertions_with_conflict
-                    .range(beginning_with_duration_offset..end)
-                    .count();
-
-                let nb_possible_beginnings = incompatible_activities_insertions_with_conflict.len();
-
-                let nb_remaining_beginnings = nb_possible_beginnings - nb_beginnings_blocked;
-
-                if 0 == nb_remaining_beginnings {
-                    beginning_will_block_other_activities = true;
-                    break;
-                } else {
-                    // Is at least one (at least this activity is incompatible)
-                    let nb_incompatible_activities = incompatible_activities_static_data
-                        .indexes_of_incompatible_activities
-                        .len();
-
-                    const SIGNIFICANT_DIGIT_MULTIPLIER: usize = 1000;
-                    cost += SIGNIFICANT_DIGIT_MULTIPLIER
-                        * nb_beginnings_blocked
-                        * nb_incompatible_activities
-                        / nb_remaining_beginnings;
+                    Some((
+                        static_data.get_unchecked(index),
+                        possible_insertions_with_conflicts.get_unchecked(index),
+                    ))
                 }
-            }
-            // The activity can be inserted
-            if !beginning_will_block_other_activities {
-                cost_for_all_beginnings.push(InsertionCostsMinutes {
-                    beginning_minutes: beginning,
-                    cost,
-                });
+            })
+        {
+            let offset_check_before_activity = incompatible_activities_static_data
+                .duration_minutes
+                - MIN_TIME_DISCRETIZATION_MINUTES;
+
+            let beginning_with_duration_offset = if beginning < offset_check_before_activity {
+                0
+            } else {
+                beginning - offset_check_before_activity
+            };
+
+            let nb_beginnings_blocked = incompatible_activities_insertions_with_conflict
+                .range(beginning_with_duration_offset..end)
+                .count();
+
+            let nb_possible_beginnings = incompatible_activities_insertions_with_conflict.len();
+
+            let nb_remaining_beginnings = nb_possible_beginnings - nb_beginnings_blocked;
+
+            if 0 == nb_remaining_beginnings {
+                beginning_will_block_other_activities = true;
+                break;
+            } else {
+                // Is at least one (at least this activity is incompatible)
+                let nb_incompatible_activities = incompatible_activities_static_data
+                    .indexes_of_incompatible_activities
+                    .len();
+
+                const SIGNIFICANT_DIGIT_MULTIPLIER: usize = 1000;
+                cost += SIGNIFICANT_DIGIT_MULTIPLIER
+                    * nb_beginnings_blocked
+                    * nb_incompatible_activities
+                    / nb_remaining_beginnings;
             }
         }
-        costs_for_all_activities.push(cost_for_all_beginnings);
+        // The activity can be inserted
+        if !beginning_will_block_other_activities {
+            cost_for_all_beginnings.push(InsertionCostsMinutes {
+                beginning_minutes: beginning,
+                cost,
+            });
+        }
     }
-    costs_for_all_activities
+    cost_for_all_beginnings
 }

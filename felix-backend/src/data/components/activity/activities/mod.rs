@@ -368,7 +368,7 @@ impl Activities {
                 self.last_fetch_computation_id_to_index_map[&concerned_activity_id];
 
             let insertion_costs_of_activity =
-                &compute_insertion_costs(&static_data, &insertion_data)[index_of_activity];
+                &compute_insertion_costs(&static_data, &insertion_data, index_of_activity);
 
             Some(
                 insertion_costs_of_activity
