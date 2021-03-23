@@ -1,6 +1,9 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::{Activity, ActivityId, Data, Time, TimeInterval};
+use crate::data::{
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data, Time,
+    TimeInterval,
+};
 use crate::errors::Result;
 
 use std::collections::HashSet;
@@ -66,5 +69,27 @@ impl Data {
                 }
             })
             .next()
+    }
+
+    /// Given a vector of entities, outputs their work hours and activity durations.
+    pub(super) fn work_hours_and_activity_durations_from_entities(
+        &self,
+        entities: &[String],
+    ) -> Result<Vec<WorkHoursAndActivityDurationsSorted>> {
+        entities
+            .iter()
+            .map(|entity| {
+                let work_hours = self.work_hours_of(entity)?;
+                let activity_durations = self
+                    .activities_of(entity)?
+                    .iter()
+                    .map(|activity| activity.duration())
+                    .collect::<Vec<_>>();
+                Ok(WorkHoursAndActivityDurationsSorted::new(
+                    work_hours,
+                    activity_durations,
+                ))
+            })
+            .collect()
     }
 }

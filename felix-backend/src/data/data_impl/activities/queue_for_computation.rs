@@ -1,11 +1,9 @@
-use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data,
-};
+use crate::data::{Activity, ActivityId, Data};
 use crate::errors::Result;
 
 use std::collections::HashSet;
 
-/// Helper functions to trigger & update activity insertion computation
+/// Functions to trigger & update activity insertion computation
 impl Data {
     /// Queues up every entity to compute the possible beginnings of their entities.
     /// Must be called on startup if data is not created from stratch (i.e. instantiated without
@@ -48,28 +46,6 @@ impl Data {
             activities_to_invalidate,
         );
         Ok(())
-    }
-
-    /// Given a vector of entities, outputs their work hours and activity durations.
-    pub(crate) fn work_hours_and_activity_durations_from_entities(
-        &self,
-        entities: &[String],
-    ) -> Result<Vec<WorkHoursAndActivityDurationsSorted>> {
-        entities
-            .iter()
-            .map(|entity| {
-                let work_hours = self.work_hours_of(entity)?;
-                let activity_durations = self
-                    .activities_of(entity)?
-                    .iter()
-                    .map(|activity| activity.duration())
-                    .collect::<Vec<_>>();
-                Ok(WorkHoursAndActivityDurationsSorted::new(
-                    work_hours,
-                    activity_durations,
-                ))
-            })
-            .collect()
     }
 
     /// Given a vector of entities, outputs the ids of all their activities.

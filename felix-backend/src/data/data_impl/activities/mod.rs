@@ -1,5 +1,6 @@
 mod error_checks;
 mod inner;
+mod queue_for_computation;
 
 use super::helpers::clean_string;
 use crate::{
