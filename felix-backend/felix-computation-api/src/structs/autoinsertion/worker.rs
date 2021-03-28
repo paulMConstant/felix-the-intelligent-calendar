@@ -62,7 +62,6 @@ impl Worker {
     fn expand_best_node(&mut self) {
         // Find best node
         // If only one activity remains, cost will be zero, so we will find it fast
-        //self.current_nodes.sort_unstable_by_key(|node| std::cmp::Reverse(node.cost));
         if let Some(best_node) = self.current_nodes.pop() {
             // Current nodes is not empty: work
             let nb_activities_inserted = best_node.current_insertions.len();
@@ -83,11 +82,6 @@ impl Worker {
                     // Create a node for each possible beginning
                     let mut new_insertions = best_node.current_insertions.clone();
                     new_insertions.push(insertion);
-                    //let nb_activities_left_to_insert =
-                    //nb_activities_to_insert - new_insertions.len();
-                    //let cost = 1;//insertion_cost.cost;
-                    //* nb_activities_left_to_insert;
-                    //* nb_possible_spots; TODO
 
                     self.current_nodes.push(Node::new(new_insertions));
                 }

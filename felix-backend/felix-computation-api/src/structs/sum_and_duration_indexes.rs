@@ -20,3 +20,15 @@ impl Default for SumAndDurationIndexes {
         SumAndDurationIndexes::new()
     }
 }
+
+impl Ord for SumAndDurationIndexes {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.sum_minutes.cmp(&other.sum_minutes)
+    }
+}
+
+impl PartialOrd for SumAndDurationIndexes {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.sum_minutes.cmp(&other.sum_minutes))
+    }
+}

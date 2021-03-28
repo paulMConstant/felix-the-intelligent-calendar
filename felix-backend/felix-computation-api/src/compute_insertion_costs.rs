@@ -86,6 +86,7 @@ pub fn get_activity_beginnings_with_conflicts(
             }
         })
     {
+        // Make sure the activity will not overlap with invalid intervals (for its whole duration)
         let incompatible_beginning = if incompatible_beginning < offset_check_before_activity {
             0
         } else {

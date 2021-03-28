@@ -46,7 +46,7 @@ pub struct Activities {
     /// into indexes. This allows for faster access to incompatible ids for autocompletion
     /// algorithm.
     #[serde(skip)]
-    last_fetch_computation_id_to_index_map: HashMap<ActivityId, usize>,
+    last_fetch_computation_index_to_id_map: HashMap<usize, ActivityId>,
 }
 
 impl Activities {
@@ -58,7 +58,7 @@ impl Activities {
             possible_beginnings_updater: PossibleBeginningsUpdater::new(),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
-            last_fetch_computation_id_to_index_map: HashMap::new(),
+            last_fetch_computation_index_to_id_map: HashMap::new(),
         }
     }
 
@@ -365,7 +365,7 @@ impl Activities {
             let (static_data, insertion_data) = self.fetch_computation();
 
             let index_of_activity =
-                self.last_fetch_computation_id_to_index_map[&concerned_activity_id];
+                self.last_fetch_computation_index_to_id_map[&concerned_activity_id];
 
             let insertion_costs_of_activity =
                 &compute_insertion_costs(&static_data, &insertion_data, index_of_activity);
@@ -499,7 +499,7 @@ impl Activities {
             .map(|other| other.metadata.id())
             .collect::<Vec<_>>();
 
-        self.last_fetch_computation_id_to_index_map.clear();
+        self.last_fetch_computation_index_to_id_map.clear();
 
         // Translate incompatible ids into incompatible indexes
         // This is not the most efficient but this operation is not critical:
@@ -539,8 +539,8 @@ impl Activities {
             }
 
             // Keep track of the id -> index translation to revert it
-            self.last_fetch_computation_id_to_index_map
-                .insert(activity.id(), index);
+            self.last_fetch_computation_index_to_id_map
+                .insert(index, activity.id());
         }
         (static_data_vec, insertion_data_vec)
     }
@@ -548,7 +548,7 @@ impl Activities {
     /// Associates each computation data to its rightful activity then overwrites it.
     pub fn overwrite_insertion_data(&mut self, insertion_data: Vec<ActivityBeginningMinutes>) {
         for (index, insertion) in insertion_data.into_iter().enumerate() {
-            let id = self.last_fetch_computation_id_to_index_map[&index];
+            let id = self.last_fetch_computation_index_to_id_map[&index];
             self.get_mut_by_id(id)
                 .expect("Invalid activity ID")
                 .computation_data
@@ -565,8 +565,8 @@ impl Clone for Activities {
             possible_beginnings_updater: PossibleBeginningsUpdater::new(),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
-            last_fetch_computation_id_to_index_map: self
-                .last_fetch_computation_id_to_index_map
+            last_fetch_computation_index_to_id_map: self
+                .last_fetch_computation_index_to_id_map
                 .clone(),
         }
     }

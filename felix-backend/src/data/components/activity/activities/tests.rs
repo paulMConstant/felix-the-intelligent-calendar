@@ -183,10 +183,10 @@ fn test_fetch_computation() {
     // Order should be Activity3 (inserted), activity2(harder to insert - 20 mins * 2 incompatible
     // activities), activity1
 
-    let id_to_index_translation = &activity_collection.last_fetch_computation_id_to_index_map;
-    assert_eq!(id_to_index_translation[&0], 2);
-    assert_eq!(id_to_index_translation[&1], 1);
-    assert_eq!(id_to_index_translation[&3], 0);
+    let index_to_id_translation = &activity_collection.last_fetch_computation_index_to_id_map;
+    assert_eq!(index_to_id_translation[&2], 0);
+    assert_eq!(index_to_id_translation[&1], 1);
+    assert_eq!(index_to_id_translation[&0], 3);
 
     let activity3_static_data = &static_data[0];
     let activity2_static_data = &static_data[1];

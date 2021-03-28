@@ -30,8 +30,8 @@ pub fn autoinsert(
 
         let nb_activities_inserted = insertions.len();
 
-        for insertion in get_activity_beginnings_with_conflicts(
-            static_data, &insertions, nb_activities_inserted)
+        for insertion in
+            get_activity_beginnings_with_conflicts(static_data, &insertions, nb_activities_inserted)
         {
             let mut new_insertions = insertions.clone();
             new_insertions.push(insertion);

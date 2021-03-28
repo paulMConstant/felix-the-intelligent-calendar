@@ -52,8 +52,7 @@ impl Tree {
 
             // Fetch the best nodes to expand it
             let n_nodes_to_fetch = if tree_len > N_NODES_TO_LEAVE_IN_THE_TREE {
-                N_NODES_TO_FETCH_WHEN_SYNCING_WITH_TREE
-                    .min(tree_len - N_NODES_TO_LEAVE_IN_THE_TREE)
+                N_NODES_TO_FETCH_WHEN_SYNCING_WITH_TREE.min(tree_len - N_NODES_TO_LEAVE_IN_THE_TREE)
             } else {
                 1
             };

@@ -124,6 +124,16 @@ fn test_find_possible_beginnings() {
     );
     let expected = activity_beginnings_given_duration(&[125], &[&[]]);
     assert_eq!(res, expected);
+
+    let res = find_possible_beginnings(
+        // 08:00 - 12:15
+        &[WorkHourInMinutes::new(480, 700)],
+        &[20, 35, 40, 45],
+        5,
+    );
+    let expected =
+        activity_beginnings_given_duration(&[40], &[&(480..=660).step_by(5).collect::<Vec<u16>>()]);
+    assert_eq!(res[&40], expected[&40]);
 }
 
 /// Given activity durations and possible beginnings for each duration (parallel slices),

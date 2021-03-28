@@ -26,13 +26,13 @@ pub fn find_possible_beginnings(
     activity_durations: &[u16],
     minute_step: usize,
 ) -> ActivityBeginningsGivenDurationMinutes {
-    assert!(is_sorted(activity_durations));
+    debug_assert!(is_sorted(activity_durations));
 
     let work_hour_durations = work_hours
         .iter()
         .map(|work_hour| work_hour.duration())
         .collect::<Vec<_>>();
-    assert!(is_sorted(&work_hour_durations));
+    debug_assert!(is_sorted(&work_hour_durations));
 
     // Init result
     let mut activity_beginnings = ActivityBeginningsGivenDurationMinutes::new();
@@ -124,6 +124,8 @@ pub fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
         // Run counter from 000..0 to 111..1
         for (counter, sum_and_indexes) in res.iter_mut().enumerate().take(set_size) {
             for (duration_index, duration) in durations.iter().enumerate() {
+                // Checking for == 0 instead of != 0 yields a vector
+                // *almost* sorted decreasingly.
                 if counter & (1 << duration_index) == 0 {
                     // The index was included in the counter. Add it to the result.
                     sum_and_indexes.indexes.insert(duration_index as u16);
@@ -131,6 +133,8 @@ pub fn compute_all_sums(durations: &[u16]) -> Vec<SumAndDurationIndexes> {
                 }
             }
         }
+
+        res.sort_unstable_by_key(|sum| std::cmp::Reverse(sum.sum_minutes));
         res
     } else {
         panic!("Overflow : too many activities !");
@@ -218,6 +222,7 @@ pub fn can_fit_in_schedule(
             return true;
         }
     }
+
     // At this point, we did not fit every duration in the interval.
     false
 }

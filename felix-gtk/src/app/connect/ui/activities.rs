@@ -8,7 +8,7 @@ use crate::app::{
     App,
 };
 
-use felix_backend::data::{clean_string, ActivityId, Rgba, Time, ActivityBeginningMinutes};
+use felix_backend::data::{clean_string, ActivityBeginningMinutes, ActivityId, Rgba, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
@@ -384,24 +384,24 @@ impl App {
             self,
             autoinsert_button,
             autoinsert_button.connect_clicked(move |_button| {
-                assign_or_return!(autoinsertion_handle, 
-                    app.data.borrow_mut().start_autoinsertion());
-
-                app.on_autoinsertion_started_start_polling_result(
-                    autoinsertion_handle
+                assign_or_return!(
+                    autoinsertion_handle,
+                    app.data.borrow_mut().start_autoinsertion()
                 );
+
+                app.on_autoinsertion_started_start_polling_result(autoinsertion_handle);
             })
         );
     }
 
     fn on_autoinsertion_started_start_polling_result(
-        &self, 
-        handle: mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>) {
-        const FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS: u32 = 100;
+        &self,
+        handle: mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>,
+    ) {
+        const FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS: u32 = 50;
 
         let data = self.data.clone();
         glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
-            println!("Check Autoinsertion Result");
             if let Ok(result) = handle.try_recv() {
                 if let Ok(result) = result {
                     data.borrow_mut().apply_autoinsertion_result(result);

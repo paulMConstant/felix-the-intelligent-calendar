@@ -8,6 +8,7 @@ use std::collections::HashSet;
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
+    #[serde(skip)]
     possible_insertion_times_if_no_conflict: HashSet<Time>,
     incompatible_activity_ids: Vec<ActivityId>,
 }
