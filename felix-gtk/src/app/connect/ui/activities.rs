@@ -8,10 +8,11 @@ use crate::app::{
     App,
 };
 
-use felix_backend::data::{clean_string, ActivityId, Rgba, Time};
+use felix_backend::data::{clean_string, ActivityId, Rgba, Time, ActivityBeginningMinutes};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
+use std::sync::mpsc;
 
 impl App {
     pub fn connect_activities_tab(&self) {
@@ -24,6 +25,8 @@ impl App {
         self.connect_remove_group_from_activity();
         self.connect_remove_entity_from_activity();
         self.connect_set_activity_color();
+
+        self.connect_autoinsert();
 
         self.connect_clean_activity_entries();
     }
@@ -371,6 +374,43 @@ impl App {
                     .expect("Current activity should be set before performing any action");
             })
         );
+    }
+
+    fn connect_autoinsert(&self) {
+        fetch_from!(self.ui.borrow(), autoinsert_button);
+
+        let app = self.clone();
+        app_register_signal!(
+            self,
+            autoinsert_button,
+            autoinsert_button.connect_clicked(move |_button| {
+                assign_or_return!(autoinsertion_handle, 
+                    app.data.borrow_mut().start_autoinsertion());
+
+                app.on_autoinsertion_started_start_polling_result(
+                    autoinsertion_handle
+                );
+            })
+        );
+    }
+
+    fn on_autoinsertion_started_start_polling_result(
+        &self, 
+        handle: mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>) {
+        const FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS: u32 = 100;
+
+        let data = self.data.clone();
+        glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
+            println!("Check Autoinsertion Result");
+            if let Ok(result) = handle.try_recv() {
+                if let Ok(result) = result {
+                    data.borrow_mut().apply_autoinsertion_result(result);
+                }
+                glib::Continue(false)
+            } else {
+                glib::Continue(true)
+            }
+        });
     }
 
     fn connect_clean_activity_entries(&self) {

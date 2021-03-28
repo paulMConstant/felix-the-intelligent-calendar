@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 mod activity_computation_static_data;
+pub mod autoinsertion;
 mod insertion_costs;
 mod sum_and_duration_indexes;
 mod work_hour_in_minutes;
@@ -18,5 +19,3 @@ pub type ActivityBeginningsGivenDurationMinutes =
 pub type ActivityDurationMinutes = u16;
 pub type Cost = usize;
 pub type ActivityBeginningMinutes = u16;
-
-pub type ActivityInsertionBeginningMinutes = Option<ActivityBeginningMinutes>;

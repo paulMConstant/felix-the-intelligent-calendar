@@ -17,7 +17,7 @@ use crate::data::{
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
 use felix_computation_api::{
     compute_insertion_costs,
-    structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
+    structs::{ActivityBeginningMinutes, ActivityComputationStaticData},
 };
 
 use serde::{Deserialize, Serialize};
@@ -425,9 +425,9 @@ impl Activities {
     ///
     /// # Panics
     ///
-    /// Panics if the activity is not found. This should never happen as this function is
-    /// crate-local.
-    pub(crate) fn insert_activity_in_spot_closest_to(
+    /// Panics if the activity is not found. This should never happen as this function is only
+    /// called internally (no invalid user input).
+    pub fn insert_activity_in_spot_closest_to(
         &mut self,
         id: ActivityId,
         ideal_beginning: Time,
@@ -464,28 +464,50 @@ impl Activities {
     ///
     /// The ids of incompatible activities are turned into indexes.
     #[must_use]
-    fn fetch_computation(
+    pub fn fetch_computation(
         &mut self,
     ) -> (
         Vec<ActivityComputationStaticData>,
-        Vec<ActivityInsertionBeginningMinutes>,
+        Vec<ActivityBeginningMinutes>,
     ) {
         let mut static_data_vec = Vec::with_capacity(self.activities.len());
         let mut insertion_data_vec = Vec::with_capacity(self.activities.len());
 
-        let ids = self
+        let inserted_activities = self
             .activities
             .values()
+            .filter(|activity| activity.computation_data.insertion_interval().is_some());
+
+        let mut non_inserted_activities = self
+            .activities
+            .values()
+            .filter(|activity| activity.computation_data.insertion_interval().is_none())
+            .collect::<Vec<_>>();
+
+        // Harder to insert activities go first
+        non_inserted_activities.sort_by_key(|activity| {
+            std::cmp::Reverse(
+                activity.computation_data.duration().total_minutes() as usize
+                    * activity.computation_data.incompatible_activity_ids().len(),
+            )
+        });
+
+        let sorted_activities = inserted_activities.chain(non_inserted_activities);
+
+        let ids = sorted_activities
+            .clone()
             .map(|other| other.metadata.id())
             .collect::<Vec<_>>();
+
         self.last_fetch_computation_id_to_index_map.clear();
 
         // Translate incompatible ids into incompatible indexes
         // This is not the most efficient but this operation is not critical:
         // the computation should be optimized, not this
-        for (index, activity) in self.activities.values().enumerate() {
+        for (index, activity) in sorted_activities.enumerate() {
             let computation_data = &activity.computation_data;
             let incompatible_ids = computation_data.incompatible_activity_ids();
+
             let mut incompatible_indexes: Vec<ActivityId> =
                 Vec::with_capacity(incompatible_ids.len());
             for (index_of_other, id_of_other) in ids.iter().enumerate() {
@@ -506,12 +528,15 @@ impl Activities {
                 duration_minutes: computation_data.duration().total_minutes(),
             };
 
-            let insertion_data = computation_data
-                .insertion_interval()
-                .map(|interval| interval.beginning().total_minutes());
-
             static_data_vec.push(static_data);
-            insertion_data_vec.push(insertion_data);
+
+            // Only the first activities are inserted - this can be optimized
+            if let Some(insertion_beginning) = computation_data
+                .insertion_interval()
+                .map(|interval| interval.beginning().total_minutes())
+            {
+                insertion_data_vec.push(insertion_beginning);
+            }
 
             // Keep track of the id -> index translation to revert it
             self.last_fetch_computation_id_to_index_map
@@ -520,9 +545,16 @@ impl Activities {
         (static_data_vec, insertion_data_vec)
     }
 
-    /// TODO
     /// Associates each computation data to its rightful activity then overwrites it.
-    fn overwrite_insertion_data(&mut self) {}
+    pub fn overwrite_insertion_data(&mut self, insertion_data: Vec<ActivityBeginningMinutes>) {
+        for (index, insertion) in insertion_data.into_iter().enumerate() {
+            let id = self.last_fetch_computation_id_to_index_map[&index];
+            self.get_mut_by_id(id)
+                .expect("Invalid activity ID")
+                .computation_data
+                .insert(Some(Time::from_total_minutes(insertion)));
+        }
+    }
 }
 
 /// Used only for testing.

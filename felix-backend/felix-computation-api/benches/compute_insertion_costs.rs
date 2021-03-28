@@ -1,13 +1,15 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use felix_computation_api::{
-    compute_insertion_costs::{compute_insertion_costs, get_activity_beginnings_with_conflicts},
-    structs::{ActivityComputationStaticData, ActivityInsertionBeginningMinutes},
+    compute_insertion_costs::{
+        compute_insertion_costs, get_all_activity_beginnings_with_conflicts,
+    },
+    structs::{ActivityBeginningMinutes, ActivityComputationStaticData},
 };
 
 fn create_data() -> (
     Vec<ActivityComputationStaticData>,
-    Vec<ActivityInsertionBeginningMinutes>,
+    Vec<ActivityBeginningMinutes>,
 ) {
     let static_data = vec![
         ActivityComputationStaticData {
@@ -37,7 +39,7 @@ fn create_data() -> (
         },
     ];
 
-    let insertion_data = vec![None, None, Some(1500), Some(200), None];
+    let insertion_data = vec![500, 50];
 
     (static_data, insertion_data)
 }
@@ -45,7 +47,7 @@ fn create_data() -> (
 fn bench_filter_conflicts(c: &mut Criterion) {
     let (static_data, insertion_data) = create_data();
     c.bench_function("Bench filter_conflicts", |b| {
-        b.iter(|| get_activity_beginnings_with_conflicts(&static_data, &insertion_data))
+        b.iter(|| get_all_activity_beginnings_with_conflicts(&static_data, &insertion_data))
     });
 }
 
@@ -53,7 +55,13 @@ fn bench_compute_costs(c: &mut Criterion) {
     let (static_data, insertion_data) = create_data();
 
     c.bench_function("Bench compute insertion costs", |b| {
-        b.iter(|| compute_insertion_costs(&static_data, &insertion_data))
+        b.iter(|| {
+            compute_insertion_costs(&static_data, &insertion_data, 0);
+            compute_insertion_costs(&static_data, &insertion_data, 1);
+            compute_insertion_costs(&static_data, &insertion_data, 2);
+            compute_insertion_costs(&static_data, &insertion_data, 3);
+            compute_insertion_costs(&static_data, &insertion_data, 4);
+        });
     });
 }
 

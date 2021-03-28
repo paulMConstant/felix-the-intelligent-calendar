@@ -7,7 +7,12 @@ use crate::{
     data::{Activity, ActivityId, Data, InsertionCost, Rgba, Time},
     errors::{invalid_insertion::InvalidInsertion, Result},
 };
+use felix_computation_api::{
+    autoinsert,
+    structs::ActivityBeginningMinutes,
+};
 
+use std::sync::mpsc;
 use std::collections::BTreeSet;
 
 /// Operations on activities
@@ -614,6 +619,25 @@ impl Data {
                     );
                 }
             }
+        }
+    }
+
+    /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the result.
+    #[must_use]
+    pub fn start_autoinsertion(&mut self) 
+        -> Result<mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>> {
+        // TODO POLL
+        let (static_data, insertion_data) = self.activities.fetch_computation();
+        Ok(autoinsert(&static_data, &insertion_data))
+    }
+
+    /// Applies the result of autoinsertion to the activities.
+    pub fn apply_autoinsertion_result(&mut self, insertion_data: Vec<ActivityBeginningMinutes>) {
+        self.activities.overwrite_insertion_data(insertion_data);
+
+        // Notify activity inserted to update ui
+        if let Some(activity) = self.activities_sorted().first() {
+            self.events().borrow_mut().emit_activity_inserted(self, activity);
         }
     }
 

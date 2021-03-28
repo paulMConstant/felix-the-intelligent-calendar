@@ -1,8 +1,5 @@
 use crate::{
-    structs::{
-        ActivityBeginningMinutes, ActivityComputationStaticData, ActivityInsertionBeginningMinutes,
-        InsertionCostsMinutes,
-    },
+    structs::{ActivityBeginningMinutes, ActivityComputationStaticData, InsertionCostsMinutes},
     MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
@@ -11,13 +8,16 @@ use std::collections::BTreeSet;
 /// Given the static data and insertion data of all activities (parallel arrays)
 /// as well as the index of the activity for which insertion times are computed,
 /// computes the insertion times taking conflicts into account.
+///
+/// Activities which are inserted are always stored FIRST in the static data,
+/// as the insertion_data contains only the subset of inserted activities.
 pub fn compute_insertion_costs(
     static_data: &[ActivityComputationStaticData],
-    insertion_data: &[ActivityInsertionBeginningMinutes],
+    insertion_data: &[ActivityBeginningMinutes],
     index_of_activity: usize,
 ) -> Vec<InsertionCostsMinutes> {
     let activity_beginnings_with_conflicts =
-        get_activity_beginnings_with_conflicts(static_data, insertion_data);
+        get_all_activity_beginnings_with_conflicts(static_data, insertion_data);
 
     get_activity_insertion_costs(
         static_data,
@@ -29,77 +29,91 @@ pub fn compute_insertion_costs(
 
 /// Given activity data, computes the possible insertion times so that no activities
 /// cannot overlap.
-pub fn get_activity_beginnings_with_conflicts(
+pub fn get_all_activity_beginnings_with_conflicts(
     static_data: &[ActivityComputationStaticData],
-    insertion_data: &[ActivityInsertionBeginningMinutes],
+    insertion_data: &[ActivityBeginningMinutes],
 ) -> Vec<BTreeSet<ActivityBeginningMinutes>> {
     // Preallocate data
     let mut beginnings_for_all_activities = Vec::with_capacity(static_data.len());
 
-    for activity_static_data in static_data {
-        let mut possible_beginnings = activity_static_data
-            .possible_insertion_beginnings_minutes_sorted
-            .clone();
+    for i in 0..static_data.len() {
+        beginnings_for_all_activities.push(get_activity_beginnings_with_conflicts(
+            static_data,
+            insertion_data,
+            i,
+        ));
+    }
+    beginnings_for_all_activities
+}
 
-        // 1 - Fetch invalid beginnings
-        // Offset with the duration of the activity
-        // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
-        // at 10:50.
-        let offset_check_before_activity =
-            activity_static_data.duration_minutes - MIN_TIME_DISCRETIZATION_MINUTES;
+/// Given activity data, computes the possible insertion times so that no activities
+/// cannot overlap.
+pub fn get_activity_beginnings_with_conflicts(
+    static_data: &[ActivityComputationStaticData],
+    insertion_data: &[ActivityBeginningMinutes],
+    index_of_activity: usize,
+) -> BTreeSet<ActivityBeginningMinutes> {
+    // Preallocate data
 
-        for (incompatible_beginning, incompatible_end) in activity_static_data
-            .indexes_of_incompatible_activities
-            .iter()
-            .copied()
-            .filter_map(|index| unsafe {
-                if let Some(incompatible_beginning) = insertion_data.get_unchecked(index) {
-                    // The activity is inserted.
-                    // Use it to filter out conflicts
+    let activity_static_data = unsafe { static_data.get_unchecked(index_of_activity) };
+    let mut possible_beginnings = activity_static_data
+        .possible_insertion_beginnings_minutes_sorted
+        .clone();
+
+    // 1 - Fetch invalid beginnings
+    // Offset with the duration of the activity
+    // (e.g. if 11:00 - 12:00 is taken and our duration is 00:30, we cannot insert the activity
+    // at 10:50.
+    let offset_check_before_activity =
+        activity_static_data.duration_minutes - MIN_TIME_DISCRETIZATION_MINUTES;
+
+    for (incompatible_beginning, incompatible_end) in activity_static_data
+        .indexes_of_incompatible_activities
+        .iter()
+        .copied()
+        .filter_map(|index| {
+            if let Some(incompatible_beginning) = insertion_data.get(index) {
+                // The activity is inserted.
+                // Use it to filter out conflicts
+                unsafe {
                     Some((
                         *incompatible_beginning,
                         incompatible_beginning + static_data.get_unchecked(index).duration_minutes,
                     ))
-                } else {
-                    None
                 }
-            })
-        {
-            let incompatible_beginning = if incompatible_beginning < offset_check_before_activity {
-                0
             } else {
-                incompatible_beginning - offset_check_before_activity
-            };
-
-            // 2 - Remove invalid beginnings
-            for beginning in activity_static_data
-                .possible_insertion_beginnings_minutes_sorted
-                .range(incompatible_beginning..incompatible_end)
-            {
-                possible_beginnings.remove(&beginning);
+                None
             }
+        })
+    {
+        let incompatible_beginning = if incompatible_beginning < offset_check_before_activity {
+            0
+        } else {
+            incompatible_beginning - offset_check_before_activity
+        };
+
+        // 2 - Remove invalid beginnings
+        for beginning in activity_static_data
+            .possible_insertion_beginnings_minutes_sorted
+            .range(incompatible_beginning..incompatible_end)
+        {
+            possible_beginnings.remove(&beginning);
         }
-        // 3 - Insert possible beginnings
-        beginnings_for_all_activities.push(possible_beginnings);
     }
-    beginnings_for_all_activities
+    possible_beginnings
 }
 
 /// Given activity data and possible insertion times taking conflicts into account,
 /// computes new possible insertion times associated with a cost.
 pub fn get_activity_insertion_costs(
     static_data: &[ActivityComputationStaticData],
-    insertion_data: &[ActivityInsertionBeginningMinutes],
+    insertion_data: &[ActivityBeginningMinutes],
     possible_insertions_with_conflicts: Vec<BTreeSet<ActivityBeginningMinutes>>,
     index_of_activity: usize,
 ) -> Vec<InsertionCostsMinutes> {
-
-    let possible_beginnings = (|| unsafe {
-            possible_insertions_with_conflicts.get_unchecked(index_of_activity)
-    })();
-    let activity_static_data = (|| unsafe {
-        static_data.get_unchecked(index_of_activity)
-    })();
+    let possible_beginnings =
+        unsafe { possible_insertions_with_conflicts.get_unchecked(index_of_activity) };
+    let activity_static_data = unsafe { static_data.get_unchecked(index_of_activity) };
 
     // 1 - Calculate scores for the remaining beginnings
     let mut cost_for_all_beginnings = Vec::with_capacity(possible_beginnings.len());
@@ -118,20 +132,21 @@ pub fn get_activity_insertion_costs(
             .indexes_of_incompatible_activities
             .iter()
             .copied()
-            .filter_map(|index| unsafe {
-                if insertion_data.get_unchecked(index).is_some() {
+            .filter_map(|index| {
+                if insertion_data.len() > index {
                     // The activity is inserted, don't count it (we won't block it)
                     None
                 } else {
-                    Some((
-                        static_data.get_unchecked(index),
-                        possible_insertions_with_conflicts.get_unchecked(index),
-                    ))
+                    unsafe {
+                        Some((
+                            static_data.get_unchecked(index),
+                            possible_insertions_with_conflicts.get_unchecked(index),
+                        ))
+                    }
                 }
             })
         {
-            let offset_check_before_activity = incompatible_activities_static_data
-                .duration_minutes
+            let offset_check_before_activity = incompatible_activities_static_data.duration_minutes
                 - MIN_TIME_DISCRETIZATION_MINUTES;
 
             let beginning_with_duration_offset = if beginning < offset_check_before_activity {

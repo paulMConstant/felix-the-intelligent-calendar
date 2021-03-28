@@ -19,6 +19,7 @@ pub use components::{
 pub(crate) use thread_pool::ThreadPool;
 
 pub use computation_structs::InsertionCost;
+pub use felix_computation_api::structs::ActivityBeginningMinutes;
 
 pub use data_impl::helpers::clean_string;
 pub use events::Events;

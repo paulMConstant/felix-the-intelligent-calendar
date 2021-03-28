@@ -112,4 +112,9 @@ impl Ui {
     pub fn activity_entities_tree_view(&self) -> gtk::TreeView {
         fetch_ui_from_builder!(self, "ActivityEntitiesTreeView")
     }
+
+    #[must_use]
+    pub fn autoinsert_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "AutoInsertButton")
+    }
 }
