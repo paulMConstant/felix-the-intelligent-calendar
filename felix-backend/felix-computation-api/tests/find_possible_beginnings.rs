@@ -125,15 +125,16 @@ fn test_find_possible_beginnings() {
     let expected = activity_beginnings_given_duration(&[125], &[&[]]);
     assert_eq!(res, expected);
 
-    let res = find_possible_beginnings(
-        // 08:00 - 12:15
-        &[WorkHourInMinutes::new(480, 700)],
-        &[20, 35, 40, 45],
-        5,
-    );
+    // Result which used to be a problem - bug has been resolved since then, but keep it
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(480, 700)], &[20, 35, 40, 45], 5);
     let expected =
         activity_beginnings_given_duration(&[40], &[&(480..=660).step_by(5).collect::<Vec<u16>>()]);
     assert_eq!(res[&40], expected[&40]);
+
+    // Duplicate values
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(480, 615)], &[25, 35, 35, 40], 5);
+    let expected = activity_beginnings_given_duration(&[40], &[&[480, 505, 515, 540, 550, 575]]);
+    assert_eq!(res[&40], expected[&40])
 }
 
 /// Given activity durations and possible beginnings for each duration (parallel slices),

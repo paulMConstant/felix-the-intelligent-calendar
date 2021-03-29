@@ -620,11 +620,9 @@ impl Data {
     }
 
     /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the result.
-    #[must_use]
     pub fn start_autoinsertion(
         &mut self,
     ) -> Result<mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>> {
-        // TODO POLL
         let (static_data, insertion_data) = self.activities.fetch_computation();
         Ok(autoinsert(&static_data, &insertion_data))
     }

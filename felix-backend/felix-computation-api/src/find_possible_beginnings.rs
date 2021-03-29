@@ -50,8 +50,13 @@ pub fn find_possible_beginnings(
     //   If it is possible, then the starting time is added to the result.
 
     // It is faster to copy u16 than to use references
-    for (activity_index, activity_duration) in
-        activity_durations.iter().unique().copied().enumerate()
+    for (activity_index, activity_duration) in activity_durations
+        .iter()
+        .copied()
+        .enumerate()
+        // Must call enumerate before unique_by so that indexes stay aligned
+        // (otherwise, each time .unique filters, indexes are offset by one)
+        .unique_by(|index_duration| index_duration.1)
     {
         let mut possible_beginnings = HashSet::new();
         // The filter acts as both an early stop and safety
