@@ -1,6 +1,8 @@
 use glib::clone;
 use gtk::prelude::*;
 
+use gettextrs::gettext as tr;
+
 use crate::app::{
     connect::ui::wrap_duration::wrap_duration,
     notify::notify_err,
@@ -383,13 +385,14 @@ impl App {
         app_register_signal!(
             self,
             autoinsert_button,
-            autoinsert_button.connect_clicked(move |_button| {
+            autoinsert_button.connect_clicked(move |button| {
                 assign_or_return!(
                     autoinsertion_handle,
                     app.data.borrow_mut().start_autoinsertion()
                 );
 
                 app.on_autoinsertion_started_start_polling_result(autoinsertion_handle);
+                button.set_label(&tr("Stop auto-insertion"));
             })
         );
     }

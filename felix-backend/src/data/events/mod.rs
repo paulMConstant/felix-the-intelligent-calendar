@@ -30,7 +30,8 @@ create_events!(Events:
     entity_removed_from_group {group: &Group},
     group_added_to_activity { activity: &Activity},
     group_removed_from_activity { activity: &Activity},
-    work_hours_changed {}
+    work_hours_changed {},
+    autoinsertion_done {}
 );
 
 /// Data implementation for events.

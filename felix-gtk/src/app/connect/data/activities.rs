@@ -2,7 +2,9 @@ use crate::app::App;
 
 use felix_backend::data::Data;
 
+use gettextrs::gettext as tr;
 use glib::clone;
+use gtk::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -95,6 +97,13 @@ impl App {
                 ui.update_schedules(data);
             }),
         ));
+
+        events.connect_autoinsertion_done(Box::new(clone!(@strong self.ui as ui => move |data| {
+            let mut ui = ui.borrow_mut();
+            ui.update_schedules(data);
+            fetch_from!(ui, autoinsert_button);
+            autoinsert_button.set_label(&tr("Auto-insert"));
+        })));
     }
 
     fn on_activity_duration_changed_start_polling_to_insert_it_again(

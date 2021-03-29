@@ -658,13 +658,7 @@ impl Data {
     /// Applies the result of autoinsertion to the activities.
     pub fn apply_autoinsertion_result(&mut self, insertion_data: Vec<ActivityBeginningMinutes>) {
         self.activities.overwrite_insertion_data(insertion_data);
-
-        // Notify activity inserted to update ui
-        if let Some(activity) = self.activities_sorted().first() {
-            self.events()
-                .borrow_mut()
-                .emit_activity_inserted(self, activity);
-        }
+        self.events().borrow_mut().emit_autoinsertion_done(self);
     }
 
     /// Clears the list of activities which were removed because their duration increased.
