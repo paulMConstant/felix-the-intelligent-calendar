@@ -65,12 +65,12 @@ fn test_case_can_fit_in_schedule(
 #[test]
 fn test_find_possible_beginnings() {
     // Activity fits perfectly in the work hour
-    let res = find_possible_beginnings(&[WorkHourInMinutes::new(10, 30)], &[20], 5);
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(10, 30)], &[20]);
     let expected = activity_beginnings_given_duration(&[20], &[&[10]]);
     assert_eq!(res, expected);
 
     // Two activities with same duration - tests symmetry
-    let res = find_possible_beginnings(&[WorkHourInMinutes::new(10, 30)], &[10, 10], 5);
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(10, 30)], &[10, 10]);
     let expected = activity_beginnings_given_duration(&[10], &[&[10, 20]]);
     assert_eq!(res, expected);
 
@@ -84,7 +84,6 @@ fn test_find_possible_beginnings() {
             WorkHourInMinutes::new(300, 400),
         ],
         &[100],
-        5,
     );
     let expected = activity_beginnings_given_duration(&[100], &[&[300]]);
     assert_eq!(res, expected);
@@ -96,7 +95,6 @@ fn test_find_possible_beginnings() {
             WorkHourInMinutes::new(1000, 1200),
         ],
         &[50, 150],
-        5,
     );
     let expected = activity_beginnings_given_duration(
         &[50, 150],
@@ -120,19 +118,18 @@ fn test_find_possible_beginnings() {
             WorkHourInMinutes::new(100, 200),
         ],
         &[125],
-        5,
     );
     let expected = activity_beginnings_given_duration(&[125], &[&[]]);
     assert_eq!(res, expected);
 
     // Result which used to be a problem - bug has been resolved since then, but keep it
-    let res = find_possible_beginnings(&[WorkHourInMinutes::new(480, 700)], &[20, 35, 40, 45], 5);
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(480, 700)], &[20, 35, 40, 45]);
     let expected =
         activity_beginnings_given_duration(&[40], &[&(480..=660).step_by(5).collect::<Vec<u16>>()]);
     assert_eq!(res[&40], expected[&40]);
 
     // Duplicate values
-    let res = find_possible_beginnings(&[WorkHourInMinutes::new(480, 615)], &[25, 35, 35, 40], 5);
+    let res = find_possible_beginnings(&[WorkHourInMinutes::new(480, 615)], &[25, 35, 35, 40]);
     let expected = activity_beginnings_given_duration(&[40], &[&[480, 505, 515, 540, 550, 575]]);
     assert_eq!(res[&40], expected[&40])
 }

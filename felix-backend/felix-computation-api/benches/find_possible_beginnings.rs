@@ -18,7 +18,6 @@ fn bench_find_possible_beginnings(c: &mut Criterion) {
                     WorkHourInMinutes::new(250, 450),
                 ],
                 &[15, 15, 20, 20, 30, 30, 40, 45, 60, 80],
-                5,
             )
         })
     });
@@ -31,7 +30,6 @@ fn bench_find_possible_beginnings(c: &mut Criterion) {
                     WorkHourInMinutes::new(800, 1235),
                 ],
                 &[25, 25, 30, 30, 40, 40, 45, 45, 60, 80, 90, 120],
-                5,
             )
         })
     });
