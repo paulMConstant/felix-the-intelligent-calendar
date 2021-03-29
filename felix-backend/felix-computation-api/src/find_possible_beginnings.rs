@@ -10,7 +10,7 @@
 //! 5 - The rest of the activities can be inserted in the remaining slots if their is a combination
 //!   of duration sums which fit in the remaining slots.
 
-use crate::{MIN_TIME_DISCRETIZATION_MINUTES, structs::*};
+use crate::{structs::*, MIN_TIME_DISCRETIZATION_MINUTES};
 
 use itertools::Itertools;
 use std::collections::HashSet;
@@ -72,8 +72,9 @@ pub fn find_possible_beginnings(
             // Iterate over each possible starting time in the work hour
             // Note the inclusive range (a..=b) because we want to take into account the
             //    last last_time_we_need_to_check
-            for mins_from_start in (0..=last_time_we_need_to_check)
-                .step_by(MIN_TIME_DISCRETIZATION_MINUTES.into()) {
+            for mins_from_start in
+                (0..=last_time_we_need_to_check).step_by(MIN_TIME_DISCRETIZATION_MINUTES.into())
+            {
                 let mut new_work_hour_durations = work_hour_durations.to_vec();
                 // Reduce the duration of the work interval by the duration of the activity
 

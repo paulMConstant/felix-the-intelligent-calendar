@@ -18,7 +18,8 @@ pub enum InvalidOrNotComputed {
     NotComputed,
 }
 
-/// Throw this error when the user tries to insert an activity where it cannot be inserted.
+/// Throw this error when the user tries to insert an activity where it cannot be inserted,
+/// or when the possible insertion times are queried but not availabe.
 ///
 /// # Example
 ///

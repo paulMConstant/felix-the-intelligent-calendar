@@ -623,8 +623,36 @@ impl Data {
     pub fn start_autoinsertion(
         &mut self,
     ) -> Result<mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>> {
-        let (static_data, insertion_data) = self.activities.fetch_computation();
-        Ok(autoinsert(&static_data, &insertion_data))
+        // Poll insertion data
+
+        let activities = self
+            .activities_sorted()
+            .into_iter()
+            .cloned()
+            .collect::<Vec<Activity>>();
+
+        if let Some(activity_not_computed_yet) = activities.iter().find(|activity| {
+            let participants = activity.entities_sorted();
+            let work_hours_and_activity_durations = self
+                .work_hours_and_activity_durations_from_entities(&participants)
+                .expect("Could not get work hours and activity durations from participants");
+
+            let activity_is_computed = self
+                .activities
+                .update_possible_insertion_times_of_activity(
+                    &work_hours_and_activity_durations,
+                    activity.id(),
+                )
+                .expect("Could not get possible insertions of activity");
+            !activity_is_computed
+        }) {
+            Err(InvalidInsertion::insertions_not_computed_yet(
+                activity_not_computed_yet.name(),
+            ))
+        } else {
+            let (static_data, insertion_data) = self.activities.fetch_computation();
+            Ok(autoinsert(&static_data, &insertion_data))
+        }
     }
 
     /// Applies the result of autoinsertion to the activities.

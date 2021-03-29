@@ -72,6 +72,10 @@ impl Data {
     }
 
     /// Given a vector of entities, outputs their work hours and activity durations.
+    ///
+    /// # Errors
+    ///
+    /// Returns err if an entity is not found.
     pub(super) fn work_hours_and_activity_durations_from_entities(
         &self,
         entities: &[String],

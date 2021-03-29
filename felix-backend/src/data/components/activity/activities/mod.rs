@@ -350,7 +350,7 @@ impl Activities {
     /// # Errors
     ///
     /// Returns Err if the activity with given id is not found.
-    pub fn possible_insertion_times_of_activity_with_associated_cost(
+    pub(crate) fn possible_insertion_times_of_activity_with_associated_cost(
         &mut self,
         schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
         concerned_activity_id: ActivityId,
