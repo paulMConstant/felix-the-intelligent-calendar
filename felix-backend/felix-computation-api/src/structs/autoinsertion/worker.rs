@@ -80,10 +80,9 @@ impl Worker {
                     nb_activities_inserted,
                 ) {
                     // Create a node for each possible beginning
-                    let mut new_insertions = best_node.current_insertions.clone();
-                    new_insertions.push(insertion);
-
-                    self.current_nodes.push(Node::new(new_insertions));
+                    self.current_nodes.push(
+                        Node::new(best_node.current_insertions.clone(), insertion)
+                    );
                 }
             }
         } else {

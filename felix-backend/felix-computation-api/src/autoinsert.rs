@@ -1,7 +1,6 @@
 use crate::{
-    compute_insertion_costs::get_activity_beginnings_with_conflicts,
     structs::{
-        autoinsertion::{Node, Tree, Worker},
+        autoinsertion::{Tree, Worker},
         ActivityBeginningMinutes, ActivityComputationStaticData,
     },
 };
@@ -16,43 +15,23 @@ pub fn autoinsert(
     let (tx, rx) = mpsc::channel();
     let mut tree = Tree::new(tx);
 
-    // Init N beginning nodes
-    let mut init_nodes: Vec<Node> = Vec::new();
+    if let Some(mut init_nodes) = tree.init_with_n_nodes(num_workers,
+                                                         static_data,
+                                                         current_insertions) {
+        // Exactly num_workers init nodes generated succesfuly
+        let arc_tree = Arc::new(Mutex::new(tree));
+        for _ in 0..num_workers {
+            let mut worker = Worker::new(
+                static_data.to_vec(),
+                arc_tree.clone(),
+                // We made sure before that there were exactly enough init nodes
+                vec![init_nodes.pop().expect("Popping out of empty vector")],
+            );
 
-    while init_nodes.len() < num_workers {
-        // Expand the last node to get more nodes
-        // TODO this will bug in some cases ?
-        let insertions = if let Some(node) = init_nodes.pop() {
-            node.current_insertions
-        } else {
-            current_insertions.to_vec()
-        };
-
-        let nb_activities_inserted = insertions.len();
-
-        for insertion in
-            get_activity_beginnings_with_conflicts(static_data, &insertions, nb_activities_inserted)
-        {
-            let mut new_insertions = insertions.clone();
-            new_insertions.push(insertion);
-            init_nodes.push(Node::new(new_insertions));
+            std::thread::spawn(move || {
+                worker.work();
+            });
         }
-    }
-
-    tree.unexplored_nodes = init_nodes.split_off(num_workers);
-
-    let arc_tree = Arc::new(Mutex::new(tree));
-    for _ in 0..num_workers {
-        let mut worker = Worker::new(
-            static_data.to_vec(),
-            arc_tree.clone(),
-            // We made sure before that there were exactly enough init nodes
-            vec![init_nodes.pop().expect("Popping out of empty vector")],
-        );
-
-        std::thread::spawn(move || {
-            worker.work();
-        });
     }
 
     rx

@@ -408,6 +408,8 @@ impl App {
             if let Ok(result) = handle.try_recv() {
                 if let Ok(result) = result {
                     data.borrow_mut().apply_autoinsertion_result(result);
+                } else {
+                    // TODO throw error
                 }
                 glib::Continue(false)
             } else {
