@@ -7,10 +7,12 @@ use crate::{
     data::{Activity, ActivityId, Data, InsertionCost, Rgba, Time},
     errors::{invalid_insertion::InvalidInsertion, Result},
 };
-use felix_computation_api::{autoinsert, structs::ActivityBeginningMinutes};
+use felix_computation_api::{
+    autoinsert,
+    structs::{ActivityBeginningMinutes, AutoinsertionThreadHandle},
+};
 
 use std::collections::BTreeSet;
-use std::sync::mpsc;
 
 /// Operations on activities
 impl Data {
@@ -620,9 +622,7 @@ impl Data {
     }
 
     /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the result.
-    pub fn start_autoinsertion(
-        &mut self,
-    ) -> Result<mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>> {
+    pub fn start_autoinsertion(&mut self) -> Result<AutoinsertionThreadHandle> {
         // Poll insertion data
 
         let activities = self

@@ -10,11 +10,10 @@ use crate::app::{
     App,
 };
 
-use felix_backend::data::{clean_string, ActivityBeginningMinutes, ActivityId, Rgba, Time};
+use felix_backend::data::{clean_string, ActivityId, AutoinsertionThreadHandle, Rgba, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
-use std::sync::mpsc;
 
 impl App {
     pub fn connect_activities_tab(&self) {
@@ -397,15 +396,12 @@ impl App {
         );
     }
 
-    fn on_autoinsertion_started_start_polling_result(
-        &self,
-        handle: mpsc::Receiver<std::result::Result<Vec<ActivityBeginningMinutes>, ()>>,
-    ) {
+    fn on_autoinsertion_started_start_polling_result(&self, handle: AutoinsertionThreadHandle) {
         const FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS: u32 = 50;
 
         let data = self.data.clone();
         glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
-            if let Ok(result) = handle.try_recv() {
+            if let Some(result) = handle.try_get_result() {
                 if let Ok(result) = result {
                     data.borrow_mut().apply_autoinsertion_result(result);
                 } else {

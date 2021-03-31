@@ -5,13 +5,14 @@ use crate::{
     },
 };
 
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{mpsc, Arc, Mutex, MutexGuard};
 
 pub struct Worker {
     static_data: Vec<ActivityComputationStaticData>,
     tree: Arc<Mutex<Tree>>,
     current_nodes: Vec<Node>,
-    exit: bool,
+    exit_receiver: mpsc::Receiver<()>,
+    exit_sender: mpsc::Sender<()>,
 }
 
 impl Worker {
@@ -20,16 +21,24 @@ impl Worker {
         tree: Arc<Mutex<Tree>>,
         current_nodes: Vec<Node>,
     ) -> Worker {
+        let (exit_sender, exit_receiver) = mpsc::channel();
+
         Worker {
             static_data,
             tree,
             current_nodes,
-            exit: false,
+            exit_receiver,
+            exit_sender,
         }
     }
 
+    pub fn exit_sender(&self) -> mpsc::Sender<()> {
+        self.exit_sender.clone()
+    }
+
     pub fn work(&mut self) {
-        while !self.exit {
+        // Exit as soon as we get data
+        while self.exit_receiver.try_recv().is_err() {
             self.expand_best_node();
             self.try_sync_with_tree();
         }
@@ -52,11 +61,7 @@ impl Worker {
     }
 
     fn update_tree_and_fetch_new_node(&mut self, mut tree: MutexGuard<Tree>) {
-        if tree.solution_found() {
-            self.exit = true;
-        } else {
-            tree.merge_and_load_best_nodes(&mut self.current_nodes);
-        }
+        tree.merge_and_load_best_nodes(&mut self.current_nodes);
     }
 
     fn expand_best_node(&mut self) {
@@ -80,9 +85,8 @@ impl Worker {
                     nb_activities_inserted,
                 ) {
                     // Create a node for each possible beginning
-                    self.current_nodes.push(
-                        Node::new(best_node.current_insertions.clone(), insertion)
-                    );
+                    self.current_nodes
+                        .push(Node::new(best_node.current_insertions.clone(), insertion));
                 }
             }
         } else {

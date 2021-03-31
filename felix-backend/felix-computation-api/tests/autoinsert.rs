@@ -5,32 +5,30 @@ use std::collections::BTreeSet;
 /// Makes sure sending all inserted activities works
 #[test]
 fn test_autoinsert_everything_inserted() {
-    let static_data = vec![
-        ActivityComputationStaticData {
-            possible_insertion_beginnings_minutes_sorted: (0..=0).collect(),
-            indexes_of_incompatible_activities: vec![],
-            duration_minutes: 20,
-        },
-    ];
+    let static_data = vec![ActivityComputationStaticData {
+        possible_insertion_beginnings_minutes_sorted: (0..=0).collect(),
+        indexes_of_incompatible_activities: vec![],
+        duration_minutes: 20,
+    }];
     let insertion_data = vec![0];
-    let rx = autoinsert(&static_data, &insertion_data);
-    assert_eq!(rx.recv().unwrap().unwrap(), vec![0]);
+    let handle = autoinsert(&static_data, &insertion_data);
+    println!("Launching autoinsert everything inserted");
+    assert_eq!(handle.get_result().unwrap(), vec![0]);
 }
 
 /// Makes sure sending activities which can be inserted instantly works
 /// (not enough data for init_nodes, need to expand once)
 #[test]
 fn test_autoinsert_instant_result_1() {
-    let static_data = vec![
-        ActivityComputationStaticData {
-            possible_insertion_beginnings_minutes_sorted: (0..=0).collect(),
-            indexes_of_incompatible_activities: vec![],
-            duration_minutes: 20,
-        },
-    ];
+    let static_data = vec![ActivityComputationStaticData {
+        possible_insertion_beginnings_minutes_sorted: (0..=0).collect(),
+        indexes_of_incompatible_activities: vec![],
+        duration_minutes: 20,
+    }];
     let insertion_data = vec![];
-    let rx = autoinsert(&static_data, &insertion_data);
-    assert_eq!(rx.recv().unwrap().unwrap(), vec![0]);
+    let handle = autoinsert(&static_data, &insertion_data);
+    println!("Launching autoinsertion instant result 1");
+    assert_eq!(handle.get_result().unwrap(), vec![0]);
 }
 
 /// Makes sure sending activities which can be inserted instantly works
@@ -51,8 +49,9 @@ fn test_autoinsert_instant_result_2() {
     ];
     let insertion_data = vec![];
 
-    let rx = autoinsert(&static_data, &insertion_data);
-    assert_eq!(rx.recv().unwrap().unwrap(), vec![0, 10]);
+    let handle = autoinsert(&static_data, &insertion_data);
+    println!("Launching autoinsertion instant result 2");
+    assert_eq!(handle.get_result().unwrap(), vec![0, 10]);
 }
 
 #[test]
@@ -97,25 +96,24 @@ fn test_basic_autoinsert() {
     ];
     let insertion_data = vec![0];
 
-    let rx = autoinsert(&static_data, &insertion_data);
-    let result = rx.recv().unwrap().unwrap();
+    let handle = autoinsert(&static_data, &insertion_data);
+    let result = handle.get_result().unwrap();
+    println!("Basic autoinsert done");
     assert_eq!(result[0], 0);
 }
 
 /// Makes sure autoinsertion fails early if not enough nodes to init and no solution
 #[test]
 fn test_autoinsert_instant_no_solution() {
-    let static_data = vec![
-        ActivityComputationStaticData {
-            possible_insertion_beginnings_minutes_sorted: BTreeSet::new(),
-            indexes_of_incompatible_activities: vec![],
-            duration_minutes: 15,
-        },
-    ];
+    let static_data = vec![ActivityComputationStaticData {
+        possible_insertion_beginnings_minutes_sorted: BTreeSet::new(),
+        indexes_of_incompatible_activities: vec![],
+        duration_minutes: 15,
+    }];
     let insertion_data = vec![];
 
-    let rx = autoinsert(&static_data, &insertion_data);
-    assert!(rx.recv().unwrap().is_err());
+    let handle = autoinsert(&static_data, &insertion_data);
+    assert!(handle.get_result().is_err());
 }
 
 #[test]
@@ -141,6 +139,6 @@ fn test_autoinsert_no_solution() {
     ];
     let insertion_data = vec![];
 
-    let rx = autoinsert(&static_data, &insertion_data);
-    assert!(rx.recv().unwrap().is_err());
+    let handle = autoinsert(&static_data, &insertion_data);
+    assert!(handle.get_result().is_err());
 }
