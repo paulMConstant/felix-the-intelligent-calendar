@@ -402,8 +402,8 @@ impl App {
         let data = self.data.clone();
         glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
             if let Some(result) = handle.try_get_result() {
-                if let Ok(result) = result {
-                    data.borrow_mut().apply_autoinsertion_result(result);
+                if let Some(solution) = result {
+                    data.borrow_mut().apply_autoinsertion_result(solution);
                 } else {
                     // TODO throw error
                 }
