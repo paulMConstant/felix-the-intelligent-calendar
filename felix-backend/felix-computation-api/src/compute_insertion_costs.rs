@@ -48,6 +48,10 @@ pub fn get_all_activity_beginnings_with_conflicts(
 
 /// Given activity data, computes the possible insertion times so that no activities
 /// cannot overlap.
+///
+/// # Undefined Behaviour
+///
+/// Index of activity must be in bounds.
 pub fn get_activity_beginnings_with_conflicts(
     static_data: &[ActivityComputationStaticData],
     insertion_data: &[ActivityBeginningMinutes],

@@ -81,7 +81,7 @@ use std::rc::Rc;
 ///
 /// let entity = data.entity(new_name.clone()).unwrap();
 ///
-/// assert!(entity.send_me_a_mail(), send_mail);
+/// assert!(entity.send_me_a_mail(), "{}", send_mail);
 /// assert_eq!(entity.mail(), mail);
 /// assert_eq!(entity.custom_work_hours()[0], custom_morning_shift);
 ///

@@ -192,17 +192,17 @@ fn test_fetch_computation() {
     let activity2_static_data = &static_data[1];
     let activity1_static_data = &static_data[2];
     // Check ids
-    // Activity3
+    // Activity3 - incompatible with activity 2 which is second
     assert_eq!(
         activity3_static_data.indexes_of_incompatible_activities,
         vec![1]
     );
-    // Activity2
+    // Activity2 - incompatible with activities 3 and 1 which are last and first
     assert_eq!(
         activity2_static_data.indexes_of_incompatible_activities,
         vec![0, 2]
     );
-    // Activity1
+    // Activity1 - incompatible with activity 3 which is first
     assert_eq!(
         activity1_static_data.indexes_of_incompatible_activities,
         vec![0]
@@ -256,4 +256,10 @@ fn test_fetch_computation() {
             .total_minutes()
     );
     assert_eq!(insertion_data.len(), 1);
+}
+
+#[test]
+fn test_possible_insertion_times_of_activity_with_associated_cost() {
+    // TODO test that index to id and id to index are not confused
+    // Can use setup with 3 activities : 1 and 2 are inserted, not 0
 }

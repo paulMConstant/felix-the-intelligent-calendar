@@ -1,6 +1,7 @@
 use felix_computation_api::{
-    compute_insertion_costs, compute_insertion_costs::get_activity_beginnings_with_conflicts,
-    structs::ActivityComputationStaticData,
+    compute_insertion_costs,
+    compute_insertion_costs::get_activity_beginnings_with_conflicts,
+    structs::{ActivityComputationStaticData, InsertionCostsMinutes},
 };
 
 use std::collections::BTreeSet;
@@ -35,6 +36,51 @@ fn test_filter_conflicts() {
     assert_eq!(
         get_activity_beginnings_with_conflicts(&static_data, &insertion_data, 2),
         expected
+    );
+}
+
+#[test]
+fn test_filter_conflicts_real_life() {
+    // 4 activities, 08:00 - 10:15
+    let static_data = vec![
+        // 0
+        ActivityComputationStaticData {
+            possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[]), // We don't care
+            indexes_of_incompatible_activities: vec![3, 1, 2],
+            duration_minutes: 35,
+        },
+        // 1
+        ActivityComputationStaticData {
+            possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[]), // We don't care
+            indexes_of_incompatible_activities: vec![3, 0, 2],
+            duration_minutes: 35,
+        },
+        // 2
+        ActivityComputationStaticData {
+            possible_insertion_beginnings_minutes_sorted: btreeset_from_slice(&[]), // We don't care
+            indexes_of_incompatible_activities: vec![3, 0, 1],
+            duration_minutes: 25,
+        },
+        // 3
+        ActivityComputationStaticData {
+            possible_insertion_beginnings_minutes_sorted: (480..615)
+                .step_by(5)
+                .map(|i| i as u16)
+                .collect::<BTreeSet<_>>(),
+            indexes_of_incompatible_activities: vec![0, 1, 2],
+            duration_minutes: 40,
+        },
+    ];
+
+    let insertion_data = vec![580, 480, 555];
+
+    let insertion_costs = compute_insertion_costs(&static_data, &insertion_data, 3);
+    assert_eq!(
+        insertion_costs,
+        vec![InsertionCostsMinutes {
+            beginning_minutes: 515,
+            cost: 0
+        }]
     );
 }
 

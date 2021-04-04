@@ -364,8 +364,11 @@ impl Activities {
             // Filter & compute the cost of each possible beginning
             let (static_data, insertion_data) = self.fetch_computation();
 
-            let index_of_activity =
-                self.last_fetch_computation_index_to_id_map[&concerned_activity_id];
+            let (&index_of_activity, _id) = self
+                .last_fetch_computation_index_to_id_map
+                .iter()
+                .find(|&(_index, id)| id == &concerned_activity_id)
+                .expect("Could not find activity");
 
             let insertion_costs_of_activity =
                 &compute_insertion_costs(&static_data, &insertion_data, index_of_activity);

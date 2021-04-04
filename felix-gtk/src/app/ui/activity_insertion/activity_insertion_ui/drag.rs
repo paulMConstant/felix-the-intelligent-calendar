@@ -113,7 +113,7 @@ impl ActivityInsertionUi {
             let selected_activity_id = activity_under_cursor.id();
 
             let concerned_entities_and_possible_insertion_times =
-                get_possible_insertions_callback(selected_activity_id);
+                (get_possible_insertions_callback)(selected_activity_id);
             this.show_possible_activity_insertions(concerned_entities_and_possible_insertion_times);
         }));
     }
