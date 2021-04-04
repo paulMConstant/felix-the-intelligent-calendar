@@ -1,9 +1,9 @@
 mod autoinsertion_thread_handle;
 mod node;
-mod tree;
+mod node_pool;
 mod worker;
 
 pub use autoinsertion_thread_handle::AutoinsertionThreadHandle;
 pub use node::Node;
-pub use tree::Tree;
+pub use node_pool::NodePool;
 pub use worker::Worker;

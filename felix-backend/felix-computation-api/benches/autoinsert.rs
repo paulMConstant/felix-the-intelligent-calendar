@@ -87,9 +87,9 @@ fn bench_autoinsert_light(c: &mut Criterion) {
 
     c.bench_function("Bench autoinsert_light", |b| {
         b.iter(|| {
-            let rx = autoinsert(&static_data, &insertion_data);
+            let handle = autoinsert(&static_data, &insertion_data);
             // Wait for computation result
-            rx.recv().unwrap().unwrap();
+            handle.get_result().unwrap();
         });
     });
 }
@@ -210,9 +210,9 @@ fn bench_autoinsert_heavy(c: &mut Criterion) {
 
     c.bench_function("Bench autoinsert_heavy", |b| {
         b.iter(|| {
-            let rx = autoinsert(&static_data, &insertion_data);
+            let handle = autoinsert(&static_data, &insertion_data);
             // Wait for computation result
-            rx.recv().unwrap().unwrap();
+            handle.get_result().unwrap();
         });
     });
 }

@@ -1,97 +1,90 @@
 use crate::{
     compute_insertion_costs::get_activity_beginnings_with_conflicts,
     structs::{
-        autoinsertion::node::Node, autoinsertion::tree::Tree, ActivityComputationStaticData,
+        autoinsertion::node::Node, autoinsertion::node_pool::NodePool,
+        ActivityComputationStaticData,
     },
 };
 
-use std::sync::{mpsc, Arc, Mutex, MutexGuard};
+use std::sync::{mpsc, Arc, Mutex};
 
 pub struct Worker {
     static_data: Vec<ActivityComputationStaticData>,
-    tree: Arc<Mutex<Tree>>,
+    pool: Arc<Mutex<NodePool>>,
     current_nodes: Vec<Node>,
+    active: bool,
+
     exit_receiver: mpsc::Receiver<()>,
-    exit_sender: mpsc::Sender<()>,
 }
 
 impl Worker {
     pub fn new(
         static_data: Vec<ActivityComputationStaticData>,
-        tree: Arc<Mutex<Tree>>,
+        pool: Arc<Mutex<NodePool>>,
         current_nodes: Vec<Node>,
+        exit_receiver: mpsc::Receiver<()>,
     ) -> Worker {
-        let (exit_sender, exit_receiver) = mpsc::channel();
-
         Worker {
             static_data,
-            tree,
+            pool,
             current_nodes,
-            exit_receiver,
-            exit_sender,
-        }
-    }
+            active: true,
 
-    pub fn exit_sender(&self) -> mpsc::Sender<()> {
-        self.exit_sender.clone()
+            exit_receiver,
+        }
     }
 
     pub fn work(&mut self) {
         // Exit as soon as we get data
         while self.exit_receiver.try_recv().is_err() {
-            self.expand_best_node();
-            self.try_sync_with_tree();
+            self.expand_node();
+            self.try_sync_with_pool();
         }
     }
 
-    /// Updates the tree and fetches a new node to explore.
-    /// If the tree is locked, this operation is skipped.
-    fn sync_with_tree(&mut self) {
-        let tree = self.tree.clone();
-        let tree = tree.lock().unwrap();
-        self.update_tree_and_fetch_new_node(tree);
+    /// Updates the pool and fetches a new node to explore.
+    /// If the pool is locked, this operation is skipped.
+    fn sync_with_pool(&mut self) {
+        self.pool
+            .lock()
+            .unwrap()
+            .merge_and_load_nodes(&mut self.current_nodes, &mut self.active);
     }
 
-    /// Updates the tree and fetches a new node to explore.
-    /// If the tree is locked, this operation is skipped.
-    fn try_sync_with_tree(&mut self) {
-        if let Ok(tree) = self.tree.clone().try_lock() {
-            self.update_tree_and_fetch_new_node(tree);
+    /// Updates the pool and fetches a new node to explore.
+    /// If the pool is locked, this operation is skipped.
+    fn try_sync_with_pool(&mut self) {
+        if let Ok(mut pool) = self.pool.try_lock() {
+            pool.merge_and_load_nodes(&mut self.current_nodes, &mut self.active);
         };
     }
 
-    fn update_tree_and_fetch_new_node(&mut self, mut tree: MutexGuard<Tree>) {
-        tree.merge_and_load_best_nodes(&mut self.current_nodes);
-    }
-
-    fn expand_best_node(&mut self) {
-        // Find best node
-        // If only one activity remains, cost will be zero, so we will find it fast
-        if let Some(best_node) = self.current_nodes.pop() {
+    fn expand_node(&mut self) {
+        if let Some(node) = self.current_nodes.pop() {
             // Current nodes is not empty: work
-            let nb_activities_inserted = best_node.current_insertions.len();
+            let nb_activities_inserted = node.current_insertions.len();
             let nb_activities_to_insert = self.static_data.len();
 
             if nb_activities_inserted == nb_activities_to_insert {
                 // All activities have been inserted. Yay !
-                self.tree
+                self.pool
                     .lock()
                     .unwrap()
-                    .send_solution(best_node.current_insertions);
+                    .send_solution(node.current_insertions);
             } else {
-                for insertion in get_activity_beginnings_with_conflicts(
-                    &self.static_data,
-                    &best_node.current_insertions,
-                    nb_activities_inserted,
-                ) {
-                    // Create a node for each possible beginning
-                    self.current_nodes
-                        .push(Node::new(best_node.current_insertions.clone(), insertion));
-                }
+                self.current_nodes.extend(
+                    get_activity_beginnings_with_conflicts(
+                        &self.static_data,
+                        &node.current_insertions,
+                        nb_activities_inserted,
+                    )
+                    .into_iter()
+                    .map(|insertion| Node::new(node.current_insertions.clone(), insertion)),
+                );
             }
         } else {
-            // Current nodes is empty, fetch from tree
-            self.sync_with_tree();
+            // Current nodes is empty, fetch from pool
+            self.sync_with_pool();
         }
     }
 }
