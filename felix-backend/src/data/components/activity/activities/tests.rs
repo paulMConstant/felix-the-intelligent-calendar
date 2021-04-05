@@ -259,7 +259,55 @@ fn test_fetch_computation() {
 }
 
 #[test]
-fn test_possible_insertion_times_of_activity_with_associated_cost() {
-    // TODO test that index to id and id to index are not confused
-    // Can use setup with 3 activities : 1 and 2 are inserted, not 0
+fn test_possible_insertion_times_of_activity_with_associated_cost_check_revert_sorting() {
+    let mut activity_collection = Activities::new();
+    activity_collection.add("0".to_owned());
+    activity_collection.add("1".to_owned());
+    activity_collection.add("2".to_owned());
+
+    let activity1 = activity_collection
+        .get_mut_by_id(0)
+        .expect("Could not get activity by id");
+
+    let activity1_possible_beginnings = (0..=10)
+        .step_by(5)
+        .map(|i| Time::from_total_minutes(i))
+        .collect::<HashSet<Time>>();
+
+    activity1
+        .computation_data
+        .set_incompatible_activity_ids(vec![]);
+    activity1.computation_data.set_duration(Time::new(0, 30));
+    activity1
+        .computation_data
+        .set_possible_insertion_times_if_no_conflict(activity1_possible_beginnings.clone());
+
+    let activity2 = activity_collection
+        .get_mut_by_id(1)
+        .expect("Could not get activity by id");
+
+    activity2
+        .computation_data
+        .set_incompatible_activity_ids(vec![0, 3]);
+    activity2.computation_data.set_duration(Time::new(0, 20));
+    activity2.computation_data.insert(Some(Time::new(2, 0)));
+
+    let activity3 = activity_collection
+        .get_mut_by_id(2)
+        .expect("Could not get activity by id");
+    activity3.computation_data.set_duration(Time::new(0, 20));
+    activity3.computation_data.insert(Some(Time::new(1, 0)));
+
+    // Activity 1 will be reordered internally.
+    // Check that its beginnings are the ones we fetch (id != index)
+    let result = activity_collection
+        .possible_insertion_times_of_activity_with_associated_cost(&[], 0)
+        .unwrap();
+    let expected = Some(
+        activity1_possible_beginnings
+            .into_iter()
+            .map(|beginning| InsertionCost { beginning, cost: 0 })
+            .collect::<BTreeSet<_>>(),
+    );
+    assert_eq!(result, expected);
 }
