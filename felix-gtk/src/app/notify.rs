@@ -6,7 +6,7 @@ pub fn notify_err(error: Box<dyn std::error::Error>) {
     toast_notify(tr("Uh-Oh..."), error.to_string());
 }
 
-fn toast_notify<S1, S2>(summary: S1, body: S2)
+pub fn toast_notify<S1, S2>(summary: S1, body: S2)
 where
     S1: AsRef<str>,
     S2: AsRef<str>,

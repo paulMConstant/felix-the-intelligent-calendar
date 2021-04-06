@@ -4,6 +4,7 @@ use gtk::prelude::*;
 use gettextrs::gettext as tr;
 
 use crate::app::{
+    notify::toast_notify,
     connect::ui::wrap_duration::wrap_duration,
     notify::notify_err,
     ui::{activities_treeview_config::*, helpers::tree::get_selection_from_treeview},
@@ -405,7 +406,7 @@ impl App {
                 if let Some(solution) = result {
                     data.borrow_mut().apply_autoinsertion_result(solution);
                 } else {
-                    // TODO throw error
+                    toast_notify(tr("Sorry"), tr("There is no solution for these activities"));
                 }
                 glib::Continue(false)
             } else {
