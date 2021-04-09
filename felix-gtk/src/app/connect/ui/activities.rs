@@ -11,7 +11,7 @@ use crate::app::{
     App,
 };
 
-use felix_backend::data::{clean_string, ActivityId, AutoinsertionThreadHandle, Rgba, Time};
+use felix_backend::data::{clean_string, ActivityId, Rgba, Time};
 use felix_backend::errors::does_not_exist::DoesNotExist;
 
 use std::convert::TryFrom;
@@ -381,35 +381,63 @@ impl App {
         fetch_from!(self.ui.borrow(), autoinsert_button);
 
         let app = self.clone();
+
         app_register_signal!(
             self,
             autoinsert_button,
             autoinsert_button.connect_clicked(move |button| {
-                assign_or_return!(
-                    autoinsertion_handle,
-                    app.data.borrow_mut().start_autoinsertion()
-                );
+                if !app.ui.borrow_mut().stop_autoinsertion_if_running() {
+                    // Autoinsertion was not running
+                    // Start autoinsertion
+                    assign_or_return!(handle, app.data.borrow_mut().start_autoinsertion());
 
-                app.on_autoinsertion_started_start_polling_result(autoinsertion_handle);
-                button.set_label(&tr("Stop auto-insertion"));
+                    *app.ui.borrow().autoinsertion_handle().borrow_mut() = Some(handle);
+
+                    app.on_autoinsertion_started_start_polling_result();
+                    button.set_label(&tr("Stop auto-insertion"));
+                }
             })
         );
     }
 
-    fn on_autoinsertion_started_start_polling_result(&self, handle: AutoinsertionThreadHandle) {
+    fn on_autoinsertion_started_start_polling_result(&self) {
         const FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS: u32 = 50;
 
         let data = self.data.clone();
+        let ui = self.ui.clone();
+
         glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
-            if let Some(result) = handle.try_get_result() {
-                if let Some(solution) = result {
-                    data.borrow_mut().apply_autoinsertion_result(solution);
+            let handle = ui
+                .borrow()
+                .autoinsertion_handle()
+                .borrow()
+                .as_ref()
+                .map(|handle| handle.try_get_result());
+
+            if let Some(result_from_handle) = handle {
+                // Autoinsertion handle is still there
+                if let Some(result) = result_from_handle {
+                    // We have got a result
+                    if let Some(solution) = result {
+                        // Yay we got a solution - autoinsertion is done
+                        data.borrow_mut().apply_autoinsertion_result(solution);
+                        glib::Continue(false)
+                    } else {
+                        // We have got no solution - autoinsertion is done
+                        toast_notify(tr("Sorry"), tr("There is no solution for these activities"));
+                        data.borrow()
+                            .events()
+                            .borrow_mut()
+                            .emit_autoinsertion_done(&data.borrow());
+                        glib::Continue(false)
+                    }
                 } else {
-                    toast_notify(tr("Sorry"), tr("There is no solution for these activities"));
+                    // No result but autoinsertion still running
+                    glib::Continue(true)
                 }
-                glib::Continue(false)
             } else {
-                glib::Continue(true)
+                // Autoinsertion handle is not there - autoinsertion was halted
+                glib::Continue(false)
             }
         });
     }

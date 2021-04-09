@@ -89,7 +89,10 @@ impl Ui {
 
     pub fn on_entities_or_groups_changed(&mut self, data: &Data) {
         self.update_entity_group_completion_list_store(data);
+        self.refresh_current_activity_view(data);
+    }
 
+    pub fn refresh_current_activity_view(&mut self, data: &Data) {
         if let Some(current_activity) = &self.current_activity {
             let new_current_activity = data
                 .activities_sorted()

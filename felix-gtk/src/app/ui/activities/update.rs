@@ -15,6 +15,7 @@ impl Ui {
 
         if self.current_activity.is_some() {
             self.update_current_activity_view(groups);
+            self.update_activities_treeview_selection();
         } else {
             self.hide_current_activity_view();
         }

@@ -10,6 +10,8 @@ use felix_backend::data::{ActivityId, Data, Entity, Time};
 use glib::clone;
 use gtk::prelude::*;
 
+use gettextrs::gettext as tr;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -144,6 +146,12 @@ impl Ui {
                 .expect("User clicked on activity which does not exist");
             self.update_current_activity(&data.groups_sorted(), Some(activity));
         }
+    }
+
+    pub fn on_autoinsertion_done_update_state(&mut self) {
+        fetch_from!(self, autoinsert_button);
+        autoinsert_button.set_label(&tr("Auto-insert"));
+        *self.autoinsertion_handle.borrow_mut() = None;
     }
 
     pub fn on_right_click(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {

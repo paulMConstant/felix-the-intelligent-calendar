@@ -578,6 +578,11 @@ impl Data {
     /// data.insert_activity(id_static, Some(Time::new(9, 0)));
     ///
     /// data.set_activity_duration(id_will_move, Time::new(0, 30));
+    /// // Wait for computation result...
+    /// while data.possible_insertion_times_of_activity_with_associated_cost(id_will_move).unwrap().is_none() {
+    /// // For the purpose of this test, wait for asynchronous computation of possible beginnings.
+    /// }
+    ///
     /// data.insert_activity(id_will_move, Some(Time::new(8, 30)));
     /// assert!(data.activity(id_will_move).unwrap().insertion_interval().is_some());
     ///

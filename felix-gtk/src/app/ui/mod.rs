@@ -24,7 +24,7 @@ pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;
 
-use felix_backend::data::{Activity, Entity, Group, InsertionCost};
+use felix_backend::data::{Activity, AutoinsertionThreadHandle, Entity, Group, InsertionCost};
 
 use std::cell::RefCell;
 use std::collections::BTreeSet;
@@ -44,6 +44,7 @@ pub struct Ui {
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
     activity_insertion: Rc<RefCell<ActivityInsertionUi>>,
+    autoinsertion_handle: Rc<RefCell<Option<AutoinsertionThreadHandle>>>,
 }
 
 impl Ui {
@@ -57,7 +58,28 @@ impl Ui {
             work_hours_builder: WorkHoursBuilder::new(),
             custom_work_hours_builder: WorkHoursBuilder::new(),
             activity_insertion: Rc::new(RefCell::new(ActivityInsertionUi::new())),
+            autoinsertion_handle: Rc::new(RefCell::new(None)),
         }
+    }
+
+    /// Stops the autoinsertion if it is running.
+    /// Returns true if the autoinsertion was running else false.
+    pub(super) fn stop_autoinsertion_if_running(&mut self) -> bool {
+        let autoinsertion_running = if let Some(handle) = &*self.autoinsertion_handle.borrow() {
+            handle.stop();
+            true
+        } else {
+            false
+        };
+
+        if autoinsertion_running {
+            self.on_autoinsertion_done_update_state();
+        }
+        autoinsertion_running
+    }
+
+    pub(super) fn autoinsertion_handle(&self) -> Rc<RefCell<Option<AutoinsertionThreadHandle>>> {
+        self.autoinsertion_handle.clone()
     }
 
     pub(super) fn init_ui_state(&mut self) {
