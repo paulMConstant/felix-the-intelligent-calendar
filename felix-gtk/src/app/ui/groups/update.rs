@@ -58,27 +58,15 @@ impl Ui {
     }
 
     fn show_current_group_view(&self) {
-        fetch_from!(
-            self,
-            group_specific_box,
-            add_entity_to_group_box,
-            create_entity_before_adding_to_group_box
-        );
+        fetch_from!(self, group_specific_box, add_entity_to_group_box);
         group_specific_box.show();
         add_entity_to_group_box.show();
-        create_entity_before_adding_to_group_box.show();
     }
 
     fn hide_current_group_view(&self) {
-        fetch_from!(
-            self,
-            group_specific_box,
-            add_entity_to_group_box,
-            create_entity_before_adding_to_group_box
-        );
+        fetch_from!(self, group_specific_box, add_entity_to_group_box);
         group_specific_box.hide();
         add_entity_to_group_box.hide();
-        create_entity_before_adding_to_group_box.hide();
     }
 
     pub(super) fn update_groups_treeview(&self, groups: &[&Group]) {

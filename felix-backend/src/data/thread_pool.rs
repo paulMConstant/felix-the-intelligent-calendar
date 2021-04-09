@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub(crate) struct ThreadPool {
+pub(crate) struct FelixThreadPool {
     thread_pool: rayon::ThreadPool,
 }
 
-impl ThreadPool {
+impl FelixThreadPool {
     pub fn new() -> Self {
-        ThreadPool {
+        FelixThreadPool {
             thread_pool: rayon::ThreadPoolBuilder::new()
                 .num_threads((num_cpus::get() - 1).max(1))
                 .build()
@@ -13,17 +13,16 @@ impl ThreadPool {
         }
     }
 
-    /// Transparent method which calls rayon::ThreadPool::install.
-    pub fn install<OP, R>(&self, op: OP) -> R
+    /// Transparent method which calls rayon::ThreadPool::spawn.
+    pub fn spawn<OP>(&self, op: OP)
     where
-        OP: FnOnce() -> R + Send,
-        R: Send,
+        OP: FnOnce() + Send + 'static,
     {
-        self.thread_pool.install(op)
+        self.thread_pool.spawn(op)
     }
 }
 
-impl Default for ThreadPool {
+impl Default for FelixThreadPool {
     fn default() -> Self {
         Self::new()
     }

@@ -12,7 +12,12 @@ fn test_autoinsert_everything_inserted() {
     }];
     let insertion_data = vec![0];
     let handle = autoinsert(&static_data, &insertion_data);
-    assert_eq!(handle.get_result().unwrap(), vec![0]);
+    assert_eq!(
+        handle
+            .get_result()
+            .expect("No autoinsertion result where there should be one"),
+        vec![0]
+    );
 }
 
 /// Makes sure sending activities which can be inserted instantly works
@@ -26,7 +31,12 @@ fn test_autoinsert_instant_result_1() {
     }];
     let insertion_data = vec![];
     let handle = autoinsert(&static_data, &insertion_data);
-    assert_eq!(handle.get_result().unwrap(), vec![0]);
+    assert_eq!(
+        handle
+            .get_result()
+            .expect("No autoinsertion result where there should be one"),
+        vec![0]
+    );
 }
 
 /// Makes sure sending activities which can be inserted instantly works
@@ -48,7 +58,12 @@ fn test_autoinsert_instant_result_2() {
     let insertion_data = vec![];
 
     let handle = autoinsert(&static_data, &insertion_data);
-    assert_eq!(handle.get_result().unwrap(), vec![0, 10]);
+    assert_eq!(
+        handle
+            .get_result()
+            .expect("No autoinsertion result where there should be one"),
+        vec![0, 10]
+    );
 }
 
 #[test]
@@ -94,7 +109,9 @@ fn test_basic_autoinsert() {
     let insertion_data = vec![0];
 
     let handle = autoinsert(&static_data, &insertion_data);
-    let result = handle.get_result().unwrap();
+    let result = handle
+        .get_result()
+        .expect("No autoinsertion result where there should be one");
     assert_eq!(result[0], 0);
 }
 

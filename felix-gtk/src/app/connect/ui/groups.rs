@@ -128,12 +128,10 @@ impl App {
 
     fn connect_add_entity_to_group(&self) {
         macro_rules! add_entity_to_group_closure {
-            ($data:ident, $ui: ident, $entity_into_group_name_entry:ident,
-             $create_entity_before_adding_to_group_switch:ident) => {
+            ($data:ident, $ui: ident, $entity_into_group_name_entry:ident,) => {
                 clone!(@strong $ui,
                        @strong $data,
-                       @weak $entity_into_group_name_entry,
-                       @weak $create_entity_before_adding_to_group_switch => move |_| {
+                       @weak $entity_into_group_name_entry => move |_| {
                 let mut data = $data.borrow_mut();
                 let group_in_which_to_add = $ui.borrow().current_group().as_ref()
                     .expect("Current group should be selected before accessing any group-related filed")
@@ -144,12 +142,6 @@ impl App {
                     $entity_into_group_name_entry.set_text(""),
                     $entity_into_group_name_entry
                 );
-
-                no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-                if $create_entity_before_adding_to_group_switch.get_active()
-                    && data.entity(&entity_name).is_err() {
-                    return_if_err!(data.add_entity(&entity_name));
-                }
 
                 return_if_err!(
                     data
@@ -164,8 +156,7 @@ impl App {
         fetch_from!(
             self.ui.borrow(),
             entity_into_group_name_entry,
-            add_to_group_button,
-            create_entity_before_adding_to_group_switch
+            add_to_group_button
         );
 
         let entity_into_group_name_entry_cloned = entity_into_group_name_entry.clone();
@@ -176,7 +167,6 @@ impl App {
                 data,
                 ui,
                 entity_into_group_name_entry,
-                create_entity_before_adding_to_group_switch
             ))
         );
 
@@ -187,7 +177,6 @@ impl App {
                 data,
                 ui,
                 entity_into_group_name_entry,
-                create_entity_before_adding_to_group_switch
             ))
         );
     }

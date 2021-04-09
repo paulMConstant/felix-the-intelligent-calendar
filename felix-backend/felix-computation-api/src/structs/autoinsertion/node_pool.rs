@@ -1,10 +1,13 @@
-use crate::structs::{autoinsertion::Node, ActivityBeginningMinutes};
+use crate::structs::{
+    autoinsertion::{Node, NodesSortedByScore},
+    ActivityBeginningMinutes, Cost,
+};
 
 use std::sync::{mpsc, Arc, Mutex};
 
 /// A destructive tree structure shared among all workers.
 pub struct NodePool {
-    unexplored_nodes: Vec<Node>,
+    unexplored_nodes: NodesSortedByScore,
 
     result_sender: mpsc::Sender<Option<Vec<ActivityBeginningMinutes>>>,
     worker_thread_terminate_handles: Arc<Mutex<Vec<mpsc::Sender<()>>>>,
@@ -15,13 +18,13 @@ pub struct NodePool {
 impl NodePool {
     #[must_use]
     pub fn new(
-        unexplored_nodes: Vec<Node>,
+        unexplored_nodes: Vec<(Cost, Node)>,
         result_sender: mpsc::Sender<Option<Vec<ActivityBeginningMinutes>>>,
         worker_thread_terminate_handles: Arc<Mutex<Vec<mpsc::Sender<()>>>>,
         n_workers: usize,
     ) -> NodePool {
         NodePool {
-            unexplored_nodes,
+            unexplored_nodes: NodesSortedByScore::new(unexplored_nodes),
             result_sender,
             worker_thread_terminate_handles,
             n_workers,
@@ -39,12 +42,16 @@ impl NodePool {
         let _ = self.result_sender.send(None);
     }
 
-    pub fn merge_and_load_nodes(&mut self, nodes: &mut Vec<Node>, worker_active: &mut bool) {
+    pub fn merge_and_load_nodes(
+        &mut self,
+        nodes_to_merge: &mut NodesSortedByScore,
+        worker_active: &mut bool,
+    ) {
         // Add nodes to the node_pool
-        self.unexplored_nodes.append(nodes);
+        self.unexplored_nodes.merge_append(nodes_to_merge);
 
-        if let Some(node) = self.unexplored_nodes.pop() {
-            nodes.push(node);
+        if let Some((cost, node)) = self.unexplored_nodes.node_with_lowest_cost() {
+            nodes_to_merge.insert(cost, vec![node]);
             if !*worker_active {
                 self.n_inactive_workers -= 1;
                 *worker_active = true;

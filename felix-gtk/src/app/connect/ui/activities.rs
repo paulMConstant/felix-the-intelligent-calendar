@@ -4,9 +4,9 @@ use gtk::prelude::*;
 use gettextrs::gettext as tr;
 
 use crate::app::{
-    notify::toast_notify,
     connect::ui::wrap_duration::wrap_duration,
     notify::notify_err,
+    notify::toast_notify,
     ui::{activities_treeview_config::*, helpers::tree::get_selection_from_treeview},
     App,
 };
@@ -168,7 +168,6 @@ impl App {
                     $minutes_spin.set_value(activity_duration.minutes() as f64);
                     $hours_spin.set_value(activity_duration.hours() as f64);
                 }
-
             };
         }
 

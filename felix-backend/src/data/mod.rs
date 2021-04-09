@@ -16,7 +16,7 @@ pub use components::{
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
 
-pub(crate) use thread_pool::ThreadPool;
+pub(crate) use thread_pool::FelixThreadPool;
 
 pub use computation_structs::InsertionCost;
 pub use felix_computation_api::structs::{ActivityBeginningMinutes, AutoinsertionThreadHandle};

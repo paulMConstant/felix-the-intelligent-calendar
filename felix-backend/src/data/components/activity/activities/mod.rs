@@ -290,7 +290,7 @@ impl Activities {
     /// Triggers the computation of new possible beginnings for the given activities.
     pub fn trigger_update_possible_activity_beginnings(
         &mut self,
-        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
+        schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
         concerned_activity_ids: HashSet<ActivityId>,
     ) {
         self.possible_beginnings_updater

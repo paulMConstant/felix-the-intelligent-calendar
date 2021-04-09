@@ -258,8 +258,11 @@ fn test_fetch_computation() {
     assert_eq!(insertion_data.len(), 1);
 }
 
+/// The purpose of this test is to make sure that activities which are ordered differently in data
+/// (by order of addition)
+/// and in felix-computation-api (by difficulty of insertion) are not inverted.
 #[test]
-fn test_possible_insertion_times_of_activity_with_associated_cost_check_revert_sorting() {
+fn test_possible_insertion_times_of_activity_with_associated_cost() {
     let mut activity_collection = Activities::new();
     activity_collection.add("0".to_owned());
     activity_collection.add("1".to_owned());
@@ -306,7 +309,11 @@ fn test_possible_insertion_times_of_activity_with_associated_cost_check_revert_s
     let expected = Some(
         activity1_possible_beginnings
             .into_iter()
-            .map(|beginning| InsertionCost { beginning, cost: 0 })
+            // Base cost = 10 000 divided by 1 + nb_activities_inserted
+            .map(|beginning| InsertionCost {
+                beginning,
+                cost: 10000 / (1 + 2),
+            })
             .collect::<BTreeSet<_>>(),
     );
     assert_eq!(result, expected);

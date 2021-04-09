@@ -10,7 +10,7 @@ use std::collections::BTreeSet;
 /// computes the insertion times taking conflicts into account.
 ///
 /// Activities which are inserted are always stored FIRST in the static data,
-/// as the insertion_data contains only the subset of inserted activities.
+/// as the insertion data contains only the subset of inserted activities.
 pub fn compute_insertion_costs(
     static_data: &[ActivityComputationStaticData],
     insertion_data: &[ActivityBeginningMinutes],
@@ -76,18 +76,16 @@ pub fn get_activity_beginnings_with_conflicts(
         .iter()
         .copied()
         .filter_map(|index| {
-            if let Some(incompatible_beginning) = insertion_data.get(index) {
+            insertion_data.get(index).map(|incompatible_beginning| {
                 // The activity is inserted.
                 // Use it to filter out conflicts
                 unsafe {
-                    Some((
+                    (
                         *incompatible_beginning,
                         incompatible_beginning + static_data.get_unchecked(index).duration_minutes,
-                    ))
+                    )
                 }
-            } else {
-                None
-            }
+            })
         })
     {
         // Make sure the activity will not overlap with invalid intervals (for its whole duration)
@@ -127,7 +125,10 @@ pub fn get_activity_insertion_costs(
     for beginning in possible_beginnings.iter().copied() {
         let end = beginning + activity_static_data.duration_minutes;
 
-        let mut cost = 0;
+        // Treat usize as float with 4 digits precision
+        const SIGNIFICANT_DIGIT_MULTIPLIER: usize = 10_000;
+        // Baseline
+        let mut cost = SIGNIFICANT_DIGIT_MULTIPLIER;
         let mut beginning_will_block_other_activities = false;
 
         for (
@@ -177,7 +178,6 @@ pub fn get_activity_insertion_costs(
                     .indexes_of_incompatible_activities
                     .len();
 
-                const SIGNIFICANT_DIGIT_MULTIPLIER: usize = 1000;
                 cost += SIGNIFICANT_DIGIT_MULTIPLIER
                     * nb_beginnings_blocked
                     * nb_incompatible_activities
@@ -186,6 +186,9 @@ pub fn get_activity_insertion_costs(
         }
         // The activity can be inserted
         if !beginning_will_block_other_activities {
+            let nb_activities_inserted = insertion_data.len();
+            // Cost decreases with depth
+            cost /= nb_activities_inserted + 1;
             cost_for_all_beginnings.push(InsertionCostsMinutes {
                 beginning_minutes: beginning,
                 cost,

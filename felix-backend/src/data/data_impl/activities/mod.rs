@@ -55,6 +55,7 @@ impl Data {
         &mut self,
         id: ActivityId,
     ) -> Result<Option<BTreeSet<InsertionCost>>> {
+        let now = std::time::Instant::now();
         let activity = self.activities.get_by_id(id)?;
         let participants = activity.entities_sorted();
 
@@ -80,8 +81,9 @@ impl Data {
                 )
             })
             .collect::<Result<Vec<_>>>(); // Result<bool>>
+        println!("Elapsed {:?}", now.elapsed().as_millis());
 
-        if possible_beginnings_are_computed?
+        let res = if possible_beginnings_are_computed?
             .iter()
             .all(|computed| *computed)
         {
@@ -93,7 +95,9 @@ impl Data {
                 )
         } else {
             Ok(None)
-        }
+        };
+        println!("Elapsed total {:?}", now.elapsed().as_millis());
+        res
     }
 
     /// Adds an activity with the formatted given name.

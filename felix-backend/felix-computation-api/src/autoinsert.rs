@@ -1,8 +1,8 @@
 use crate::{
-    compute_insertion_costs::get_activity_beginnings_with_conflicts,
+    compute_insertion_costs,
     structs::{
         autoinsertion::{AutoinsertionThreadHandle, Node, NodePool, Worker},
-        ActivityBeginningMinutes, ActivityComputationStaticData,
+        ActivityBeginningMinutes, ActivityComputationStaticData, Cost,
     },
 };
 
@@ -25,71 +25,62 @@ pub fn autoinsert(
 
     if n_activities_to_insert == current_insertions.len() {
         // All activities are inserted - return the solution
-        NodePool::new(
-            Vec::new(),
-            result_sender,
-            worker_thread_terminate_handles,
-            n_workers,
-        )
-        .send_solution(current_insertions.to_vec());
+        // If no one is listening, it is fine, we just return as if nothing happened
+        let _ = result_sender.send(Some(current_insertions.to_vec()));
         return auto_insertion_handle;
     }
 
     // Create n nodes
-    let mut init_nodes: Vec<Node> = Vec::with_capacity(n_workers);
+    let mut init_nodes: Vec<(Cost, Node)> = Vec::with_capacity(n_workers);
 
     // Create a node for each possible beginning
-    for insertion in get_activity_beginnings_with_conflicts(
-        static_data,
-        current_insertions,
-        current_insertions.len(),
-    ) {
-        init_nodes.push(Node::new(current_insertions.to_vec(), insertion));
+    for insertion_cost in
+        compute_insertion_costs(static_data, current_insertions, current_insertions.len())
+    {
+        init_nodes.push((
+            insertion_cost.cost,
+            Node::new(
+                current_insertions.to_vec(),
+                insertion_cost.beginning_minutes,
+            ),
+        ));
     }
 
     // Generate nodes until there are enough of them
     while init_nodes.len() < n_workers {
         if init_nodes.is_empty() {
             // Init nodes have all been expanded - no solution is available
-            NodePool::new(
-                Vec::new(),
-                result_sender,
-                worker_thread_terminate_handles,
-                n_workers,
-            )
-            .send_no_solution();
+            // If no one is listening, it is fine, we just return as if nothing happened
+            let _ = result_sender.send(None);
             return auto_insertion_handle;
         }
 
         // Check if any node has reached a solution
         if let Some(node_with_solution) = init_nodes
             .iter()
-            .find(|node| n_activities_to_insert == node.current_insertions.len())
+            .map(|(_cost, node)| node)
+            .find(|&node| n_activities_to_insert == node.current_insertions.len())
         {
             // All activities are inserted - return the solution
-            NodePool::new(
-                Vec::new(),
-                result_sender,
-                worker_thread_terminate_handles,
-                n_workers,
-            )
-            .send_solution(node_with_solution.current_insertions.clone());
+            // If no one is listening, it is fine, we just return as if nothing happened
+            let _ = result_sender.send(Some(node_with_solution.current_insertions.clone()));
             return auto_insertion_handle;
         }
 
         // Expand the node with the least number of inserted activities
         let (index_node_with_least_number_of_insertions, _) = init_nodes
             .iter()
+            .map(|(_cost, node)| node)
             .enumerate()
             .min_by_key(|(_index, node)| node.current_insertions.len())
             .expect("Taking min of empty vec");
 
-        let node_with_least_number_of_insertions =
+        let (_cost, node_with_least_number_of_insertions) =
             init_nodes.swap_remove(index_node_with_least_number_of_insertions);
 
         // Create a node for each possible beginning
         init_nodes.extend(
-            get_activity_beginnings_with_conflicts(
+            compute_insertion_costs(
                 static_data,
                 &node_with_least_number_of_insertions.current_insertions,
                 node_with_least_number_of_insertions
@@ -97,12 +88,15 @@ pub fn autoinsert(
                     .len(),
             )
             .into_iter()
-            .map(|insertion| {
-                Node::new(
-                    node_with_least_number_of_insertions
-                        .current_insertions
-                        .to_vec(),
-                    insertion,
+            .map(|insertion_cost| {
+                (
+                    insertion_cost.cost,
+                    Node::new(
+                        node_with_least_number_of_insertions
+                            .current_insertions
+                            .to_vec(),
+                        insertion_cost.beginning_minutes,
+                    ),
                 )
             }),
         );

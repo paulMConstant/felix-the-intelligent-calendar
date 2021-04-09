@@ -220,21 +220,25 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkTreeView" id="ActivitiesTreeView">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="model">ActivitiesListStore</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
-                        </child>
+                        <property name="shadow-type">in</property>
                         <child>
-                          <object class="GtkTreeViewColumn" id="ActivityNameCol">
-                            <property name="title" translatable="yes">Activities</property>
+                          <object class="GtkTreeView" id="ActivitiesTreeView">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="model">ActivitiesListStore</property>
                             <child>
-                              <object class="GtkCellRendererText" id="ActivityNameRenderer"/>
-                              <attributes>
-                                <attribute name="text">1</attribute>
-                              </attributes>
+                              <object class="GtkTreeViewColumn" id="ActivityNameCol">
+                                <property name="title" translatable="yes">Activities</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="ActivityNameRenderer"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
                             </child>
                           </object>
                         </child>
@@ -737,6 +741,7 @@
                         <property name="vexpand">False</property>
                         <property name="border-width">0</property>
                         <property name="orientation">vertical</property>
+                        <property name="position-set">True</property>
                         <property name="wide-handle">True</property>
                         <child>
                           <object class="GtkScrolledWindow">

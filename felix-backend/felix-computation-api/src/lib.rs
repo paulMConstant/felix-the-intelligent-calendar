@@ -1,3 +1,5 @@
+#![feature(map_first_last)]
+
 extern crate itertools;
 extern crate num_cpus;
 

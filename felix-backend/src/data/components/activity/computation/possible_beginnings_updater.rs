@@ -1,6 +1,6 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, ThreadPool,
-    Time,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId,
+    FelixThreadPool, Time,
 };
 
 use felix_computation_api::find_possible_beginnings;
@@ -25,7 +25,7 @@ pub struct PossibleBeginningsUpdater {
     possible_beginnings_up_to_date: HashMap<ActivityId, bool>,
     // Prototype design pattern
     computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
-    thread_pool: Rc<ThreadPool>,
+    thread_pool: Rc<FelixThreadPool>,
 }
 
 impl PossibleBeginningsUpdater {
@@ -35,7 +35,7 @@ impl PossibleBeginningsUpdater {
             computation_cache: Arc::new(
                 Mutex::new(WorkHoursAndActivityDurationsSortedCache::new()),
             ),
-            thread_pool: Rc::new(ThreadPool::new()),
+            thread_pool: Rc::new(FelixThreadPool::new()),
         }
     }
 
@@ -62,7 +62,7 @@ impl PossibleBeginningsUpdater {
     /// Invalidates the concerned activities.
     pub fn queue_work_hours_and_activity_durations(
         &mut self,
-        work_hours_and_activity_durations: &[WorkHoursAndActivityDurationsSorted],
+        work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
         out_of_date_activities: HashSet<ActivityId>,
     ) {
         if out_of_date_activities.is_empty() {
@@ -76,10 +76,10 @@ impl PossibleBeginningsUpdater {
 
         for key in work_hours_and_activity_durations {
             if !self.computation_cache.lock().unwrap().contains_key(&key) {
-                let computation_cache = &self.computation_cache;
+                let computation_cache = self.computation_cache.clone();
 
                 // Launch the computation in a separate thread
-                self.thread_pool.install(|| {
+                self.thread_pool.spawn(move || {
                     let activity_beginnings_given_duration_minutes = find_possible_beginnings(
                         &key.work_hours_in_minutes(),
                         &key.activity_durations_in_minutes(),
@@ -111,24 +111,20 @@ impl PossibleBeginningsUpdater {
         let activity_duration = activity.duration();
 
         // Fetch possible beginnings
-        let maybe_all_possible_beginnings: Option<Vec<_>> =
-            schedules_of_participants
-                .iter()
-                .map(|work_hours_and_activity_durations| {
-                    if let Some(beginnings_given_duration) =
-                        computation_cache.get(work_hours_and_activity_durations)
-                    {
-                        // Computation result is there.
+        let maybe_all_possible_beginnings: Option<Vec<_>> = schedules_of_participants
+            .iter()
+            .map(|work_hours_and_activity_durations| {
+                computation_cache
+                    .get(work_hours_and_activity_durations)
+                    .map(|beginnings_given_duration| {
+                        // If Some, then computation result is there.
                         // Fetch only the possible beginnings for the specified duration.
-                        Some(beginnings_given_duration.get(&activity_duration).expect(
+                        beginnings_given_duration.get(&activity_duration).expect(
                             "Activity duration not in durations calculated for participants",
-                        ))
-                    } else {
-                        // Computation result is missing
-                        None
-                    }
-                })
-                .collect();
+                        )
+                    })
+            })
+            .collect();
 
         // Intersect all possible beginnings
         if let Some(mut all_possible_beginnings) = maybe_all_possible_beginnings {
