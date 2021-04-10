@@ -4,7 +4,7 @@ mod queue_for_computation;
 
 use super::helpers::clean_string;
 use crate::{
-    data::{Activity, ActivityId, Data, InsertionCost, Rgba, Time},
+    data::{Activity, ActivityId, ActivityInsertionCosts, Data, Rgba, Time},
     errors::{invalid_insertion::InvalidInsertion, Result},
 };
 use felix_computation_api::{
@@ -46,59 +46,63 @@ impl Data {
     }
 
     /// Returns the possible insertion times of an activity.
-    /// If they are not calculated, returns Ok(None).
+    /// If they are not calculated, returns None.
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// Returns Err if the activity is not found.
+    /// Panics if the activity is not found.
     pub fn possible_insertion_times_of_activity_with_associated_cost(
-        &mut self,
+        &self,
         id: ActivityId,
-    ) -> Result<Option<BTreeSet<InsertionCost>>> {
-        let now = std::time::Instant::now();
-        let activity = self.activities.get_by_id(id)?;
-        let participants = activity.entities_sorted();
-
-        // Fetch possible beginnings of  every conflicting activity
-        // (we will compute insertion costs for the main activity. For this we need the
-        // data for all incompatible_activities as well)
-        let possible_beginnings_are_computed = activity
-            .incompatible_activity_ids()
-            .iter()
-            .map(|&other_id| {
-                let other_activity_participants = self
-                    .activities
-                    .get_by_id(other_id)
-                    .expect("Activity is incompatible with nonexistent activity")
-                    .entities_sorted();
-
-                // Fetch possible beginnings of this activity
-                self.activities.update_possible_insertion_times_of_activity(
-                    &self.work_hours_and_activity_durations_from_entities(
-                        &other_activity_participants,
-                    )?,
-                    other_id,
-                )
-            })
-            .collect::<Result<Vec<_>>>(); // Result<bool>>
-        println!("Elapsed {:?}", now.elapsed().as_millis());
-
-        let res = if possible_beginnings_are_computed?
-            .iter()
-            .all(|computed| *computed)
-        {
-            // Fetch possible beginnings of this activity
-            self.activities
-                .possible_insertion_times_of_activity_with_associated_cost(
-                    &self.work_hours_and_activity_durations_from_entities(&participants)?,
-                    id,
-                )
-        } else {
-            Ok(None)
-        };
-        println!("Elapsed total {:?}", now.elapsed().as_millis());
-        res
+    ) -> ActivityInsertionCosts {
+        self.activities
+            .get_by_id(id)
+            .expect(&format!("Activity with id {} does not exist", id))
+            .insertion_costs()
     }
+    //let now = std::time::Instant::now();
+    //let activity = self.activities.get_by_id(id)?;
+    //let participants = activity.entities_sorted();
+
+    // Fetch possible beginnings of  every conflicting activity
+    // (we will compute insertion costs for the main activity. For this we need the
+    // data for all incompatible_activities as well)
+    //let possible_beginnings_are_computed = activity
+    //.incompatible_activity_ids()
+    //.iter()
+    //.map(|&other_id| {
+    //let other_activity_participants = self
+    //.activities
+    //.get_by_id(other_id)
+    //.expect("Activity is incompatible with nonexistent activity")
+    //.entities_sorted();
+
+    // Fetch possible beginnings of this activity
+    //self.activities.update_possible_insertion_times_of_activity(
+    //&self.work_hours_and_activity_durations_from_entities(
+    //&other_activity_participants,
+    //)?,
+    //other_id,
+    //)
+    //})
+    //.collect::<Result<Vec<_>>>(); // Result<bool>>
+    //println!("Elapsed {:?}", now.elapsed().as_millis());
+
+    //let res = if possible_beginnings_are_computed?
+    //.iter()
+    //.all(|computed| *computed)
+    //{
+    //Fetch possible beginnings of this activity
+    //self.activities
+    //.possible_insertion_times_of_activity_with_associated_cost(
+    //&self.work_hours_and_activity_durations_from_entities(&participants)?,
+    //id,
+    //)
+    //} else {
+    //Ok(None)
+    //};
+    //println!("Elapsed total {:?}", now.elapsed().as_millis());
+    //res
 
     /// Adds an activity with the formatted given name.
     ///
@@ -476,8 +480,11 @@ impl Data {
     /// If None is given, the activity is removed from the schedule.
     ///
     /// # Errors
+    /// Returns Err if the insertion time is not available.
     ///
-    /// Returns Err if the activity is not found or if the insertion time is not available.
+    /// # Panics
+    ///
+    /// Panics if the activity does not exist.
     ///
     /// # Example
     ///
@@ -507,7 +514,7 @@ impl Data {
         if let Some(insertion_time) = insertion_time {
             // We want to insert the activity
             if let Some(possible_insertion_costs) =
-                self.possible_insertion_times_of_activity_with_associated_cost(id)?
+                self.possible_insertion_times_of_activity_with_associated_cost(id)
             {
                 if possible_insertion_costs
                     .iter()
@@ -610,9 +617,8 @@ impl Data {
             .get_activities_removed_because_duration_increased();
 
         for (id, old_beginning) in activity_ids_and_old_beginnings {
-            if let Some(possible_insertion_times) = self
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                .expect("Asking for possible times of activity which does not exist")
+            if let Some(possible_insertion_times) =
+                self.possible_insertion_times_of_activity_with_associated_cost(id)
             {
                 if self
                     .activities
@@ -640,21 +646,10 @@ impl Data {
             .cloned()
             .collect::<Vec<Activity>>();
 
-        if let Some(activity_not_computed_yet) = activities.iter().find(|activity| {
-            let participants = activity.entities_sorted();
-            let work_hours_and_activity_durations = self
-                .work_hours_and_activity_durations_from_entities(&participants)
-                .expect("Could not get work hours and activity durations from participants");
-
-            let activity_is_computed = self
-                .activities
-                .update_possible_insertion_times_of_activity(
-                    &work_hours_and_activity_durations,
-                    activity.id(),
-                )
-                .expect("Could not get possible insertions of activity");
-            !activity_is_computed
-        }) {
+        if let Some(activity_not_computed_yet) = activities
+            .iter()
+            .find(|activity| activity.insertion_costs().is_none())
+        {
             Err(InvalidInsertion::insertions_not_computed_yet(
                 activity_not_computed_yet.name(),
             ))

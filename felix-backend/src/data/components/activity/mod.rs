@@ -4,8 +4,11 @@ mod activity_metadata;
 mod computation;
 
 use crate::data::{Time, TimeInterval};
+
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
+
+pub use activity_computation_data::ActivityInsertionCosts;
 pub use activity_metadata::Rgba;
 
 use serde::{Deserialize, Serialize};
@@ -85,5 +88,16 @@ impl Activity {
     #[must_use]
     pub(crate) fn incompatible_activity_ids(&self) -> Vec<ActivityId> {
         self.computation_data.incompatible_activity_ids()
+    }
+
+    /// Returns the possible insertion times with their respective costs.
+    /// If None is returned, then they haven't been computed yet.
+    #[must_use]
+    pub(crate) fn insertion_costs(&self) -> ActivityInsertionCosts {
+        self.computation_data
+            .insertion_costs()
+            .lock()
+            .unwrap()
+            .clone()
     }
 }

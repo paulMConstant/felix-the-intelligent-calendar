@@ -1,19 +1,19 @@
-use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId,
-    FelixThreadPool, Time,
-};
+use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Time};
 
 use felix_computation_api::find_possible_beginnings;
 
-use super::activity_beginnings_given_duration::{
-    new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
+use super::{
+    activity_beginnings_given_duration::{
+        new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
+    },
+    thread_pool::ThreadPool,
 };
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
-type WorkHoursAndActivityDurationsSortedCache =
+pub type PossibleBeginningsComputationPool =
     HashMap<WorkHoursAndActivityDurationsSorted, ActivityBeginningsGivenDuration>;
 
 /// Keeps track of which activity possible beginnings are out of date
@@ -21,62 +21,31 @@ type WorkHoursAndActivityDurationsSortedCache =
 ///
 /// This class is NOT thread-safe, it only runs the computations in a separate thread pool.
 #[derive(Debug)]
-pub struct PossibleBeginningsUpdater {
-    possible_beginnings_up_to_date: HashMap<ActivityId, bool>,
-    // Prototype design pattern
-    computation_cache: Arc<Mutex<WorkHoursAndActivityDurationsSortedCache>>,
-    thread_pool: Rc<FelixThreadPool>,
+pub struct PossibleBeginningsPool {
+    // Prototype design pattern : all results are stored in RAM and computed only once
+    computation_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+    thread_pool: Rc<ThreadPool>,
 }
 
-impl PossibleBeginningsUpdater {
-    pub fn new() -> PossibleBeginningsUpdater {
-        PossibleBeginningsUpdater {
-            possible_beginnings_up_to_date: HashMap::new(),
-            computation_cache: Arc::new(
-                Mutex::new(WorkHoursAndActivityDurationsSortedCache::new()),
-            ),
-            thread_pool: Rc::new(FelixThreadPool::new()),
-        }
-    }
-
-    /// Informs the updater that a new activity has been added.
-    pub fn notify_new_activity(&mut self, id: ActivityId) {
-        self.possible_beginnings_up_to_date.insert(id, true);
-    }
-
-    /// Informs the updater that an activity has been deleted.
-    pub fn notify_activity_removed(&mut self, id: ActivityId) {
-        self.possible_beginnings_up_to_date.remove(&id);
-    }
-
-    /// Returns true if the activity possible beginnings are up to date.
-    #[must_use]
-    pub fn activity_beginnings_are_up_to_date(&self, id: &ActivityId) -> bool {
-        match self.possible_beginnings_up_to_date.get(id) {
-            None => false,
-            Some(result) => *result,
+impl PossibleBeginningsPool {
+    pub(crate) fn new(
+        computation_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+        thread_pool: Rc<ThreadPool>,
+    ) -> PossibleBeginningsPool {
+        PossibleBeginningsPool {
+            computation_pool,
+            thread_pool,
         }
     }
 
     /// For the given work hours and activity durations, computes the possible activity beginnings.
-    /// Invalidates the concerned activities.
     pub fn queue_work_hours_and_activity_durations(
         &mut self,
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
-        out_of_date_activities: HashSet<ActivityId>,
     ) {
-        if out_of_date_activities.is_empty() {
-            // No activities are concerned - return
-            return;
-        }
-
-        for id in out_of_date_activities {
-            self.possible_beginnings_up_to_date.insert(id, false);
-        }
-
         for key in work_hours_and_activity_durations {
-            if !self.computation_cache.lock().unwrap().contains_key(&key) {
-                let computation_cache = self.computation_cache.clone();
+            if !self.computation_pool.lock().unwrap().contains_key(&key) {
+                let pool = self.computation_pool.clone();
 
                 // Launch the computation in a separate thread
                 self.thread_pool.spawn(move || {
@@ -89,10 +58,7 @@ impl PossibleBeginningsUpdater {
                         activity_beginnings_given_duration_minutes,
                     );
 
-                    computation_cache
-                        .lock()
-                        .unwrap()
-                        .insert(key.clone(), result);
+                    pool.lock().unwrap().insert(key.clone(), result);
                 });
             }
         }
@@ -105,21 +71,20 @@ impl PossibleBeginningsUpdater {
     pub fn poll_and_fuse_possible_beginnings(
         &mut self,
         schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
-        activity: &Activity,
+        duration: Time,
+        // TODO should return nothing or juste a bool
     ) -> Option<HashSet<Time>> {
-        let computation_cache = self.computation_cache.lock().unwrap();
-        let activity_duration = activity.duration();
+        let pool = self.computation_pool.lock().unwrap();
 
         // Fetch possible beginnings
         let maybe_all_possible_beginnings: Option<Vec<_>> = schedules_of_participants
             .iter()
             .map(|work_hours_and_activity_durations| {
-                computation_cache
-                    .get(work_hours_and_activity_durations)
+                pool.get(work_hours_and_activity_durations)
                     .map(|beginnings_given_duration| {
                         // If Some, then computation result is there.
                         // Fetch only the possible beginnings for the specified duration.
-                        beginnings_given_duration.get(&activity_duration).expect(
+                        beginnings_given_duration.get(&duration).expect(
                             "Activity duration not in durations calculated for participants",
                         )
                     })
@@ -130,9 +95,6 @@ impl PossibleBeginningsUpdater {
         if let Some(mut all_possible_beginnings) = maybe_all_possible_beginnings {
             // Sort sets by ascending size so that fewer checks are done for intersections
             all_possible_beginnings.sort_by_key(|a| a.len());
-
-            self.possible_beginnings_up_to_date
-                .insert(activity.id(), true);
 
             let first_set = all_possible_beginnings.first();
 
@@ -150,11 +112,5 @@ impl PossibleBeginningsUpdater {
             // At least one computation result was missing
             None
         }
-    }
-}
-
-impl Default for PossibleBeginningsUpdater {
-    fn default() -> Self {
-        PossibleBeginningsUpdater::new()
     }
 }

@@ -1,13 +1,13 @@
 /// Simple wrapper around a rayon ThreadPool.
 /// Has juste one method and is initialized with the number of threads on the machine.
 #[derive(Debug)]
-pub(crate) struct FelixThreadPool {
+pub(crate) struct ThreadPool {
     thread_pool: rayon::ThreadPool,
 }
 
-impl FelixThreadPool {
+impl ThreadPool {
     pub fn new() -> Self {
-        FelixThreadPool {
+        ThreadPool {
             thread_pool: rayon::ThreadPoolBuilder::new()
                 .num_threads(num_cpus::get())
                 .build()
@@ -24,7 +24,7 @@ impl FelixThreadPool {
     }
 }
 
-impl Default for FelixThreadPool {
+impl Default for ThreadPool {
     fn default() -> Self {
         Self::new()
     }

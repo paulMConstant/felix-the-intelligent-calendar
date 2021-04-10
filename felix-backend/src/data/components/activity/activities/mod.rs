@@ -4,7 +4,7 @@ mod tests;
 use super::{
     computation::{
         id_computation::{compute_incompatible_ids, generate_next_id},
-        possible_beginnings_updater::PossibleBeginningsUpdater,
+        separate_thread_activity_computation::SeparateThreadActivityComputation,
     },
     ActivityMetadata,
 };
@@ -15,10 +15,7 @@ use crate::data::{
 };
 
 use crate::errors::{does_not_exist::DoesNotExist, duration_too_short::DurationTooShort, Result};
-use felix_computation_api::{
-    compute_insertion_costs,
-    structs::{ActivityBeginningMinutes, ActivityComputationStaticData},
-};
+use felix_computation_api::structs::{ActivityBeginningMinutes, ActivityComputationStaticData};
 
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
@@ -35,9 +32,10 @@ pub struct Activities {
     #[serde_as(as = "Vec<(_, _)>")]
     activities: HashMap<ActivityId, Activity>,
     #[serde(skip)]
-    possible_beginnings_updater: PossibleBeginningsUpdater,
+    separate_thread_computation: SeparateThreadActivityComputation,
     #[serde(skip)]
     activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings,
+    // TODO remove
     /// Keeps track of the last id to index translation done in self.fetch\_computation.
     ///
     /// # Context:
@@ -55,7 +53,7 @@ impl Activities {
     pub fn new() -> Activities {
         Activities {
             activities: HashMap::new(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(),
+            separate_thread_computation: SeparateThreadActivityComputation::new(),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
             last_fetch_computation_index_to_id_map: HashMap::new(),
@@ -106,8 +104,10 @@ impl Activities {
         let id = generate_next_id(used_ids);
         let activity = Activity::new(id, name);
 
+        self.separate_thread_computation
+            .register_new_activity(id, activity.computation_data.insertion_costs());
+
         self.activities.insert(id, activity);
-        self.possible_beginnings_updater.notify_new_activity(id);
 
         &self
             .activities
@@ -125,7 +125,8 @@ impl Activities {
             None => Err(DoesNotExist::activity_does_not_exist(id)),
             Some(_) => {
                 self.update_incompatible_activities();
-                self.possible_beginnings_updater.notify_activity_removed(id);
+                self.separate_thread_computation
+                    .register_activity_removed(id);
                 Ok(())
             }
         }
@@ -293,101 +294,11 @@ impl Activities {
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
         concerned_activity_ids: HashSet<ActivityId>,
     ) {
-        self.possible_beginnings_updater
+        self.separate_thread_computation
             .queue_work_hours_and_activity_durations(
                 schedules_of_participants,
                 concerned_activity_ids,
             );
-    }
-
-    /// Updates the possible insertion times of an activity.
-    /// Returns true if the possible insertion times were computed, else false.
-    /// This function must be called before
-    /// possible_insertion_times_of_activity_with_associated_cost.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the activity with given id is not found.
-    pub(crate) fn update_possible_insertion_times_of_activity(
-        &mut self,
-        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
-        concerned_activity_id: ActivityId,
-    ) -> Result<bool> {
-        let concerned_activity = self.get_by_id(concerned_activity_id)?;
-
-        let possible_beginnings_are_computed = if self
-            .possible_beginnings_updater
-            .activity_beginnings_are_up_to_date(&concerned_activity_id)
-        {
-            true
-        } else {
-            let maybe_possible_beginnings = self
-                .possible_beginnings_updater
-                .poll_and_fuse_possible_beginnings(&schedules_of_participants, &concerned_activity);
-
-            if maybe_possible_beginnings.is_some() {
-                // If the result is valid, store it into the activity computation data.
-                let result =
-                    maybe_possible_beginnings.expect("Maybe result should be some but is not");
-                let activity = self
-                    .get_mut_by_id(concerned_activity_id)
-                    .expect("Getting activity which does not exist");
-                activity
-                    .computation_data
-                    .set_possible_insertion_times_if_no_conflict(result);
-                true
-            } else {
-                false
-            }
-        };
-        Ok(possible_beginnings_are_computed)
-    }
-
-    /// Returns the possible beginnings of an activity if it is up to date or if
-    /// the computation results are up.
-    /// If neither is the case, returns None.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the activity with given id is not found.
-    pub(crate) fn possible_insertion_times_of_activity_with_associated_cost(
-        &mut self,
-        schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
-        concerned_activity_id: ActivityId,
-    ) -> Result<Option<BTreeSet<InsertionCost>>> {
-        let possible_beginnings_are_computed = self.update_possible_insertion_times_of_activity(
-            schedules_of_participants,
-            concerned_activity_id,
-        )?;
-
-        let possible_beginnings = if possible_beginnings_are_computed {
-            // Filter & compute the cost of each possible beginning
-            let (static_data, insertion_data) = self.fetch_computation();
-
-            let (&index_of_activity, _id) = self
-                .last_fetch_computation_index_to_id_map
-                .iter()
-                .find(|&(_index, id)| id == &concerned_activity_id)
-                .expect("Could not find activity");
-
-            let insertion_costs_of_activity =
-                &compute_insertion_costs(&static_data, &insertion_data, index_of_activity);
-
-            Some(
-                insertion_costs_of_activity
-                    .iter()
-                    .map(|insertion_cost_minutes| InsertionCost {
-                        beginning: Time::from_total_minutes(
-                            insertion_cost_minutes.beginning_minutes,
-                        ),
-                        cost: insertion_cost_minutes.cost,
-                    })
-                    .collect::<BTreeSet<_>>(),
-            )
-        } else {
-            None
-        };
-        Ok(possible_beginnings)
     }
 
     /// Inserts the activity with the given beginning.
@@ -487,7 +398,7 @@ impl Activities {
             .filter(|activity| activity.computation_data.insertion_interval().is_none())
             .collect::<Vec<_>>();
 
-        // Harder to insert activities go first
+        // Harder to insert activities should be inserted first - insertion order is fixed
         non_inserted_activities.sort_by_key(|activity| {
             std::cmp::Reverse(
                 activity.computation_data.duration().total_minutes() as usize
@@ -521,17 +432,27 @@ impl Activities {
                 }
             }
 
+            let possible_insertion_beginnings_minutes_sorted = activity
+                .insertion_costs()
+                .expect(
+                    "Fetching computation even though activity beginnings have not been computed yet",
+                )
+                .iter()
+                .map(|insertion_cost| insertion_cost.beginning.total_minutes())
+                .collect();
+
             let static_data = ActivityComputationStaticData {
-                possible_insertion_beginnings_minutes_sorted: computation_data
-                    .possible_insertion_times_if_no_conflict()
-                    .iter()
-                    .map(|time| time.total_minutes())
-                    .collect(),
+                possible_insertion_beginnings_minutes_sorted,
                 indexes_of_incompatible_activities: incompatible_indexes,
                 duration_minutes: computation_data.duration().total_minutes(),
             };
 
             static_data_vec.push(static_data);
+
+            // TODO Don't put already inserted activities in !
+            // Instead, reduce the id of incompatible activities
+            // This does not matter for now (no logic issue)
+            // but it will make for faster computations
 
             // Only the first activities are inserted - this can be optimized
             if let Some(insertion_beginning) = computation_data
@@ -565,9 +486,9 @@ impl Clone for Activities {
     fn clone(&self) -> Self {
         Activities {
             activities: self.activities.clone(),
-            possible_beginnings_updater: PossibleBeginningsUpdater::new(),
-            activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
-            ),
+            separate_thread_computation: SeparateThreadActivityComputation::default(),
+            activities_removed_because_duration_increased:
+                ActivitiesAndOldInsertionBeginnings::default(),
             last_fetch_computation_index_to_id_map: self
                 .last_fetch_computation_index_to_id_map
                 .clone(),

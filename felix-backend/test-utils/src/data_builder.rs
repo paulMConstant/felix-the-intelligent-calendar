@@ -130,7 +130,6 @@ impl DataBuilder {
         while self
             .data
             .possible_insertion_times_of_activity_with_associated_cost(id)
-            .expect("Could not get activity by ID")
             .is_none()
         {
             // Wait for possible insertion times to be asynchronously calculated

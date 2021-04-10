@@ -168,12 +168,10 @@ impl App {
                 if insert_activity {
                     // Try to insert the activity in the best spot
                     let mut data = data.borrow_mut();
-                    assign_or_return!(
-                        insertion_costs,
-                        data.possible_insertion_times_of_activity_with_associated_cost(id)
-                    );
 
-                    if let Some(insertion_costs) = insertion_costs {
+                    if let Some(insertion_costs) =
+                        data.possible_insertion_times_of_activity_with_associated_cost(id)
+                    {
                         if let Some(best_spot) = insertion_costs
                             .iter()
                             .min_by_key(|insertion_cost| insertion_cost.cost)
@@ -290,7 +288,7 @@ impl App {
         let data = self.data.clone();
         let possible_insertion_times_of_activity_callback =
             Rc::new(Box::new(move |id: ActivityId| {
-                let mut data = data.borrow_mut();
+                let data = data.borrow();
                 let activity_participants = data
                     .activity(id)
                     .expect(
@@ -298,11 +296,8 @@ impl App {
                     )
                     .entities_sorted();
 
-                let maybe_possible_insertion_times = data
-                    .possible_insertion_times_of_activity_with_associated_cost(id)
-                    .expect(
-                        "Trying to get possible insertion times of activity which does not exist !",
-                    );
+                let maybe_possible_insertion_times =
+                    data.possible_insertion_times_of_activity_with_associated_cost(id);
 
                 EntitiesAndInsertionTimes {
                     entities: activity_participants,

@@ -1,6 +1,10 @@
-use crate::data::{ActivityId, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use crate::data::{ActivityId, InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::BTreeSet;
+use std::sync::{Arc, Mutex};
+
+pub type ActivityInsertionCosts = Option<BTreeSet<InsertionCost>>;
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.
@@ -8,8 +12,11 @@ use std::collections::HashSet;
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
+    /// Kept in a arc because updated when necessary in separate threads.
+    /// None means not computed yet (invalidated).
+    /// Some means up to date.
     #[serde(skip)]
-    possible_insertion_times_if_no_conflict: HashSet<Time>,
+    insertion_costs: Arc<Mutex<ActivityInsertionCosts>>,
     incompatible_activity_ids: Vec<ActivityId>,
 }
 
@@ -19,7 +26,7 @@ impl ActivityComputationData {
         ActivityComputationData {
             duration: MIN_TIME_DISCRETIZATION,
             insertion_interval: None,
-            possible_insertion_times_if_no_conflict: HashSet::new(),
+            insertion_costs: Arc::new(Mutex::new(None)),
             incompatible_activity_ids: Vec::new(),
         }
     }
@@ -38,10 +45,10 @@ impl ActivityComputationData {
         self.insertion_interval
     }
 
-    /// Simple getter for possible insertion times.
+    /// Simple getter for insertion costs.
     #[must_use]
-    pub fn possible_insertion_times_if_no_conflict(&self) -> &HashSet<Time> {
-        &self.possible_insertion_times_if_no_conflict
+    pub fn insertion_costs(&self) -> Arc<Mutex<ActivityInsertionCosts>> {
+        self.insertion_costs.clone()
     }
 
     /// Simple getter for incompatible activities.
@@ -74,16 +81,6 @@ impl ActivityComputationData {
     /// Does not perform any checks, the activities collection does it.
     pub fn set_incompatible_activity_ids(&mut self, incompatible_ids: Vec<ActivityId>) {
         self.incompatible_activity_ids = incompatible_ids;
-    }
-
-    /// Simple setter for possible beginnings if no conflicts.
-    ///
-    /// Does not perform any check, the activities collection does it.
-    pub fn set_possible_insertion_times_if_no_conflict(
-        &mut self,
-        possible_insertion_times_if_no_conflict: HashSet<Time>,
-    ) {
-        self.possible_insertion_times_if_no_conflict = possible_insertion_times_if_no_conflict;
     }
 
     /// Inserts the activity at given time.

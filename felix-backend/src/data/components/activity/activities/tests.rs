@@ -155,6 +155,9 @@ fn test_fetch_computation() {
         .computation_data
         .set_incompatible_activity_ids(vec![3]);
     activity1.computation_data.set_duration(Time::new(0, 30));
+    *activity1.computation_data.insertion_costs().lock().unwrap() = 
+        Some(BTreeSet::new());
+
     let activity1 = activity1.clone();
 
     let activity2 = activity_collection
@@ -165,6 +168,8 @@ fn test_fetch_computation() {
         .computation_data
         .set_incompatible_activity_ids(vec![0, 3]);
     activity2.computation_data.set_duration(Time::new(0, 20));
+    *activity2.computation_data.insertion_costs().lock().unwrap() = 
+        Some(BTreeSet::new());
     let activity2 = activity2.clone();
 
     let activity3 = activity_collection
@@ -176,6 +181,8 @@ fn test_fetch_computation() {
         .set_incompatible_activity_ids(vec![1]);
     activity3.computation_data.set_duration(Time::new(0, 15));
     activity3.computation_data.insert(Some(Time::new(1, 0)));
+    *activity3.computation_data.insertion_costs().lock().unwrap() = 
+        Some(BTreeSet::new());
     let activity3 = activity3.clone();
 
     let (static_data, insertion_data) = activity_collection.fetch_computation();
@@ -227,10 +234,10 @@ fn test_fetch_computation() {
         activity: &Activity,
     ) -> BTreeSet<ActivityBeginningMinutes> {
         activity
-            .computation_data
-            .possible_insertion_times_if_no_conflict()
+            .insertion_costs()
+            .expect("Insertion costs have not been computed")
             .iter()
-            .map(|time| time.total_minutes())
+            .map(|insertion_cost| insertion_cost.beginning.total_minutes())
             .collect::<BTreeSet<_>>()
     }
     assert_eq!(
@@ -281,9 +288,16 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
         .computation_data
         .set_incompatible_activity_ids(vec![]);
     activity1.computation_data.set_duration(Time::new(0, 30));
-    activity1
+    *activity1
         .computation_data
-        .set_possible_insertion_times_if_no_conflict(activity1_possible_beginnings.clone());
+        .insertion_costs()
+        .lock()
+        .unwrap() = Some(
+            activity1_possible_beginnings
+                .iter()
+                .map(|&time| InsertionCost { beginning: time, cost: 0 })
+                .collect()
+        );
 
     let activity2 = activity_collection
         .get_mut_by_id(1)
@@ -304,8 +318,10 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     // Activity 1 will be reordered internally.
     // Check that its beginnings are the ones we fetch (id != index)
     let result = activity_collection
-        .possible_insertion_times_of_activity_with_associated_cost(&[], 0)
-        .unwrap();
+        .get_by_id(0)
+        .expect("Could not get activity by id")
+        .insertion_costs();
+
     let expected = Some(
         activity1_possible_beginnings
             .into_iter()

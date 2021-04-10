@@ -2,7 +2,6 @@ mod components;
 pub(crate) mod computation_structs;
 mod data_impl;
 mod events;
-mod thread_pool;
 
 use components::{
     activity::activities::Activities, entity::entities::Entities, group::groups::Groups,
@@ -10,13 +9,11 @@ use components::{
 };
 
 pub use components::{
-    activity::{Activity, ActivityId, Rgba},
+    activity::{Activity, ActivityId, ActivityInsertionCosts, Rgba},
     entity::Entity,
     group::Group,
     time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
 };
-
-pub(crate) use thread_pool::FelixThreadPool;
 
 pub use computation_structs::InsertionCost;
 pub use felix_computation_api::structs::{ActivityBeginningMinutes, AutoinsertionThreadHandle};
