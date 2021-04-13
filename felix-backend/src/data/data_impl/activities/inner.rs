@@ -13,13 +13,13 @@ impl Data {
     ///
     /// # Errors
     ///
-    /// Returns Err if the given activity id is not valid or the group does not exist.
+    /// Returns Err if the group does not exist.
     pub(super) fn entities_participating_through_this_group_only(
         &self,
         activity_id: ActivityId,
         group_name: &str,
     ) -> Result<HashSet<String>> {
-        let all_participating_groups = self.activity(activity_id)?.groups_sorted();
+        let all_participating_groups = self.activity(activity_id).groups_sorted();
         let entities_of_group = self
             .group(group_name)?
             .entities_sorted()
@@ -48,15 +48,13 @@ impl Data {
         &self,
         activity: &Activity,
         time: Time,
-    ) -> Option<Activity> {
+    ) -> Option<&Activity> {
         let hypothetical_insertion_iterval = TimeInterval::new(time, time + activity.duration());
         activity
             .incompatible_activity_ids()
             .iter()
             .filter_map(|&id| {
-                let activity = self
-                    .activity(id)
-                    .expect("Found incompatible activity which does not exist");
+                let activity = self.activity(id);
 
                 if let Some(interval) = activity.insertion_interval() {
                     if interval.overlaps_with(&hypothetical_insertion_iterval) {
@@ -73,26 +71,25 @@ impl Data {
 
     /// Given a vector of entities, outputs their work hours and activity durations.
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// Returns err if an entity is not found.
+    /// Panics if one of the entity name is empty.
     pub(super) fn work_hours_and_activity_durations_from_entities(
         &self,
         entities: &[String],
-    ) -> Result<Vec<WorkHoursAndActivityDurationsSorted>> {
+    ) -> Vec<WorkHoursAndActivityDurationsSorted> {
         entities
             .iter()
             .map(|entity| {
-                let work_hours = self.work_hours_of(entity)?;
+                let work_hours = self.work_hours_of(entity).expect("Entity does not exist");
                 let activity_durations = self
-                    .activities_of(entity)?
+                    .activities_of(entity)
+                    .expect("The entity name is empty")
                     .iter()
                     .map(|activity| activity.duration())
                     .collect::<Vec<_>>();
-                Ok(WorkHoursAndActivityDurationsSorted::new(
-                    work_hours,
-                    activity_durations,
-                ))
+
+                WorkHoursAndActivityDurationsSorted::new(work_hours, activity_durations)
             })
             .collect()
     }

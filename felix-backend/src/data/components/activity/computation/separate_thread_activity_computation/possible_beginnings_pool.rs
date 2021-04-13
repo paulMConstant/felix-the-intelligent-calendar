@@ -13,6 +13,8 @@ use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
+use std_semaphore::Semaphore;
+
 pub type PossibleBeginningsComputationPool =
     HashMap<WorkHoursAndActivityDurationsSorted, ActivityBeginningsGivenDuration>;
 
@@ -42,11 +44,16 @@ impl PossibleBeginningsPool {
     pub fn queue_work_hours_and_activity_durations(
         &mut self,
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
+        computation_done_semaphore: Arc<Semaphore>,
     ) {
         for key in work_hours_and_activity_durations {
-            if !self.computation_pool.lock().unwrap().contains_key(&key) {
+            if self.computation_pool.lock().unwrap().contains_key(&key) {
+                // Result already in - Notify that the computation is already done
+                computation_done_semaphore.release();
+            } else {
                 let pool = self.computation_pool.clone();
 
+                let computation_done_semaphore = computation_done_semaphore.clone();
                 // Launch the computation in a separate thread
                 self.thread_pool.spawn(move || {
                     let activity_beginnings_given_duration_minutes = find_possible_beginnings(
@@ -59,20 +66,20 @@ impl PossibleBeginningsPool {
                     );
 
                     pool.lock().unwrap().insert(key.clone(), result);
+                    // One result was done
+                    computation_done_semaphore.release();
                 });
             }
         }
     }
 
     /// Fuses the possible beginnings given every work\_hour\_and\_activity\_duration key.
-    /// If the data is not yet available, returns None.
-    /// If the data is available, sets 'possible_beginnings_up_to_date' to true.
     #[must_use]
     pub fn poll_and_fuse_possible_beginnings(
         &mut self,
         schedules_of_participants: &[WorkHoursAndActivityDurationsSorted],
         duration: Time,
-        // TODO should return nothing or juste a bool
+        // TODO should return nothing or just a bool
     ) -> Option<HashSet<Time>> {
         let pool = self.computation_pool.lock().unwrap();
 

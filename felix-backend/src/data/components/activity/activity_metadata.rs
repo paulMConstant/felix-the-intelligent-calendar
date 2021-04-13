@@ -1,7 +1,8 @@
 use crate::data::ActivityId;
 use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::BTreeSet;
+use std::hash::{Hash, Hasher};
 
 /// Represents a color. Each field should be kept in [0.0; 1.0].
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -12,16 +13,27 @@ pub struct Rgba {
     pub alpha: f64,
 }
 
+impl Hash for Rgba {
+    // Simply round up the floats
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for value in &[self.red, self.green, self.blue, self.alpha] {
+            const HASH_PRECISION: f64 = 1000.0;
+            ((value * HASH_PRECISION) as usize).hash(state);
+        }
+    }
+}
+
 /// Simple structure holding non-computation related data : id, name, entities.
 ///
 /// We directly store incompatible activities in the ActivityComputationData which is why
 /// the entities are not directly computation-related.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ActivityMetadata {
     id: ActivityId,
     name: String,
-    entities: HashSet<String>,
-    groups: HashSet<String>,
+    // BTreeSet implements Hash
+    entities: BTreeSet<String>,
+    groups: BTreeSet<String>,
     display_color: Rgba,
 }
 
@@ -29,18 +41,20 @@ impl ActivityMetadata {
     /// Creates new activity metadata.
     #[must_use]
     pub fn new(id: ActivityId, name: String) -> ActivityMetadata {
+        // Default color is blue
+        const DEFAULT_COLOR: Rgba = Rgba {
+            red: 0.203,
+            green: 0.396,
+            blue: 0.643,
+            alpha: 1.0,
+        };
+
         ActivityMetadata {
             id,
             name,
-            entities: HashSet::new(),
-            groups: HashSet::new(),
-            // Default color is blue
-            display_color: Rgba {
-                red: 0.203,
-                green: 0.396,
-                blue: 0.643,
-                alpha: 1.0,
-            },
+            entities: BTreeSet::new(),
+            groups: BTreeSet::new(),
+            display_color: DEFAULT_COLOR,
         }
     }
 
@@ -76,7 +90,7 @@ impl ActivityMetadata {
 
     /// Getter for the entities, not sorted.
     #[must_use]
-    pub fn entities_as_set(&self) -> &HashSet<String> {
+    pub fn entities_as_set(&self) -> &BTreeSet<String> {
         &self.entities
     }
 
@@ -194,5 +208,4 @@ impl ActivityMetadata {
     }
 }
 
-// No tests, functions are tested in tests directory
 impl Eq for ActivityMetadata {}

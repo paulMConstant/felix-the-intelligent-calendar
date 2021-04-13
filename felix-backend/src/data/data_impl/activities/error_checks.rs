@@ -12,13 +12,17 @@ impl Data {
     ///
     /// # Errors
     ///
-    /// Returns Err if the activity is not found.
+    /// Returns Err if an entity does not have enough time to change the duration of the entity.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity with given ID does not exist.
     pub(super) fn check_entity_without_enough_time_to_set_duration(
         &self,
         id: ActivityId,
         new_duration: Time,
     ) -> Result<()> {
-        let activity = self.activity(id)?;
+        let activity = self.activity(id);
         let current_duration = activity.duration();
 
         if new_duration <= current_duration {
@@ -51,17 +55,23 @@ impl Data {
     ///
     /// # Errors
     ///
-    /// Returns Err if the entity does not exist, the id is invalid or the entity
-    /// does not have enough time.
+    /// Returns Err if the entity does not exist
+    /// or the entity does not have enough time.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity with given ID does not exist.
     pub(super) fn check_has_enough_time_for_activity(
         &self,
         activity_id: ActivityId,
         entity_name: &str,
     ) -> Result<()> {
-        if self.has_enough_time_for_activity(activity_id, &entity_name)? {
+        let free_time = self.free_time_of(entity_name)?;
+
+        if free_time >= self.activity(activity_id).duration() {
             Ok(())
         } else {
-            let activity = self.activity(activity_id)?;
+            let activity = self.activity(activity_id);
             Err(NotEnoughTime::activity_added_for(
                 entity_name,
                 activity.name(),
@@ -75,12 +85,16 @@ impl Data {
     ///
     /// Returns Err if any activity of the entity is inserted in a slot which overlaps with the
     /// given activity's insertion slot.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity with given ID does not exist.
     pub(super) fn check_no_activity_of_the_entity_is_overlapping(
         &self,
         activity_id: ActivityId,
         entity_name: &str,
     ) -> Result<()> {
-        let activity = self.activity(activity_id)?;
+        let activity = self.activity(activity_id);
         let maybe_insertion_interval = activity.insertion_interval();
         let activity_name = activity.name();
 
@@ -119,15 +133,18 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err:
-    /// if the activity does not exist,
     /// if the entity does not exist,
     /// if the activity is inserted and does not fit in the entity's work hours.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity with given ID does not exist.
     pub(super) fn check_activity_inside_of_work_hours(
         &self,
         activity_id: ActivityId,
         entity_name: &str,
     ) -> Result<()> {
-        let activity = self.activity(activity_id)?;
+        let activity = self.activity(activity_id);
         let maybe_insertion_interval = activity.insertion_interval();
         let activity_name = activity.name();
 
@@ -153,43 +170,5 @@ impl Data {
             // The activity is not inserted
             Ok(())
         }
-    }
-
-    /// Checks if an entity in the list  does not have enough time for the activity.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if any entity or the activity does not exist or if the entity does not
-    /// have enough time for the activity.
-    pub(super) fn check_entity_without_enough_time_for_activity(
-        &self,
-        activity_id: ActivityId,
-        entities: &[String],
-    ) -> Result<()> {
-        // Check that each entity has enough time
-        for entity_name in entities {
-            if !self.has_enough_time_for_activity(activity_id, entity_name)? {
-                let activity = self.activity(activity_id)?;
-                return Err(NotEnoughTime::activity_added_for(
-                    entity_name,
-                    activity.name(),
-                ));
-            }
-        }
-        Ok(())
-    }
-
-    /// Returns true if the entity has enough time for the activity with the given id.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity or activity does not exist.
-    fn has_enough_time_for_activity(
-        &self,
-        activity_id: ActivityId,
-        entity_name: &str,
-    ) -> Result<bool> {
-        let free_time = self.free_time_of(entity_name)?;
-        Ok(free_time >= self.activity(activity_id)?.duration())
     }
 }

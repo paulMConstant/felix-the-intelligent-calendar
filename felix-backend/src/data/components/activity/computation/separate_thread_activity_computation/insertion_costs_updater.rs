@@ -2,7 +2,7 @@ use crate::data::{ActivityId, ActivityInsertionCosts};
 
 use super::{possible_beginnings_pool::PossibleBeginningsComputationPool, thread_pool::ThreadPool};
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
@@ -24,6 +24,17 @@ impl InsertionCostsUpdater {
             activities_insertion_costs: HashMap::new(),
             possible_beginnings_pool,
             thread_pool,
+        }
+    }
+
+    pub fn invalidate_activities(&self, activity_ids: HashSet<ActivityId>) {
+        for id in activity_ids.iter() {
+            let insertion_costs = self
+                .activities_insertion_costs
+                .get(id)
+                .expect("Invalidating non registered activity insertion cost");
+
+            *insertion_costs.lock().unwrap() = None;
         }
     }
 }

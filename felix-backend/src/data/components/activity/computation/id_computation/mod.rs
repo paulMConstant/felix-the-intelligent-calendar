@@ -7,12 +7,12 @@ use super::super::activity_metadata::ActivityMetadata;
 use crate::data::ActivityId;
 
 /// Generates the smallest unused id.
-pub fn generate_next_id(mut used_ids: Vec<&ActivityId>) -> ActivityId {
+pub fn generate_next_id(mut used_ids: Vec<ActivityId>) -> ActivityId {
     // Fetch the ids in ascending order.
     used_ids.sort();
 
     // If 0 is unused, assign it.
-    if used_ids.is_empty() || *used_ids[0] != 0 {
+    if used_ids.is_empty() || used_ids[0] != 0 {
         0
     } else {
         // Compute the difference between neighbours to check for the first hole
@@ -21,7 +21,7 @@ pub fn generate_next_id(mut used_ids: Vec<&ActivityId>) -> ActivityId {
             // Found a hole ! Return the index + 1 (cf example : index 2 means next number is 3)
             index + 1
         } else {
-            // Hole not found : return the length of the used ids.
+            // Hole not found : all numbers from 0 to (len - 1) are taken.
             used_ids.len()
         }
     }

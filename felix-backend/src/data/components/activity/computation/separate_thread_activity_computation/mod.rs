@@ -4,7 +4,8 @@ mod possible_beginnings_pool;
 mod thread_pool;
 
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, ActivityInsertionCosts,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId,
+    ActivityInsertionCosts,
 };
 
 use insertion_costs_updater::InsertionCostsUpdater;
@@ -13,6 +14,8 @@ use possible_beginnings_pool::{PossibleBeginningsComputationPool, PossibleBeginn
 use std::collections::HashSet;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
+
+use std_semaphore::Semaphore;
 
 /// Handles the computation of possible activity beginnings asynchronously.
 #[derive(Debug)]
@@ -64,10 +67,35 @@ impl SeparateThreadActivityComputation {
     /// hours.
     /// Then, fills the insertion costs of concerned activities.
     pub fn queue_work_hours_and_activity_durations(
-        &self,
+        &mut self,
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
-        concerned_activities: HashSet<ActivityId>,
+        concerned_activities: HashSet<Activity>,
+        computation_done_semaphore: Arc<Semaphore>,
     ) {
+        let n_results_to_wait_for = work_hours_and_activity_durations.len();
+        self.insertion_costs_updater.invalidate_activities(
+            concerned_activities
+                .iter()
+                .map(|activity| activity.id())
+                .collect(),
+        );
+
+        self.possible_beginnings_pool
+            .queue_work_hours_and_activity_durations(
+                work_hours_and_activity_durations,
+                computation_done_semaphore.clone(),
+            );
+
+        // Wait for the possible beginnings pool to end computation then fuse the results and
+        // compute insertion scores.
+        std::thread::spawn(move || {
+            // Wait for every computation to be done
+            computation_done_semaphore.acquire();
+            //self.possible_beginnings_pool.poll_and_fuse_possible_beginnings();
+            // Every beginning has been computed
+            // Fuse them
+            // Build computation data
+        });
     }
 }
 

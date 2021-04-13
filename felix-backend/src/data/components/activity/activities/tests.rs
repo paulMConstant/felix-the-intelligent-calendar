@@ -155,8 +155,7 @@ fn test_fetch_computation() {
         .computation_data
         .set_incompatible_activity_ids(vec![3]);
     activity1.computation_data.set_duration(Time::new(0, 30));
-    *activity1.computation_data.insertion_costs().lock().unwrap() = 
-        Some(BTreeSet::new());
+    *activity1.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
 
     let activity1 = activity1.clone();
 
@@ -168,8 +167,7 @@ fn test_fetch_computation() {
         .computation_data
         .set_incompatible_activity_ids(vec![0, 3]);
     activity2.computation_data.set_duration(Time::new(0, 20));
-    *activity2.computation_data.insertion_costs().lock().unwrap() = 
-        Some(BTreeSet::new());
+    *activity2.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
     let activity2 = activity2.clone();
 
     let activity3 = activity_collection
@@ -181,8 +179,7 @@ fn test_fetch_computation() {
         .set_incompatible_activity_ids(vec![1]);
     activity3.computation_data.set_duration(Time::new(0, 15));
     activity3.computation_data.insert(Some(Time::new(1, 0)));
-    *activity3.computation_data.insertion_costs().lock().unwrap() = 
-        Some(BTreeSet::new());
+    *activity3.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
     let activity3 = activity3.clone();
 
     let (static_data, insertion_data) = activity_collection.fetch_computation();
@@ -288,16 +285,15 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
         .computation_data
         .set_incompatible_activity_ids(vec![]);
     activity1.computation_data.set_duration(Time::new(0, 30));
-    *activity1
-        .computation_data
-        .insertion_costs()
-        .lock()
-        .unwrap() = Some(
-            activity1_possible_beginnings
-                .iter()
-                .map(|&time| InsertionCost { beginning: time, cost: 0 })
-                .collect()
-        );
+    *activity1.computation_data.insertion_costs().lock().unwrap() = Some(
+        activity1_possible_beginnings
+            .iter()
+            .map(|&time| InsertionCost {
+                beginning: time,
+                cost: 0,
+            })
+            .collect(),
+    );
 
     let activity2 = activity_collection
         .get_mut_by_id(1)

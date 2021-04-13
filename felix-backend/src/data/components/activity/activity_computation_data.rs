@@ -2,6 +2,7 @@ use crate::data::{ActivityId, InsertionCost, Time, TimeInterval, MIN_TIME_DISCRE
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
 
 pub type ActivityInsertionCosts = Option<BTreeSet<InsertionCost>>;
@@ -111,5 +112,14 @@ impl PartialEq for ActivityComputationData {
         self.duration == other.duration
             && self.insertion_interval == other.insertion_interval
             && self.incompatible_activity_ids == other.incompatible_activity_ids
+    }
+}
+
+impl Hash for ActivityComputationData {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // Don't hash possible activity insertions because they are asynchronously calculated
+        self.duration.hash(state);
+        self.insertion_interval.hash(state);
+        self.incompatible_activity_ids.hash(state);
     }
 }
