@@ -1,10 +1,10 @@
 use felix_backend::data::{InsertionCost, Rgba, Time};
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{HashMap};
 
 /// From a set of possible insertion beginnings with their associated costs,
 /// returns the color associated to each time.
-pub(super) fn costs_to_rgb(insertion_costs: &BTreeSet<InsertionCost>) -> HashMap<Time, Rgba> {
+pub(super) fn costs_to_rgb(insertion_costs: &[InsertionCost]) -> HashMap<Time, Rgba> {
     let mut beginnings_and_associated_costs = HashMap::new();
 
     // If the insertion cost is empty, max_by_key and min_by_key can return None

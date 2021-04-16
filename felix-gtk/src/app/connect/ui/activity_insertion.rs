@@ -217,7 +217,6 @@ impl App {
 
                 let activity_beginning = data
                     .activity(id)
-                    .expect("Setting duration of activity which does not exist")
                     .insertion_interval()
                     .expect("Changing the beginning of an activity which is not inserted")
                     .beginning();
@@ -272,9 +271,7 @@ impl App {
             .set_activity_try_insert_callback(Rc::new(Box::new(
                 move |entity_name: String, activity_id: ActivityId, insertion_time: Time| {
                     let mut data = data.borrow_mut();
-                    let activity = data
-                        .activity(activity_id)
-                        .expect("The activity we are inserting does not exist");
+                    let activity = data.activity(activity_id);
 
                     if activity.entities_sorted().contains(&entity_name) {
                         // Ignore errors - no spamming on the user when he drag drops
@@ -289,12 +286,7 @@ impl App {
         let possible_insertion_times_of_activity_callback =
             Rc::new(Box::new(move |id: ActivityId| {
                 let data = data.borrow();
-                let activity_participants = data
-                    .activity(id)
-                    .expect(
-                        "Trying to get possible insertion times of activity which does not exist !",
-                    )
-                    .entities_sorted();
+                let activity_participants = data.activity(id).entities_sorted();
 
                 let maybe_possible_insertion_times =
                     data.possible_insertion_times_of_activity_with_associated_cost(id);
@@ -327,10 +319,8 @@ impl App {
             .init_set_activity_duration_callback(Rc::new(Box::new(
                 move |id: ActivityId, increase_duration: bool| {
                     let mut data = data.borrow_mut();
-                    let activity_duration = data
-                        .activity(id)
-                        .expect("Setting duraion of activity which does not exist")
-                        .duration();
+                    let activity_duration = data.activity(id).duration();
+
                     let new_duration = if increase_duration {
                         activity_duration + MIN_TIME_DISCRETIZATION
                     } else {

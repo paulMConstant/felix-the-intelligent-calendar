@@ -411,9 +411,6 @@ fn draw_possible_insertions_background(
     schedules.compute_height_for_min_discretization(height);
     if let Some(possible_insertion_times) = &schedules.possible_activity_insertion_times {
         let colors_associated_to_beginnings = costs_to_rgb(&possible_insertion_times);
-        // TODO check for insertion scores
-        // Just draw green for now
-        c.set_source_rgb(0.0, 1.0, 0.0);
 
         for (index, _entity) in
             schedules

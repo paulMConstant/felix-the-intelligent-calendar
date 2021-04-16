@@ -10,12 +10,12 @@ impl App {
 
     fn emit_existing_activities(&self) {
         let data = self.data.borrow();
-        let activities = data.activities_sorted();
+        let activities = data.activities_not_sorted();
         if !activities.is_empty() {
             // Refresh the view
             data.events()
                 .borrow_mut()
-                .emit_activity_added(&data, activities[0]);
+                .emit_activity_added(&data, &activities[0]);
         }
     }
 

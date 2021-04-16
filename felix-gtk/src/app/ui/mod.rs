@@ -24,15 +24,14 @@ pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;
 
-use felix_backend::data::{Activity, AutoinsertionThreadHandle, Entity, Group, InsertionCost};
+use felix_backend::data::{Activity, ActivityInsertionCosts, AutoinsertionThreadHandle, Entity, Group};
 
 use std::cell::RefCell;
-use std::collections::BTreeSet;
 use std::rc::Rc;
 
 pub struct EntitiesAndInsertionTimes {
     pub entities: Vec<String>,
-    pub insertion_times: Option<BTreeSet<InsertionCost>>,
+    pub insertion_times: ActivityInsertionCosts,
 }
 
 pub struct Ui {

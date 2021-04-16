@@ -23,12 +23,12 @@ impl Ui {
 
     /// Updates the treeview of activities and selects the given row if not None.
     /// If the given row is None, keeps the originally selected row.
-    pub(super) fn update_activities_treeview(&mut self, activities: &[&Activity]) {
+    pub(super) fn update_activities_treeview(&mut self, activities: Vec<Activity>) {
         self.update_activities_list_store(activities);
         self.update_activities_treeview_selection();
     }
 
-    fn update_activities_list_store(&self, activities: &[&Activity]) {
+    fn update_activities_list_store(&self, activities: Vec<Activity>) {
         fetch_from!(self, activities_list_store, activities_tree_view);
 
         with_blocked_signals!(

@@ -1,40 +1,163 @@
-use crate::data::{ActivityId, ActivityInsertionCosts};
+use crate::data::{
+    Activity,
+    InsertionCost,
+    Time,
+};
 
-use super::{possible_beginnings_pool::PossibleBeginningsComputationPool, thread_pool::ThreadPool};
+use felix_computation_api::compute_insertion_costs;
 
-use std::collections::{HashMap, HashSet};
+use super::{
+    computation_done_semaphore::Semaphore,
+    possible_beginnings_pool::PossibleBeginningsComputationPool, 
+    thread_pool::ThreadPool,
+    super::activities_into_computation_data::{
+        activities_into_computation_data,
+        activities_sorted_for_computation
+    },
+};
+
+use std::collections::{HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
-/// Invalidates, computes the insertion costs of activities and revalidates them.
-/// Computation and revalidation are done in a separate thread.
-#[derive(Debug)]
-pub struct InsertionCostsUpdater {
-    pub activities_insertion_costs: HashMap<ActivityId, Arc<Mutex<ActivityInsertionCosts>>>,
-    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+
+// TODO put function in separate_thread_computation
+pub fn run_update_insertion_costs_thread(
     thread_pool: Rc<ThreadPool>,
+    computation_done_semaphore: Arc<Semaphore>,
+    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+    activities: Arc<Mutex<Vec<Activity>>>,
+) {
+    thread_pool.spawn(move || {
+        // Wait until a result is up
+        computation_done_semaphore.access();
+        poll_and_fuse_possible_beginnings(activities.clone(), possible_beginnings_pool.clone());
+    });
 }
 
-impl InsertionCostsUpdater {
-    pub(crate) fn new(
-        possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
-        thread_pool: Rc<ThreadPool>,
-    ) -> Self {
-        InsertionCostsUpdater {
-            activities_insertion_costs: HashMap::new(),
-            possible_beginnings_pool,
-            thread_pool,
-        }
+/// Given the schedules of participants and all activities, for each activity:
+/// 1. Checks if all possible beginnings have been computed
+/// 2.a If they have, fills the insertion costs for each activity and returns true
+/// 2.b If they haven't, returns false
+#[must_use]
+fn poll_and_fuse_possible_beginnings(
+    mut activities: Arc<Mutex<Vec<Activity>>>,
+    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>
+) -> bool {
+    let activities = activities.lock().unwrap();
+
+    let maybe_all_possible_beginnings_for_each_activity = 
+        possible_beginnings_for_activities(possible_beginnings_pool, &activities);
+
+    // Intersect all possible beginnings for each activity
+    if let Some(all_possible_beginnings_for_each_activity) = 
+        maybe_all_possible_beginnings_for_each_activity 
+    {
+        // Sort activities in computation form
+        *activities = activities_sorted_for_computation(&activities);
+
+        merge_beginnings_of_all_participants_of_each_activity(
+            all_possible_beginnings_for_each_activity, 
+            &activities
+        );
+
+        // Once every merge has been done, compute insertion costs
+        compute_insertion_costs_for_each_activity(&activities);
+
+        true
+    } else {
+        // At least one computation result was missing
+        false
     }
+}
 
-    pub fn invalidate_activities(&self, activity_ids: HashSet<ActivityId>) {
-        for id in activity_ids.iter() {
-            let insertion_costs = self
-                .activities_insertion_costs
-                .get(id)
-                .expect("Invalidating non registered activity insertion cost");
+/// Fetches the possible beginnings of every activity, not taking conflicts into account.
+/// If one result has not been computed, returns None.
+/// Each activity has a Vec of HashSet of time, one per entity.
+#[must_use]
+fn possible_beginnings_for_activities(
+    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+    activities: &[Activity],
+    ) -> Option<Vec<Vec<HashSet<Time>>>> 
+{
+    let pool = possible_beginnings_pool.lock().unwrap();
 
-            *insertion_costs.lock().unwrap() = None;
-        }
+    activities.iter()
+        .map(|activity| {
+            // Get possible beginnings
+        activity.computation_data
+            .schedules_of_participants()
+            .iter()
+            .map(|work_hours_and_activity_durations| {
+                pool.get(work_hours_and_activity_durations)
+                    .map(|beginnings_given_duration| {
+                        beginnings_given_duration.get(&activity.duration()).expect(
+                            "Activity duration not in durations calculated for participants",
+                        )
+                            .clone()
+                    })
+                // Bring option out of the vec
+            }).collect::<Option<Vec<_>>>()
+        })
+    .collect()
+}
+
+/// For each activity in the activity slice, fuses the possible beginnings of all its
+/// participant (each participant has a set of times in which they can put the activity).
+/// The result is stored directly in the activity.
+///
+/// The activities and possible beginnings are parallel arrays.
+fn merge_beginnings_of_all_participants_of_each_activity(
+    mut all_possible_beginnings: Vec<Vec<HashSet<Time>>>, 
+    activities: &[Activity]) 
+{
+    assert!(activities.len() == all_possible_beginnings.len());
+
+    // Merge beginnings with 0 cost
+    for (possible_beginnings_for_this_activity, activity) in 
+        all_possible_beginnings.iter_mut().zip(activities) {
+        // Sort sets by ascending size so that fewer checks are done for intersections
+        possible_beginnings_for_this_activity.sort_by_key(|a| a.len());
+
+        let first_set = possible_beginnings_for_this_activity.first();
+
+        let insertion_scores = Some(
+            if let Some(first_set) = first_set {
+               first_set.into_iter()
+                .filter(|time| {
+                    possible_beginnings_for_this_activity[1..]
+                        .iter()
+                        .all(|set| set.contains(time))
+                })
+                // Map into dummy scores to fetch computation and to calculate scores properly
+                .map(|&time| InsertionCost { beginning: time, cost: 0 })
+                .collect()
+            } else {
+                // Possible beginnings have been computed and there are none
+                Vec::<InsertionCost>::new()
+            }
+        );
+
+        *activity.computation_data.insertion_costs().lock().unwrap() = insertion_scores;
+    }
+}
+
+/// For each activity, compute its insertion scores and stores them directly in the activity.
+fn compute_insertion_costs_for_each_activity(activities: &[Activity]) {
+    let (static_data, insertion_data) = activities_into_computation_data(activities);
+
+    // We can iterate in the right order because activities are sorted the same way as they
+    // are in computation form
+    for (index, activity) in activities.iter().enumerate() {
+        let insertion_costs = compute_insertion_costs(&static_data,
+                                                      &insertion_data,
+                                                      index)
+            .into_iter()
+            .map(|insertion_cost_minutes| {
+                 InsertionCost::from_insertion_cost_minutes(insertion_cost_minutes)
+            })
+        .collect();
+
+        *activity.computation_data.insertion_costs().lock().unwrap() = Some(insertion_costs);
     }
 }

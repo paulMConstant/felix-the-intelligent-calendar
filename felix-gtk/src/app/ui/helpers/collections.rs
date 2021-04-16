@@ -6,7 +6,7 @@ use std::convert::TryFrom;
 /// If there is no next element, returns None.
 pub fn get_next_element<T>(
     position_of_removed_element: usize,
-    collection: &[&T],
+    collection: &Vec<T>,
 ) -> (Option<T>, Option<i32>)
 where
     T: Clone,

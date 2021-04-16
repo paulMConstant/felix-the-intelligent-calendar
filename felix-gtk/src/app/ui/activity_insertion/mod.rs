@@ -141,9 +141,7 @@ impl Ui {
         drop(activity_insertion);
         if let Some(activity) = maybe_activity {
             let data = data.borrow();
-            let activity = data
-                .activity(activity.id())
-                .expect("User clicked on activity which does not exist");
+            let activity = data.activity(activity.id()).clone();
             self.update_current_activity(&data.groups_sorted(), Some(activity));
         }
     }

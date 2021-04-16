@@ -51,7 +51,7 @@ impl Ui {
 
     pub fn on_activity_added(&mut self, data: &Data, activity: &Activity) {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
-        self.update_activities_treeview(&data.activities_sorted());
+        self.update_activities_treeview(data.activities_sorted());
     }
 
     pub fn on_activity_selected(&mut self, data: &Data, activity: Activity) {
@@ -59,22 +59,20 @@ impl Ui {
     }
 
     pub fn on_activity_removed(&mut self, data: &Data, position_of_removed_activity: usize) {
-        let activities = &data.activities_sorted();
-        let (new_current_activity, _) = get_next_element(position_of_removed_activity, activities);
+        let activities = data.activities_sorted();
+        let (new_current_activity, _) = get_next_element(position_of_removed_activity, &activities);
         self.update_current_activity(&data.groups_sorted(), new_current_activity);
-        self.update_activities_treeview(&activities);
+        self.update_activities_treeview(activities);
     }
 
     pub fn on_activity_renamed(&mut self, data: &Data, activity: &Activity) {
         self.update_current_activity_without_ui(Some(activity.clone()));
-        self.update_activities_treeview(&data.activities_sorted());
+        self.update_activities_treeview(data.activities_sorted());
     }
 
     pub fn on_group_members_changed_update_activity(&mut self, data: &Data) {
         if let Some(current_activity) = &self.current_activity {
-            let activity = data
-                .activity(current_activity.id())
-                .expect("Current activity does not exist in data !");
+            let activity = data.activity(current_activity.id()).clone();
             self.update_current_activity(&data.groups_sorted(), Some(activity));
         }
     }
@@ -95,9 +93,10 @@ impl Ui {
     pub fn refresh_current_activity_view(&mut self, data: &Data) {
         if let Some(current_activity) = &self.current_activity {
             let new_current_activity = data
-                .activities_sorted()
+                .activities_not_sorted()
                 .into_iter()
-                .find(|activity| activity.id() == current_activity.id());
+                .find(|&activity| activity.id() == current_activity.id());
+
             self.update_current_activity(&data.groups_sorted(), new_current_activity.cloned());
         }
     }

@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod tests;
+mod inner;
 
 use super::{
     computation::{
         activities_into_computation_data::index_to_id_map,
-        id_computation::{compute_incompatible_ids, generate_next_id},
+        id_computation::generate_next_id,
         separate_thread_activity_computation::SeparateThreadActivityComputation,
     },
-    ActivityMetadata,
 };
 
 use crate::data::{
@@ -20,7 +20,8 @@ use crate::errors::Result;
 use felix_computation_api::structs::ActivityBeginningMinutes;
 
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex};
 
 pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
 
@@ -28,7 +29,10 @@ pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
 /// Makes sures there are no id duplicates.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Activities {
-    activities: Vec<Activity>,
+    // Reason for Arc:
+    // Writing in the activities to update the insertion costs asynchronously
+    // Reading the activities collection to do this computation asynchronously
+    activities: Arc<Mutex<Vec<Activity>>>,
     #[serde(skip)]
     separate_thread_computation: SeparateThreadActivityComputation,
     #[serde(skip)]
@@ -40,7 +44,7 @@ impl Activities {
     #[must_use]
     pub fn new() -> Activities {
         Activities {
-            activities: Vec::new(),
+            activities: Arc::new(Mutex::new(Vec::new())),
             separate_thread_computation: SeparateThreadActivityComputation::new(),
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
@@ -50,15 +54,15 @@ impl Activities {
     /// Simple getter for the activity list, sorted by name.
     #[must_use]
     pub fn get_sorted_by_name(&self) -> Vec<Activity> {
-        let mut activities = self.activities.clone();
+        let mut activities = self.activities.lock().unwrap().clone();
         activities.sort_by_key(|a| a.name());
         activities
     }
 
     /// Getter for all activities, not sorted.
     #[must_use]
-    pub fn get_not_sorted(&self) -> &Vec<Activity> {
-        &self.activities
+    pub fn get_not_sorted(&self) -> Vec<Activity> {
+        self.activities.lock().unwrap().clone()
     }
 
     /// Returns a copy of the activity with given id.
@@ -68,19 +72,9 @@ impl Activities {
     /// Panics if the activity with given ID does not exist.
     pub fn get_by_id(&self, id: ActivityId) -> &Activity {
         self.activities
+            .lock()
+            .unwrap()
             .iter()
-            .find(|activity| activity.id() == id)
-            .expect("Asking for activity which does not exist")
-    }
-
-    /// Simple private mutable getter for an activity.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the activity with given ID does not exist.
-    fn get_mut_by_id(&mut self, id: ActivityId) -> &mut Activity {
-        self.activities
-            .iter_mut()
             .find(|activity| activity.id() == id)
             .expect("Asking for activity which does not exist")
     }
@@ -101,18 +95,16 @@ impl Activities {
     /// Automatically assigns a unique id.
     /// Returns an immutable reference to the newly created activity.
     pub fn add(&mut self, name: String) -> &Activity {
-        let used_ids = self
-            .activities
+        let activities = self.activities.lock().unwrap();
+
+        let used_ids = activities
             .iter()
             .map(|activity| activity.id())
             .collect();
         let id = generate_next_id(used_ids);
         let activity = Activity::new(id, name);
 
-        self.separate_thread_computation
-            .register_new_activity(id, activity.computation_data.insertion_costs());
-
-        self.activities.insert(id, activity);
+        activities.insert(id, activity);
         self.get_by_id(id)
     }
 
@@ -122,17 +114,16 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn remove(&mut self, id: ActivityId) {
-        let position = self
-            .activities
+        let activities = self.activities.lock().unwrap();
+
+        let position = activities
             .iter()
             .position(|activity| activity.id() == id)
             .expect("Activity with given ID does not exist");
 
-        self.activities.swap_remove(position);
+        activities.swap_remove(position);
 
         self.update_incompatible_activities();
-        self.separate_thread_computation
-            .register_activity_removed(id);
     }
 
     /// Changes the name of the activity with the given id to the given name.
@@ -163,6 +154,8 @@ impl Activities {
     pub fn add_entity_to_activities_with_group(&mut self, group_name: &str, entity_name: String) {
         for activity in self
             .activities
+            .lock()
+            .unwrap()
             .iter_mut()
             .filter(|activity| activity.groups_sorted().contains(&group_name.into()))
         {
@@ -171,27 +164,6 @@ impl Activities {
             let _ = activity.metadata.add_entity(entity_name.clone());
         }
         self.update_incompatible_activities();
-    }
-
-    /// Updates the incompatible activity ids of each activity.
-    ///
-    /// Used for internal computation only.
-    fn update_incompatible_activities(&mut self) {
-        // 1. Create a copy of the metadata
-        let metadata_vec: Vec<ActivityMetadata> = self
-            .activities
-            .iter()
-            .map(|activity| activity.metadata.clone())
-            .collect();
-
-        // 2. Iterate over the copied metadata to fill incompatible ids (activities which
-        // have at least one entity in common are incompatible).
-        // If the activity has the same id, it is the same activity, don't add it
-        for metadata in &metadata_vec {
-            self.get_mut_by_id(metadata.id())
-                .computation_data
-                .set_incompatible_activity_ids(compute_incompatible_ids(&metadata, &metadata_vec));
-        }
     }
 
     /// Removes an entity from the activity with the given id.
@@ -211,7 +183,7 @@ impl Activities {
 
     /// Removes the entity with given name from all activities.
     pub fn remove_entity_from_all(&mut self, entity: &str) {
-        for activity in self.activities.iter_mut() {
+        for activity in self.activities.lock().unwrap().iter_mut() {
             // We don't care about the result : if the entity is not
             // taking part in the activity, that is what we want in the first place
             let _ = activity.metadata.remove_entity(entity);
@@ -221,7 +193,7 @@ impl Activities {
 
     /// Renames the entity with given name in all activities.
     pub fn rename_entity_in_all(&mut self, old_name: &str, new_name: String) {
-        for activity in self.activities.iter_mut() {
+        for activity in self.activities.lock().unwrap().iter_mut() {
             // We don't care about the result : if the entity is not
             // taking part in the activity, it does not need to be renamed
             let _ = activity.metadata.rename_entity(old_name, new_name.clone());
@@ -253,7 +225,7 @@ impl Activities {
 
     /// Removes the group with the given name from all activities.
     pub fn remove_group_from_all(&mut self, group: &str) {
-        for activity in self.activities.iter_mut() {
+        for activity in self.activities.lock().unwrap().iter_mut() {
             // We don't care about the result: if the group is not in the activity, this
             // is what we want.
             let _ = activity.metadata.remove_group(group);
@@ -263,7 +235,7 @@ impl Activities {
 
     /// Renames the group with given name in all activities.
     pub fn rename_group_in_all(&mut self, old_name: &str, new_name: String) {
-        for activity in self.activities.iter_mut() {
+        for activity in self.activities.lock().unwrap().iter_mut() {
             // We don't care about the result : if the entity is not
             // taking part in the activity, it does not need to be renamed
             let _ = activity.metadata.rename_group(old_name, new_name.clone());
@@ -294,14 +266,14 @@ impl Activities {
     pub fn trigger_update_possible_activity_beginnings(
         &mut self,
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
-        concerned_activity_ids: HashSet<Activity>,
+        concerned_activities: HashSet<Activity>,
     ) {
-        //self.separate_thread_computation
-        //.queue_work_hours_and_activity_durations(
-        //schedules_of_participants,
-        //concerned_activity_ids,
-        //);
-        // TODO compute possible insertion times if no conflict
+        println!("Trigger update");
+        self.separate_thread_computation
+            .queue_work_hours_and_activity_durations(
+                schedules_of_participants,
+                concerned_activities,
+            );
     }
 
     /// Inserts the activity with the given beginning.
@@ -345,7 +317,7 @@ impl Activities {
         &mut self,
         id: ActivityId,
         ideal_beginning: Time,
-        possible_beginnings: BTreeSet<InsertionCost>,
+        possible_beginnings: Vec<InsertionCost>,
     ) -> bool {
         // We remove this activity from the list of activities to insert back.
         self.activities_removed_because_duration_increased

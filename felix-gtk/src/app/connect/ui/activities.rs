@@ -89,7 +89,7 @@ impl App {
                         .expect("Error when parsing activity ID from model");
 
                     let data = data.borrow();
-                    assign_or_return!(activity, data.activity(activity_id));
+                    let activity = data.activity(activity_id).clone();
                     ui.borrow_mut().on_activity_selected(&data, activity);
                 }
             })
@@ -108,7 +108,7 @@ impl App {
                 let id = ui.borrow().current_activity().expect(
                     "Current activity should be selected before accessing the remove activity button",
                 ).id();
-                return_if_err!(data.borrow_mut().remove_activity(id));
+                data.borrow_mut().remove_activity(id);
             })
         );
     }
@@ -155,7 +155,6 @@ impl App {
                 let mut data = $data.borrow_mut();
                 let activity_duration = data
                     .activity(id)
-                    .expect("Setting duration of activity which does not exist")
                     .duration();
 
                 let new_duration = wrap_duration(activity_duration, Time::new(hours, minutes));
@@ -331,7 +330,7 @@ impl App {
                 .expect("Current activity should be set before performing any action on a group").id();
 
             let mut data = data.borrow_mut();
-            assign_or_return!(activity, data.activity(current_activity_id));
+            let activity = data.activity(current_activity_id);
             let activity_entities = activity.entities_sorted();
 
             if activity_entities.contains(&entity_to_remove.to_owned()) {

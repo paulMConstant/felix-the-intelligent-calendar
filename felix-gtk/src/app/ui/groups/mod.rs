@@ -31,10 +31,10 @@ impl Ui {
     }
 
     pub fn on_group_removed(&mut self, data: &Data, position_of_removed_group: usize) {
-        let groups = &data.groups_sorted();
-        let (new_current_group, _) = get_next_element(position_of_removed_group, groups);
-        self.update_current_group(new_current_group);
-        self.update_groups_treeview(groups);
+        let groups = data.groups_sorted();
+        let (new_current_group, _) = get_next_element(position_of_removed_group, &groups);
+        self.update_current_group(new_current_group.cloned());
+        self.update_groups_treeview(&groups);
     }
 
     pub fn on_group_renamed(&mut self, data: &Data, group: &Group) {

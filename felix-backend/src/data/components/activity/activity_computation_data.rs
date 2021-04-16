@@ -1,11 +1,17 @@
-use crate::data::{ActivityId, InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use crate::data::{
+    ActivityId,
+    InsertionCost,
+    Time,
+    TimeInterval,
+    MIN_TIME_DISCRETIZATION,
+    computation_structs::WorkHoursAndActivityDurationsSorted,
+};
 
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
 
-pub type ActivityInsertionCosts = Option<BTreeSet<InsertionCost>>;
+pub type ActivityInsertionCosts = Option<Vec<InsertionCost>>;
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.
@@ -13,12 +19,15 @@ pub type ActivityInsertionCosts = Option<BTreeSet<InsertionCost>>;
 pub struct ActivityComputationData {
     duration: Time,
     insertion_interval: Option<TimeInterval>,
+
     /// Kept in a arc because updated when necessary in separate threads.
     /// None means not computed yet (invalidated).
     /// Some means up to date.
     #[serde(skip)]
     insertion_costs: Arc<Mutex<ActivityInsertionCosts>>,
+
     incompatible_activity_ids: Vec<ActivityId>,
+    schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
 }
 
 impl ActivityComputationData {
@@ -29,6 +38,7 @@ impl ActivityComputationData {
             insertion_interval: None,
             insertion_costs: Arc::new(Mutex::new(None)),
             incompatible_activity_ids: Vec::new(),
+            schedules_of_participants: Vec::new(),
         }
     }
 
@@ -58,13 +68,18 @@ impl ActivityComputationData {
         self.incompatible_activity_ids.clone()
     }
 
+    #[must_use]
+    pub fn schedules_of_participants(&self) -> &Vec<WorkHoursAndActivityDurationsSorted> {
+        &self.schedules_of_participants
+    }
+
     // *** Setters ***
 
     /// Simple setter for the duration.
     ///
     /// If the duration is shorter than the current one, updates the current insertion time.
-    /// If the duration is greater, we don't know where the activity will fit. It is the
-    /// responsibility of higher level collections to deal with it.
+    /// If the duration is greater, we don't know where the activity will fit : It is the
+    /// responsibility of higher level collections to deal with the change in insertion time.
     pub fn set_duration(&mut self, duration: Time) {
         if duration < self.duration {
             if let Some(insertion_interval) = self.insertion_interval {
@@ -82,6 +97,12 @@ impl ActivityComputationData {
     /// Does not perform any checks, the activities collection does it.
     pub fn set_incompatible_activity_ids(&mut self, incompatible_ids: Vec<ActivityId>) {
         self.incompatible_activity_ids = incompatible_ids;
+    }
+
+    /// Simple setter for schedules of participants.
+    pub fn update_schedules_of_participants(&mut self, 
+                                            schedules: Vec<WorkHoursAndActivityDurationsSorted>) {
+        self.schedules_of_participants = schedules;
     }
 
     /// Inserts the activity at given time.

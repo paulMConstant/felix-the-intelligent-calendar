@@ -31,6 +31,7 @@ impl Data {
 
     /// Starts the computation of the possible beginnings of the given activity.
     pub(crate) fn queue_activity_participants(&mut self, activity: Activity) {
+        // Queue every entity of the activity
         self.queue_entities(activity.entities_sorted());
     }
 

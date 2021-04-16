@@ -1,4 +1,5 @@
 use super::super::super::super::Entities;
+use super::super::computation::activities_into_computation_data;
 use super::*;
 
 use std::collections::BTreeSet;
@@ -30,12 +31,10 @@ fn incompatible_ids() {
     // At this point : id_a contains {a}, id_b contains {a}
     let incompatible_a = activity_collection
         .get_by_id(id_a)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     let incompatible_b = activity_collection
         .get_by_id(id_b)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     assert_eq!(incompatible_a.len(), 1);
@@ -51,12 +50,10 @@ fn incompatible_ids() {
     // At this point : id_a contains {}, id_b contains {a}
     let incompatible_a = activity_collection
         .get_by_id(id_a)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     let incompatible_b = activity_collection
         .get_by_id(id_b)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     assert_eq!(incompatible_a.len(), 0);
@@ -70,14 +67,13 @@ fn incompatible_ids() {
     // At this point : id_a contains {b}, id_b contains {a}
     let incompatible_a = activity_collection
         .get_by_id(id_a)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     let incompatible_b = activity_collection
         .get_by_id(id_b)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
+
     assert_eq!(incompatible_a.len(), 0);
     assert_eq!(incompatible_b.len(), 0);
 
@@ -89,12 +85,10 @@ fn incompatible_ids() {
     // At this point : id_a contains {b}, id_b contains {a, b}
     let incompatible_a = activity_collection
         .get_by_id(id_a)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     let incompatible_b = activity_collection
         .get_by_id(id_b)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     assert_eq!(incompatible_a.len(), 1);
@@ -111,17 +105,14 @@ fn incompatible_ids() {
     // At this point : id_a contains {b}, id_b contains {a, b}, id_c contains {a}
     let incompatible_a = activity_collection
         .get_by_id(id_a)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     let incompatible_b = activity_collection
         .get_by_id(id_b)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     let incompatible_c = activity_collection
         .get_by_id(id_c)
-        .expect("Could not get activity by id")
         .computation_data
         .incompatible_activity_ids();
     assert_eq!(incompatible_a.len(), 1);
@@ -142,15 +133,10 @@ fn test_fetch_computation() {
     activity_collection.add("1".to_owned());
     activity_collection.add("2".to_owned());
     activity_collection.add("3".to_owned());
-    activity_collection
-        .remove(2)
-        .expect("Could not remove activity");
+    activity_collection.remove(2);
 
     // Ids are [0, 1, 3]
-    let activity1 = activity_collection
-        .get_mut_by_id(0)
-        .expect("Could not get activity by id");
-
+    let activity1 = activity_collection.get_mut_by_id(0);
     activity1
         .computation_data
         .set_incompatible_activity_ids(vec![3]);
@@ -159,9 +145,7 @@ fn test_fetch_computation() {
 
     let activity1 = activity1.clone();
 
-    let activity2 = activity_collection
-        .get_mut_by_id(1)
-        .expect("Could not get activity by id");
+    let activity2 = activity_collection.get_mut_by_id(1);
 
     activity2
         .computation_data
@@ -170,24 +154,22 @@ fn test_fetch_computation() {
     *activity2.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
     let activity2 = activity2.clone();
 
-    let activity3 = activity_collection
-        .get_mut_by_id(3)
-        .expect("Could not get activity by id");
+    let activity3 = activity_collection.get_mut_by_id(3);
 
-    activity3
-        .computation_data
-        .set_incompatible_activity_ids(vec![1]);
+    activity3.computation_data.set_incompatible_activity_ids(vec![1]);
+
     activity3.computation_data.set_duration(Time::new(0, 15));
     activity3.computation_data.insert(Some(Time::new(1, 0)));
     *activity3.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
     let activity3 = activity3.clone();
 
-    let (static_data, insertion_data) = activity_collection.fetch_computation();
+    let (static_data, insertion_data) = 
+        activities_into_computation_data(activity_collection.get_not_sorted());
 
     // Order should be Activity3 (inserted), activity2(harder to insert - 20 mins * 2 incompatible
     // activities), activity1
 
-    let index_to_id_translation = &activity_collection.last_fetch_computation_index_to_id_map;
+    let index_to_id_translation = index_to_id_map(activity_collection.get_not_sorted());
     assert_eq!(index_to_id_translation[&2], 0);
     assert_eq!(index_to_id_translation[&1], 1);
     assert_eq!(index_to_id_translation[&0], 3);
@@ -272,9 +254,7 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     activity_collection.add("1".to_owned());
     activity_collection.add("2".to_owned());
 
-    let activity1 = activity_collection
-        .get_mut_by_id(0)
-        .expect("Could not get activity by id");
+    let activity1 = activity_collection.get_mut_by_id(0);
 
     let activity1_possible_beginnings = (0..=10)
         .step_by(5)
@@ -284,6 +264,7 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     activity1
         .computation_data
         .set_incompatible_activity_ids(vec![]);
+
     activity1.computation_data.set_duration(Time::new(0, 30));
     *activity1.computation_data.insertion_costs().lock().unwrap() = Some(
         activity1_possible_beginnings
@@ -295,19 +276,15 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
             .collect(),
     );
 
-    let activity2 = activity_collection
-        .get_mut_by_id(1)
-        .expect("Could not get activity by id");
+    let activity2 = activity_collection.get_mut_by_id(1);
 
-    activity2
-        .computation_data
-        .set_incompatible_activity_ids(vec![0, 3]);
+    activity2.computation_data.set_incompatible_activity_ids(vec![0, 3]);
+
     activity2.computation_data.set_duration(Time::new(0, 20));
     activity2.computation_data.insert(Some(Time::new(2, 0)));
 
-    let activity3 = activity_collection
-        .get_mut_by_id(2)
-        .expect("Could not get activity by id");
+    let activity3 = activity_collection.get_mut_by_id(2);
+
     activity3.computation_data.set_duration(Time::new(0, 20));
     activity3.computation_data.insert(Some(Time::new(1, 0)));
 
@@ -315,7 +292,6 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     // Check that its beginnings are the ones we fetch (id != index)
     let result = activity_collection
         .get_by_id(0)
-        .expect("Could not get activity by id")
         .insertion_costs();
 
     let expected = Some(

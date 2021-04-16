@@ -1,9 +1,8 @@
 use super::drawing::get_height_for_one_hour;
 use crate::app::ui::EntityToShow;
 
-use felix_backend::data::{InsertionCost, Time, MIN_TIME_DISCRETIZATION};
+use felix_backend::data::{ActivityInsertionCosts, Time, MIN_TIME_DISCRETIZATION};
 
-use std::collections::BTreeSet;
 
 const MIN_SCHEDULE_WIDTH: f64 = 350.0;
 const MAX_SCHEDULE_WIDTH: f64 = 550.0;
@@ -20,7 +19,7 @@ pub struct Schedules {
     pub width_per_schedule: f64,
     pub height_per_min_discretization: f64,
     pub time_tooltip_to_draw: Option<TimeTooltipToDraw>,
-    pub possible_activity_insertion_times: Option<BTreeSet<InsertionCost>>,
+    pub possible_activity_insertion_times: ActivityInsertionCosts,
     pub activity_insertion_concerned_entities: Vec<String>,
 }
 

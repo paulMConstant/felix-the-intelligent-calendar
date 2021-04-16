@@ -12,7 +12,6 @@ paste = "1.0.4"
 num_cpus = "1.0"
 rayon = "1.5"
 serde = { version = "1.0", features = ["derive", "rc"] }
-std-semaphore = "0.1.0"
 
 [dev-dependencies]
 test-utils = { path = "test-utils" }
