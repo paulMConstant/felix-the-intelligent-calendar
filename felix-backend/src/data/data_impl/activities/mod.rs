@@ -26,16 +26,16 @@ impl Data {
 
     /// Returns te activities, not sorted.
     #[must_use]
-    pub fn activities_not_sorted(&self) -> &Vec<Activity> {
+    pub fn activities_not_sorted(&self) -> Vec<Activity> {
         self.activities.get_not_sorted()
     }
 
-    /// Returns a reference to the activity with given id.
+    /// Returns a copy of the activity with given id.
     ///
     /// # Panics
     ///
     /// Panics if the activity is not found.
-    pub fn activity(&self, id: ActivityId) -> &Activity {
+    pub fn activity(&self, id: ActivityId) -> Activity {
         self.activities.get_by_id(id)
     }
 
@@ -43,15 +43,15 @@ impl Data {
     ///
     /// # Errors
     ///
-    /// Returns err if the entity name is empty.
-    pub fn activities_of<S>(&self, entity_name: S) -> Result<Vec<&Activity>>
+    /// Returns err if the entity name is empty after sanitization.
+    pub fn activities_of<S>(&self, entity_name: S) -> Result<Vec<Activity>>
     where
         S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
         Ok(self
             .activities_not_sorted()
-            .iter()
+            .into_iter()
             .filter(|activity| activity.entities_sorted().contains(&entity_name))
             .collect())
     }
@@ -72,12 +72,12 @@ impl Data {
     /// Adds an activity with the formatted given name.
     ///
     /// Automatically assigns a unique id.
-    /// Returns a reference to the created activity.
+    /// Returns a copy of the created activity.
     ///
     /// # Errors
     ///
     /// Returns Err if the formatted name is empty.
-    pub fn add_activity<S>(&mut self, name: S) -> Result<&Activity>
+    pub fn add_activity<S>(&mut self, name: S) -> Result<Activity>
     where
         S: Into<String>,
     {
@@ -85,7 +85,7 @@ impl Data {
         let activity = self.activity(activity_id);
         self.events()
             .borrow_mut()
-            .emit_activity_added(self, activity);
+            .emit_activity_added(self, &activity);
         // No update of possible beginnings necessary
         Ok(activity)
     }
@@ -138,7 +138,7 @@ impl Data {
 
         self.events()
             .borrow_mut()
-            .emit_entity_added_to_activity(self, self.activity(id));
+            .emit_entity_added_to_activity(self, &self.activity(id));
         Ok(())
     }
 
@@ -170,7 +170,7 @@ impl Data {
 
         self.events()
             .borrow_mut()
-            .emit_entity_removed_from_activity(self, self.activity(id));
+            .emit_entity_removed_from_activity(self, &self.activity(id));
         Ok(())
     }
 
@@ -214,7 +214,7 @@ impl Data {
 
         self.events()
             .borrow_mut()
-            .emit_group_added_to_activity(self, self.activity(id));
+            .emit_group_added_to_activity(self, &self.activity(id));
         Ok(())
     }
 
@@ -254,7 +254,7 @@ impl Data {
 
         self.events()
             .borrow_mut()
-            .emit_group_removed_from_activity(self, self.activity(id));
+            .emit_group_removed_from_activity(self, &self.activity(id));
         Ok(())
     }
 
@@ -277,7 +277,7 @@ impl Data {
         self.activities.set_name(id, name.clone());
         self.events()
             .borrow_mut()
-            .emit_activity_renamed(self, self.activity(id));
+            .emit_activity_renamed(self, &self.activity(id));
         Ok(name)
     }
 
@@ -310,7 +310,7 @@ impl Data {
         self.queue_activity_participants(self.activity(id).clone());
         self.events()
             .borrow_mut()
-            .emit_activity_duration_changed(self, self.activity(id));
+            .emit_activity_duration_changed(self, &self.activity(id));
         Ok(())
     }
 
@@ -351,7 +351,7 @@ impl Data {
                     self.activities.insert_activity(id, Some(insertion_time));
                     self.events()
                         .borrow_mut()
-                        .emit_activity_inserted(self, self.activity(id));
+                        .emit_activity_inserted(self, &self.activity(id));
                     Ok(())
                 } else {
                     let activity = self.activity(id);
@@ -383,7 +383,7 @@ impl Data {
             self.activities.insert_activity(id, None);
             self.events()
                 .borrow_mut()
-                .emit_activity_inserted(self, self.activity(id));
+                .emit_activity_inserted(self, &self.activity(id));
             Ok(())
         }
     }
@@ -408,7 +408,7 @@ impl Data {
                     // Insertion was succesful
                     self.events()
                         .borrow_mut()
-                        .emit_activity_inserted(self, self.activity(id));
+                        .emit_activity_inserted(self, &self.activity(id));
                 }
             }
         }
@@ -433,7 +433,7 @@ impl Data {
             ))
         } else {
             let (static_data, insertion_data) =
-                activities_into_computation_data(self.activities_not_sorted());
+                activities_into_computation_data(&self.activities_not_sorted());
 
             Ok(autoinsert(&static_data, &insertion_data))
         }

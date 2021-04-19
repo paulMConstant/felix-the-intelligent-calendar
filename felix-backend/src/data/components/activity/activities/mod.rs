@@ -20,7 +20,7 @@ use crate::errors::Result;
 use felix_computation_api::structs::ActivityBeginningMinutes;
 
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 pub(crate) type ActivitiesAndOldInsertionBeginnings = HashMap<ActivityId, Time>;
@@ -43,11 +43,18 @@ impl Activities {
     /// Initializes the Activity collection.
     #[must_use]
     pub fn new() -> Activities {
+        let activities = Arc::new(Mutex::new(Vec::new()));
+
+        // This thread will silently update the activities insertion costs when durations, 
+        // entities or work hours change
+        let separate_thread_computation = SeparateThreadActivityComputation::new();
+        separate_thread_computation.run_update_insertion_costs_thread(activities.clone());
+
         Activities {
-            activities: Arc::new(Mutex::new(Vec::new())),
-            separate_thread_computation: SeparateThreadActivityComputation::new(),
-            activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
-            ),
+            activities,
+            separate_thread_computation,
+            activities_removed_because_duration_increased: 
+                ActivitiesAndOldInsertionBeginnings::new(),
         }
     }
 
@@ -70,16 +77,18 @@ impl Activities {
     /// # Panics
     ///
     /// Panics if the activity with given ID does not exist.
-    pub fn get_by_id(&self, id: ActivityId) -> &Activity {
+    pub fn get_by_id(&self, id: ActivityId) -> Activity {
         self.activities
             .lock()
             .unwrap()
             .iter()
             .find(|activity| activity.id() == id)
             .expect("Asking for activity which does not exist")
+            .clone()
     }
 
-    /// Getter for activities which were removed from the schedule because their duration increased.
+    /// Getter for activities which were removed from the schedule because their duration 
+    /// increased.
     pub fn get_activities_removed_because_duration_increased(
         &self,
     ) -> ActivitiesAndOldInsertionBeginnings {
@@ -93,9 +102,9 @@ impl Activities {
 
     /// Adds an activity with the given name to the collection.
     /// Automatically assigns a unique id.
-    /// Returns an immutable reference to the newly created activity.
-    pub fn add(&mut self, name: String) -> &Activity {
-        let activities = self.activities.lock().unwrap();
+    /// Returns a copy of the created activity.
+    pub fn add(&self, name: String) -> Activity {
+        let mut activities = self.activities.lock().unwrap();
 
         let used_ids = activities
             .iter()
@@ -113,8 +122,8 @@ impl Activities {
     /// # Panics
     ///
     /// Panics if the activity with given ID does not exist.
-    pub fn remove(&mut self, id: ActivityId) {
-        let activities = self.activities.lock().unwrap();
+    pub fn remove(&self, id: ActivityId) {
+        let mut activities = self.activities.lock().unwrap();
 
         let position = activities
             .iter()
@@ -132,7 +141,7 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn set_name(&mut self, id: ActivityId, name: String) {
-        self.get_mut_by_id(id).metadata.set_name(name);
+        self.mutate_activity(id, |a| a.metadata.set_name(name));
     }
 
     /// Adds an entity to the activity with the given id.
@@ -145,7 +154,7 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn add_entity(&mut self, id: ActivityId, entity: String) -> Result<()> {
-        self.get_mut_by_id(id).metadata.add_entity(entity)?;
+        self.mutate_activity(id, |a| a.metadata.add_entity(entity))?;
         self.update_incompatible_activities();
         Ok(())
     }
@@ -176,7 +185,7 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn remove_entity(&mut self, id: ActivityId, entity: &str) -> Result<()> {
-        self.get_mut_by_id(id).metadata.remove_entity(entity)?;
+        self.mutate_activity(id, |a| a.metadata.remove_entity(entity))?;
         self.update_incompatible_activities();
         Ok(())
     }
@@ -207,7 +216,7 @@ impl Activities {
     /// Returns Err if the activity is not found or if
     /// the group is already taking part in the activity.
     pub fn add_group(&mut self, id: ActivityId, group_name: String) -> Result<()> {
-        self.get_mut_by_id(id).metadata.add_group(group_name)
+        self.mutate_activity(id, |a| a.metadata.add_group(group_name))
     }
 
     /// Removes the group with the given name from the activity with given id.
@@ -220,7 +229,7 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn remove_group(&mut self, id: ActivityId, group_name: &str) -> Result<()> {
-        self.get_mut_by_id(id).metadata.remove_group(group_name)
+        self.mutate_activity(id, |a| a.metadata.remove_group(group_name))
     }
 
     /// Removes the group with the given name from all activities.
@@ -248,9 +257,7 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn set_duration(&mut self, id: ActivityId, duration: Time) {
-        self.get_mut_by_id(id)
-            .computation_data
-            .set_duration(duration);
+        self.mutate_activity(id, |a| a.computation_data.set_duration(duration));
     }
 
     /// Sets the color of the activity with the given id.
@@ -259,20 +266,18 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn set_color(&mut self, id: ActivityId, color: Rgba) {
-        self.get_mut_by_id(id).metadata.set_color(color);
+        self.mutate_activity(id, |a| a.metadata.set_color(color));
     }
 
     /// Triggers the computation of new possible beginnings for the given activities.
     pub fn trigger_update_possible_activity_beginnings(
         &mut self,
         schedules_of_participants: Vec<WorkHoursAndActivityDurationsSorted>,
-        concerned_activities: HashSet<Activity>,
     ) {
-        println!("Trigger update");
         self.separate_thread_computation
             .queue_work_hours_and_activity_durations(
                 schedules_of_participants,
-                concerned_activities,
+                self.activities.clone(),
             );
     }
 
@@ -284,8 +289,7 @@ impl Activities {
     ///
     /// Panics if the activity with given ID is not found.
     pub fn insert_activity(&mut self, id: ActivityId, beginning: Option<Time>) {
-        let activity = self.get_mut_by_id(id);
-        activity.computation_data.insert(beginning);
+        self.mutate_activity(id, |a| a.computation_data.insert(beginning));
     }
 
     /// Keeps the insertion time of an activity which was removed due to an increase of its
@@ -350,12 +354,12 @@ impl Activities {
 
     /// Associates each computation data to its rightful activity then overwrites it.
     pub fn overwrite_insertion_data(&mut self, insertion_data: Vec<ActivityBeginningMinutes>) {
-        let index_to_id_map = index_to_id_map(self.get_not_sorted());
+        let index_to_id_map = index_to_id_map(&self.get_not_sorted());
         for (index, insertion) in insertion_data.into_iter().enumerate() {
             let id = index_to_id_map[&index];
-            self.get_mut_by_id(id)
-                .computation_data
-                .insert(Some(Time::from_total_minutes(insertion)));
+            self.mutate_activity(id,
+                |a| a.computation_data.insert(Some(Time::from_total_minutes(insertion)))
+            );
         }
     }
 }
@@ -374,6 +378,6 @@ impl Clone for Activities {
 
 impl PartialEq for Activities {
     fn eq(&self, other: &Self) -> bool {
-        self.activities == other.activities
+        *self.activities.lock().unwrap() == *other.activities.lock().unwrap()
     }
 }

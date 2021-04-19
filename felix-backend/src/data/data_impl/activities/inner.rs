@@ -48,7 +48,7 @@ impl Data {
         &self,
         activity: &Activity,
         time: Time,
-    ) -> Option<&Activity> {
+    ) -> Option<Activity> {
         let hypothetical_insertion_iterval = TimeInterval::new(time, time + activity.duration());
         activity
             .incompatible_activity_ids()

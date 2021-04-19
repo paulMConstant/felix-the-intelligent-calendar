@@ -7,9 +7,7 @@ use crate::data::{
 use felix_computation_api::compute_insertion_costs;
 
 use super::{
-    computation_done_semaphore::Semaphore,
-    possible_beginnings_pool::PossibleBeginningsComputationPool, 
-    thread_pool::ThreadPool,
+    PossibleBeginningsPool, 
     super::activities_into_computation_data::{
         activities_into_computation_data,
         activities_sorted_for_computation
@@ -17,34 +15,19 @@ use super::{
 };
 
 use std::collections::{HashSet};
-use std::rc::Rc;
 use std::sync::{Arc, Mutex};
-
-
-// TODO put function in separate_thread_computation
-pub fn run_update_insertion_costs_thread(
-    thread_pool: Rc<ThreadPool>,
-    computation_done_semaphore: Arc<Semaphore>,
-    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
-    activities: Arc<Mutex<Vec<Activity>>>,
-) {
-    thread_pool.spawn(move || {
-        // Wait until a result is up
-        computation_done_semaphore.access();
-        poll_and_fuse_possible_beginnings(activities.clone(), possible_beginnings_pool.clone());
-    });
-}
 
 /// Given the schedules of participants and all activities, for each activity:
 /// 1. Checks if all possible beginnings have been computed
 /// 2.a If they have, fills the insertion costs for each activity and returns true
 /// 2.b If they haven't, returns false
+// TODO should it return a bool ? should it not panic instead ?
 #[must_use]
-fn poll_and_fuse_possible_beginnings(
-    mut activities: Arc<Mutex<Vec<Activity>>>,
-    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>
+pub(super) fn poll_and_fuse_possible_beginnings(
+    activities: Arc<Mutex<Vec<Activity>>>,
+    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsPool>>
 ) -> bool {
-    let activities = activities.lock().unwrap();
+    let mut activities = activities.lock().unwrap();
 
     let maybe_all_possible_beginnings_for_each_activity = 
         possible_beginnings_for_activities(possible_beginnings_pool, &activities);
@@ -76,7 +59,7 @@ fn poll_and_fuse_possible_beginnings(
 /// Each activity has a Vec of HashSet of time, one per entity.
 #[must_use]
 fn possible_beginnings_for_activities(
-    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsPool>>,
     activities: &[Activity],
     ) -> Option<Vec<Vec<HashSet<Time>>>> 
 {

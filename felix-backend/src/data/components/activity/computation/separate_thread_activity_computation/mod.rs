@@ -1,7 +1,6 @@
 mod activity_beginnings_given_duration;
 mod computation_done_semaphore;
 mod insertion_costs_updater;
-mod possible_beginnings_pool;
 mod thread_pool;
 
 use crate::data::{
@@ -11,25 +10,24 @@ use crate::data::{
 
 use computation_done_semaphore::Semaphore;
 use felix_computation_api::find_possible_beginnings;
-use insertion_costs_updater;
+//use insertion_costs_updater;
 use thread_pool::ThreadPool;
 
 use activity_beginnings_given_duration::{
     new_activity_beginnings_given_duration, ActivityBeginningsGivenDuration,
 };
-use thread_pool::ThreadPool;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 
-type PossibleBeginningsComputationPool =
+type PossibleBeginningsPool =
     HashMap<WorkHoursAndActivityDurationsSorted, ActivityBeginningsGivenDuration>;
 
 /// Handles the computation of possible activity beginnings asynchronously.
 #[derive(Debug)]
 pub struct SeparateThreadActivityComputation {
-    thread_pool: ThreadPool,
-    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsComputationPool>>,
+    thread_pool: Rc<ThreadPool>,
+    possible_beginnings_pool: Arc<Mutex<PossibleBeginningsPool>>,
     computation_done_semaphore: Arc<Semaphore>,
 }
 
@@ -37,24 +35,32 @@ impl SeparateThreadActivityComputation {
     #[must_use]
     pub fn new() -> Self {
         let thread_pool = Rc::new(ThreadPool::new());
-        let possible_beginnings_computation_pool =
-            Arc::new(Mutex::new(PossibleBeginningsComputationPool::new()));
+        let possible_beginnings_pool =
+            Arc::new(Mutex::new(PossibleBeginningsPool::new()));
         let computation_done_semaphore = Arc::new(Semaphore::new(1));
-
-        //let insertion_costs_updater =
-            //InsertionCostsUpdater::new(
-                //possible_beginnings_computation_pool, 
-                //thread_pool,
-            //);
-
-        //insertion_costs_updater.run_update_insertion_costs_thread(computation_done_semaphore.clone());
-
 
         SeparateThreadActivityComputation {
             thread_pool,
-            possible_beginnings_computation_pool,
+            possible_beginnings_pool,
             computation_done_semaphore,
         }
+    }
+
+    pub fn run_update_insertion_costs_thread(
+        &self,
+        activities: Arc<Mutex<Vec<Activity>>>,
+    ) {
+        let computation_done_semaphore = self.computation_done_semaphore.clone();
+        let possible_beginnings_pool = self.possible_beginnings_pool.clone();
+
+        self.thread_pool.spawn(move || {
+            // Wait until a result is up
+            computation_done_semaphore.access();
+            insertion_costs_updater::poll_and_fuse_possible_beginnings(
+                activities.clone(), 
+                possible_beginnings_pool.clone()
+            );
+        });
     }
 
     /// Computes the possible beginnings of activities with given durations for the given work
@@ -70,17 +76,25 @@ impl SeparateThreadActivityComputation {
         self.computation_done_semaphore
             .acquire_nonblocking(work_hours_and_activity_durations.len());
 
-        // TODO make separate function
-        /// Computes and stores all possible beginnings for activities, not taking conflicts into account.
-        /// This kind of computation is a variant of the backpack problem, in which you have to fit N items
-        /// into N backpacks. Here, for one entity, we check how we can arrange its activities. The search
-        /// is exhaustive.
-        ///
-        /// Storage is done via key-value pairs: 
-        ///     Key is a Vec of activity durations (e.g. 40 and 20 minutes) 
-        ///        and a Vec of Work Hours (e.g. 12:00 - 13:00))
-        ///     Value is where the activities can go (e.g. for a duration of 40 minutes, 12:00 and 12:20,
-        ///                                                for a duration of 20 minutes, 12:00 and 12:40).
+        self.launch_computation(work_hours_and_activity_durations);
+    }
+
+    /// Computes and stores all possible beginnings for activities, not taking conflicts into 
+    /// account.
+    /// This kind of computation is a variant of the backpack problem, in which you have to fit
+    /// N items into N backpacks. Here, for one entity, we check how we can arrange its 
+    /// activities. The search is exhaustive.
+    ///
+    /// Storage is done via key-value pairs: 
+    ///     Key is a Vec of activity durations (e.g. 40 and 20 minutes) 
+    ///        and a Vec of Work Hours (e.g. 12:00 - 13:00))
+    ///     Value is where the activities can go 
+    ///         (e.g. for a duration of 40 minutes, 12:00 and 12:20,
+    ///               for a duration of 20 minutes, 12:00 and 12:40).
+    fn launch_computation(
+        &self, 
+        work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
+    ) {
         for key in work_hours_and_activity_durations {
             if !self.possible_beginnings_pool.lock().unwrap().contains_key(&key) {
                 // Result not already computed 

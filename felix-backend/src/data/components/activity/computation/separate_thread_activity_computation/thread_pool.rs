@@ -20,7 +20,7 @@ impl ThreadPool {
     where
         OP: FnOnce() + Send + 'static,
     {
-        self.thread_pool.spawn(op)
+        self.thread_pool.spawn(op);
     }
 }
 

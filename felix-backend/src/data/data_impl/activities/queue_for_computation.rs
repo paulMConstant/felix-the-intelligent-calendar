@@ -1,7 +1,5 @@
 use crate::data::{Activity, Data};
 
-use std::collections::HashSet;
-
 /// Functions to trigger & update activity insertion computation
 impl Data {
     /// Queues up every entity to compute the possible beginnings of their entities.
@@ -41,29 +39,8 @@ impl Data {
     ///
     /// Panics if one of the entities does not exist.
     pub(crate) fn queue_entities(&mut self, entities: Vec<String>) {
-        let work_hours_and_activity_durations =
-            self.work_hours_and_activity_durations_from_entities(&entities);
-        let activities_to_invalidate = self.activities_of_entities(&entities);
-
         self.activities.trigger_update_possible_activity_beginnings(
-            work_hours_and_activity_durations,
-            activities_to_invalidate,
+            self.work_hours_and_activity_durations_from_entities(&entities),
         );
-    }
-
-    /// Given a vector of entities, outputs their activities without duplicates.
-    ///
-    /// # Panics
-    ///
-    /// Panics if one entity name is empty.
-    fn activities_of_entities(&self, entities: &[String]) -> HashSet<Activity> {
-        entities
-            .iter()
-            .flat_map(|entity| {
-                self.activities_of(entity)
-                    .expect(&format!("Could not find activities of '{}'", entity))
-            })
-            .cloned()
-            .collect::<HashSet<_>>()
     }
 }

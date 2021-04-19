@@ -136,40 +136,43 @@ fn test_fetch_computation() {
     activity_collection.remove(2);
 
     // Ids are [0, 1, 3]
-    let activity1 = activity_collection.get_mut_by_id(0);
-    activity1
-        .computation_data
-        .set_incompatible_activity_ids(vec![3]);
-    activity1.computation_data.set_duration(Time::new(0, 30));
-    *activity1.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
+    activity_collection.mutate_activity(0, |activity1| {
+        activity1
+            .computation_data
+            .set_incompatible_activity_ids(vec![3]);
+        activity1.computation_data.set_duration(Time::new(0, 30));
+        *activity1.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
+    });
 
-    let activity1 = activity1.clone();
+    let activity1 = activity_collection.get_by_id(0);
 
-    let activity2 = activity_collection.get_mut_by_id(1);
+    activity_collection.mutate_activity(1, |activity2| {
+        activity2
+            .computation_data
+            .set_incompatible_activity_ids(vec![0, 3]);
+        activity2.computation_data.set_duration(Time::new(0, 20));
+        *activity2.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
+    });
+    let activity2 = activity_collection.get_by_id(1);
 
-    activity2
-        .computation_data
-        .set_incompatible_activity_ids(vec![0, 3]);
-    activity2.computation_data.set_duration(Time::new(0, 20));
-    *activity2.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
-    let activity2 = activity2.clone();
 
-    let activity3 = activity_collection.get_mut_by_id(3);
+    activity_collection.mutate_activity(3, |activity3| {
+        activity3.computation_data.set_incompatible_activity_ids(vec![1]);
 
-    activity3.computation_data.set_incompatible_activity_ids(vec![1]);
+        activity3.computation_data.set_duration(Time::new(0, 15));
+        activity3.computation_data.insert(Some(Time::new(1, 0)));
+        *activity3.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
+    });
 
-    activity3.computation_data.set_duration(Time::new(0, 15));
-    activity3.computation_data.insert(Some(Time::new(1, 0)));
-    *activity3.computation_data.insertion_costs().lock().unwrap() = Some(BTreeSet::new());
-    let activity3 = activity3.clone();
+    let activity3 = activity_collection.get_by_id(3);
 
     let (static_data, insertion_data) = 
-        activities_into_computation_data(activity_collection.get_not_sorted());
+        activities_into_computation_data(&activity_collection.get_not_sorted());
 
     // Order should be Activity3 (inserted), activity2(harder to insert - 20 mins * 2 incompatible
     // activities), activity1
 
-    let index_to_id_translation = index_to_id_map(activity_collection.get_not_sorted());
+    let index_to_id_translation = index_to_id_map(&activity_collection.get_not_sorted());
     assert_eq!(index_to_id_translation[&2], 0);
     assert_eq!(index_to_id_translation[&1], 1);
     assert_eq!(index_to_id_translation[&0], 3);
@@ -254,39 +257,41 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     activity_collection.add("1".to_owned());
     activity_collection.add("2".to_owned());
 
-    let activity1 = activity_collection.get_mut_by_id(0);
 
     let activity1_possible_beginnings = (0..=10)
         .step_by(5)
         .map(|i| Time::from_total_minutes(i))
         .collect::<HashSet<Time>>();
 
-    activity1
-        .computation_data
-        .set_incompatible_activity_ids(vec![]);
+    activity_collection.mutate_activity(0, |activity1| {
+        activity1
+            .computation_data
+            .set_incompatible_activity_ids(vec![]);
 
-    activity1.computation_data.set_duration(Time::new(0, 30));
-    *activity1.computation_data.insertion_costs().lock().unwrap() = Some(
-        activity1_possible_beginnings
-            .iter()
-            .map(|&time| InsertionCost {
-                beginning: time,
-                cost: 0,
-            })
-            .collect(),
-    );
+        activity1.computation_data.set_duration(Time::new(0, 30));
+        *activity1.computation_data.insertion_costs().lock().unwrap() = Some(
+            activity1_possible_beginnings
+                .iter()
+                .map(|&time| InsertionCost {
+                    beginning: time,
+                    cost: 0,
+                })
+                .collect(),
+        );
+    });
 
-    let activity2 = activity_collection.get_mut_by_id(1);
 
-    activity2.computation_data.set_incompatible_activity_ids(vec![0, 3]);
+    activity_collection.mutate_activity(1, |activity2| {
+        activity2.computation_data.set_incompatible_activity_ids(vec![0, 3]);
 
-    activity2.computation_data.set_duration(Time::new(0, 20));
-    activity2.computation_data.insert(Some(Time::new(2, 0)));
+        activity2.computation_data.set_duration(Time::new(0, 20));
+        activity2.computation_data.insert(Some(Time::new(2, 0)));
+    });
 
-    let activity3 = activity_collection.get_mut_by_id(2);
-
-    activity3.computation_data.set_duration(Time::new(0, 20));
-    activity3.computation_data.insert(Some(Time::new(1, 0)));
+    activity_collection.mutate_activity(2, |activity3| {
+        activity3.computation_data.set_duration(Time::new(0, 20));
+        activity3.computation_data.insert(Some(Time::new(1, 0)));
+    });
 
     // Activity 1 will be reordered internally.
     // Check that its beginnings are the ones we fetch (id != index)

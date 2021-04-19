@@ -100,8 +100,9 @@ impl ActivityComputationData {
     }
 
     /// Simple setter for schedules of participants.
-    pub fn update_schedules_of_participants(&mut self, 
-                                            schedules: Vec<WorkHoursAndActivityDurationsSorted>) {
+    pub fn update_schedules_of_participants(
+        &mut self, 
+        schedules: Vec<WorkHoursAndActivityDurationsSorted>) {
         self.schedules_of_participants = schedules;
     }
 
