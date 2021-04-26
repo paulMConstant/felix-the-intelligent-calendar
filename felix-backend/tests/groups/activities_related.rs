@@ -26,7 +26,6 @@ fn rename_group_check_renamed_in_activities() {
                 .expect("Could not set group name");
             let groups = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .groups_sorted();
             assert_eq!(groups.len(), 2, "Groups were not added to the activity");
             assert_eq!(groups[0], group2, "Group was not renamed right in activity");
@@ -52,7 +51,6 @@ fn remove_group_check_removed_in_activities() {
 
             let groups = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .groups_sorted();
             assert_eq!(groups.len(), 1, "Group was not removed from the activity");
             assert_eq!(
@@ -82,7 +80,6 @@ fn add_entity_to_group_check_added_to_activities() {
                 .expect("Could not add entity to group");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             let expected = data.groups_sorted()[0].entities_sorted();
             assert_eq!(
@@ -112,7 +109,6 @@ fn add_entity_to_group_check_not_added_twice_in_activities() {
                 .expect("Could not add entity to group");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             let expected = data.groups_sorted()[0].entities_sorted();
             assert_eq!(
@@ -144,7 +140,6 @@ fn add_entity_to_group_check_only_added_to_activity_with_group() {
 
             let entities1 = data
                 .activity(id1)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             let expected = data.groups_sorted()[0].entities_sorted();
             assert_eq!(
@@ -154,7 +149,6 @@ fn add_entity_to_group_check_only_added_to_activity_with_group() {
 
             let entities2 = data
                 .activity(id2)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert!(entities2.is_empty(), "Entity was added to activity when its group was added even though the activity does not contain the group");
         }
@@ -183,7 +177,6 @@ fn remove_entity_from_group_check_removed_in_activities() {
                 .expect("Could not remove entity from group");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert!(
                 entities.is_empty(),
@@ -221,7 +214,6 @@ fn remove_entity_from_group_check_stays_in_activity_if_in_other_groups() {
                 .expect("Could not remove entity from group");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             let expected = data
                 .group(group2)
@@ -255,7 +247,6 @@ fn remove_entity_from_group_check_stays_in_activity_if_not_in_any_group() {
                 .expect("Could not remove entity from group");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             let expected = vec![entity];
 

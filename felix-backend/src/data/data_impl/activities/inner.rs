@@ -69,28 +69,24 @@ impl Data {
             .next()
     }
 
-    /// Given a vector of entities, outputs their work hours and activity durations.
+    /// Given an entity, outputs their work hours and activity durations.
     ///
     /// # Panics
     ///
     /// Panics if one of the entity name is empty.
-    pub(super) fn work_hours_and_activity_durations_from_entities(
+    pub(super) fn work_hours_and_activity_durations_from_entity(
         &self,
-        entities: &[String],
-    ) -> Vec<WorkHoursAndActivityDurationsSorted> {
-        entities
+        entity: &str,
+    ) -> WorkHoursAndActivityDurationsSorted {
+        let work_hours = self.work_hours_of(entity).expect("Entity does not exist");
+        let activity_durations = self
+            .activities_of(entity)
+            .expect("The entity name is empty")
             .iter()
-            .map(|entity| {
-                let work_hours = self.work_hours_of(entity).expect("Entity does not exist");
-                let activity_durations = self
-                    .activities_of(entity)
-                    .expect("The entity name is empty")
-                    .iter()
-                    .map(|activity| activity.duration())
-                    .collect::<Vec<_>>();
+            .map(|activity| activity.duration())
+            .collect::<Vec<_>>();
 
-                WorkHoursAndActivityDurationsSorted::new(work_hours, activity_durations)
-            })
-            .collect()
+        println!("ACTIVITY DURATIONS {:?}", activity_durations);
+        WorkHoursAndActivityDurationsSorted::new(work_hours, activity_durations)
     }
 }

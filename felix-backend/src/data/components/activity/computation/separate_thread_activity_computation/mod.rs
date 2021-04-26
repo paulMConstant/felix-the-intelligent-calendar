@@ -54,12 +54,17 @@ impl SeparateThreadActivityComputation {
         let possible_beginnings_pool = self.possible_beginnings_pool.clone();
 
         self.thread_pool.spawn(move || {
-            // Wait until a result is up
-            computation_done_semaphore.access();
-            insertion_costs_updater::poll_and_fuse_possible_beginnings(
-                activities.clone(), 
-                possible_beginnings_pool.clone()
-            );
+            loop {
+                // Wait until a result is up
+                computation_done_semaphore.acquire();
+                println!("POLLING");
+                if !insertion_costs_updater::poll_and_fuse_possible_beginnings(
+                    activities.clone(), 
+                    possible_beginnings_pool.clone()
+                ) {
+                    break;
+                }
+            }
         });
     }
 
@@ -71,12 +76,16 @@ impl SeparateThreadActivityComputation {
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
         activities: Arc<Mutex<Vec<Activity>>>,
     ) {
+        println!("QUEUING");
         invalidate_activities(activities);
 
         self.computation_done_semaphore
             .acquire_nonblocking(work_hours_and_activity_durations.len());
 
         self.launch_computation(work_hours_and_activity_durations);
+
+        // Release once to let the insertion_cost_thread go once every computation is done
+        self.computation_done_semaphore.release();
     }
 
     /// Computes and stores all possible beginnings for activities, not taking conflicts into 
@@ -113,7 +122,11 @@ impl SeparateThreadActivityComputation {
                         activity_beginnings_given_duration_minutes,
                     );
 
-                    pool.lock().unwrap().insert(key.clone(), result);
+                    // Make sure no thread has panicked with the lock
+                    if let Ok(mut pool) = pool.lock() {
+                        pool.insert(key.clone(), result);
+                    }
+                    println!("Added data to pool : {:?}", key);
                     computation_done_semaphore.release();
                 });
             } else {

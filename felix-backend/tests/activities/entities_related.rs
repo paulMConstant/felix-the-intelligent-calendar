@@ -25,7 +25,6 @@ fn simple_add_entity() {
                 .expect("Could not add entity to activity");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert_eq!(entities.len(), 1, "Participant was not added");
             assert_eq!(entities[0], name, "Participant was added with wrong name");
@@ -49,7 +48,6 @@ fn add_entities_check_sorting() {
             let id = data.activities_sorted()[0].id();
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert_eq!(entities.len(), 3, "Participants were not added");
             assert_eq!(entities[0], name1, "Participants are not sorted");
@@ -106,16 +104,14 @@ fn add_entity_already_participating() {
 #[test]
 fn add_entity_wrong_id() {
     let entity_name = "Entity";
-    test_err!(
-        data,
-        DataBuilder::new()
+    std::panic::catch_unwind(|| {
+        let mut data = DataBuilder::new()
             .with_work_interval_of_duration(4)
             .with_entity(entity_name)
-            .with_activity(Activity::default()),
-        data.add_entity_to_activity(4, entity_name),
-        "The activity with id '4' does not exist.",
-        "Could add entity to activity with wrong id"
-    );
+            .with_activity(Activity::default())
+            .into_data();
+        data.add_entity_to_activity(4, entity_name).unwrap();
+    }).expect_err("Could add entity to activity with wrong id");
 }
 
 #[test]
@@ -229,7 +225,6 @@ fn simple_remove_entity() {
                 .expect("Could not remove entity");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
 
             assert_eq!(entities.len(), 1, "Participant was not removed");
@@ -276,15 +271,13 @@ fn remove_entity_not_participating() {
 #[test]
 fn remove_entity_wrong_activity_id() {
     let entity_name = "Entity";
-    test_err!(
-        data,
-        DataBuilder::new()
+    std::panic::catch_unwind(|| {
+        let mut data = DataBuilder::new()
             .with_activity(Activity::default())
-            .with_entity(entity_name),
-        data.remove_entity_from_activity(15, entity_name),
-        "The activity with id '15' does not exist.",
-        "Could remove entity from nonexsistent activity"
-    );
+            .with_entity(entity_name)
+            .into_data();
+        data.remove_entity_from_activity(15, entity_name).unwrap();
+    }).expect_err("Could remove entity from nonexsistent activity");
 }
 
 #[test]
@@ -309,7 +302,7 @@ fn remove_last_entity_check_activity_uninserted() {
                 .expect("Could not remove entity");
 
             // Check that the activity is still inserted
-            let activity = data.activity(id).expect("Could not get activity by id");
+            let activity = data.activity(id);
             let expected_insertion_interval =
                 TimeInterval::new(beginning, beginning + activity.duration());
             assert_eq!(
@@ -321,7 +314,7 @@ fn remove_last_entity_check_activity_uninserted() {
             // Remove the last entity from the activity and check that the activity was uninserted
             data.remove_entity_from_activity(id, entity2)
                 .expect("Could not remove entity");
-            let activity = data.activity(id).expect("Could not get activity by id");
+            let activity = data.activity(id);
             assert_eq!(
                 activity.insertion_interval(),
                 None,

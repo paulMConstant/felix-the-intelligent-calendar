@@ -21,7 +21,6 @@ fn simple_add_group() {
                 .expect("Could not add group to activity");
             let groups = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .groups_sorted();
             assert_eq!(groups.len(), 1, "Group was not added to the activity");
             assert_eq!(
@@ -64,7 +63,6 @@ fn add_group_check_sorting() {
 
             let groups = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .groups_sorted();
             assert_eq!(groups.len(), 3, "Groups were not added to the activity");
             assert_eq!(groups[0], group1, "Groups are not sorted");
@@ -106,13 +104,12 @@ fn add_group_does_not_exist() {
 #[test]
 fn add_group_activity_does_not_exist() {
     let group_name = "Group";
-    test_err!(
-        data,
-        DataBuilder::new().with_group(Group::default(group_name)),
-        data.add_group_to_activity(123, group_name),
-        "The activity with id '123' does not exist.",
-        "Could add group to nonexistent activity"
-    );
+    std::panic::catch_unwind(|| {
+        let mut data = DataBuilder::new()
+            .with_group(Group::default(group_name))
+            .into_data();
+        data.add_group_to_activity(123, group_name).unwrap()
+    }).expect_err("Could add group to nonexistent activity");
 }
 
 #[test]
@@ -155,7 +152,6 @@ fn add_group_check_entities_added() {
                 .expect("Could not add group to activity");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert_eq!(entities.len(), 2, "Entities were not added to the activity");
             assert_eq!(entities[0], entity1, "The entities were not added right");
@@ -187,7 +183,6 @@ fn add_group_check_entities_not_added_twice() {
                 .expect("Could not add group to activity");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert_eq!(
                 entities.len(),
@@ -241,7 +236,6 @@ fn simple_remove_group_from_activity() {
                 .expect("Could not remove group");
             let groups = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .groups_sorted();
             assert_eq!(groups.len(), 1, "Group was not removed from the activity");
             assert_eq!(
@@ -283,15 +277,13 @@ fn remove_group_from_activity_group_does_not_exist() {
 #[test]
 fn remove_group_from_activity_activity_does_not_exist() {
     let group_name = "Group";
-    test_err!(
-        data,
-        DataBuilder::new()
+    std::panic::catch_unwind(|| {
+        let mut data = DataBuilder::new()
             .with_group(Group::default(group_name))
-            .with_activity(Activity::default()),
-        data.remove_group_from_activity(193, group_name),
-        "The activity with id '193' does not exist.",
-        "Could remove group from activity with empty name"
-    );
+            .with_activity(Activity::default())
+            .into_data();
+        data.remove_group_from_activity(193, group_name).unwrap();
+    }).expect_err("Could remove group from activity with empty name");
 }
 
 #[test]
@@ -336,7 +328,6 @@ fn remove_group_from_activity_check_entities_removed() {
 
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert_eq!(
                 entities.len(),
@@ -381,7 +372,6 @@ fn remove_group_from_activity_check_entities_in_other_groups_stay() {
 
             let entities = data
                 .activity(id)
-                .expect("Could not get activity by id")
                 .entities_sorted();
             assert_eq!(
                 entities.len(),

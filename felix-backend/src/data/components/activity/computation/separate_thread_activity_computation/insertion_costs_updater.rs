@@ -17,51 +17,50 @@ use super::{
 use std::collections::{HashSet};
 use std::sync::{Arc, Mutex};
 
-/// Given the schedules of participants and all activities, for each activity:
-/// 1. Checks if all possible beginnings have been computed
-/// 2.a If they have, fills the insertion costs for each activity and returns true
-/// 2.b If they haven't, returns false
-// TODO should it return a bool ? should it not panic instead ?
-#[must_use]
+/// Given the schedules of participants and all activities, for each activity,
+/// fills the insertion costs for each activity and returns true
+///
+/// Returns true if the activities can be accessed, else false.
+///
+/// # Panic
+///
+/// If any activity does not have possible beginnings, panics. This is a logic error and should
+/// never happen.
 pub(super) fn poll_and_fuse_possible_beginnings(
     activities: Arc<Mutex<Vec<Activity>>>,
     possible_beginnings_pool: Arc<Mutex<PossibleBeginningsPool>>
 ) -> bool {
-    let mut activities = activities.lock().unwrap();
+    if let Ok(mut activities) = activities.lock() {
+        let maybe_all_possible_beginnings_for_each_activity = 
+            possible_beginnings_for_activities(possible_beginnings_pool, &activities);
+        if let Some(all_possible_beginnings_for_each_activity) = maybe_all_possible_beginnings_for_each_activity {
+            // Sort activities in computation form
+            *activities = activities_sorted_for_computation(&activities);
 
-    let maybe_all_possible_beginnings_for_each_activity = 
-        possible_beginnings_for_activities(possible_beginnings_pool, &activities);
+            // Intersect all possible beginnings for each activity
+            merge_beginnings_of_all_participants_of_each_activity(
+                all_possible_beginnings_for_each_activity, 
+                &activities
+            );
 
-    // Intersect all possible beginnings for each activity
-    if let Some(all_possible_beginnings_for_each_activity) = 
-        maybe_all_possible_beginnings_for_each_activity 
-    {
-        // Sort activities in computation form
-        *activities = activities_sorted_for_computation(&activities);
-
-        merge_beginnings_of_all_participants_of_each_activity(
-            all_possible_beginnings_for_each_activity, 
-            &activities
-        );
-
-        // Once every merge has been done, compute insertion costs
-        compute_insertion_costs_for_each_activity(&activities);
-
+            // Once every merge has been done, compute insertion costs
+            compute_insertion_costs_for_each_activity(&activities);
+        }
         true
     } else {
-        // At least one computation result was missing
         false
     }
 }
 
 /// Fetches the possible beginnings of every activity, not taking conflicts into account.
-/// If one result has not been computed, returns None.
+/// If one result has not been computed, returns None (activities have been modified and this
+/// function will be called again once the results have been computed).
 /// Each activity has a Vec of HashSet of time, one per entity.
 #[must_use]
 fn possible_beginnings_for_activities(
     possible_beginnings_pool: Arc<Mutex<PossibleBeginningsPool>>,
     activities: &[Activity],
-    ) -> Option<Vec<Vec<HashSet<Time>>>> 
+    ) -> Option<Vec<Vec<HashSet<Time>>>>
 {
     let pool = possible_beginnings_pool.lock().unwrap();
 
@@ -72,12 +71,12 @@ fn possible_beginnings_for_activities(
             .schedules_of_participants()
             .iter()
             .map(|work_hours_and_activity_durations| {
+                // HashMap<WorkHoursAndActivityDurationsSorted, HashMap<Time, HashSet<Time>>
                 pool.get(work_hours_and_activity_durations)
-                    .map(|beginnings_given_duration| {
-                        beginnings_given_duration.get(&activity.duration()).expect(
-                            "Activity duration not in durations calculated for participants",
-                        )
-                            .clone()
+                    // HashMap<Time, HashSet<Time>>
+                    .and_then(|possible_beginnings_given_duration| {
+                        possible_beginnings_given_duration.get(&activity.duration()).cloned()
+                        // HashSet<Time>
                     })
                 // Bring option out of the vec
             }).collect::<Option<Vec<_>>>()
@@ -121,7 +120,10 @@ fn merge_beginnings_of_all_participants_of_each_activity(
             }
         );
 
-        *activity.computation_data.insertion_costs().lock().unwrap() = insertion_scores;
+        // Check if any thread panicked while holding the mutex
+        if let Ok(mut costs) = activity.computation_data.insertion_costs().lock() {
+            *costs = insertion_scores;
+        }
     }
 }
 
@@ -141,6 +143,8 @@ fn compute_insertion_costs_for_each_activity(activities: &[Activity]) {
             })
         .collect();
 
-        *activity.computation_data.insertion_costs().lock().unwrap() = Some(insertion_costs);
+        if let Ok(mut costs) = activity.computation_data.insertion_costs().lock() {
+            *costs = Some(insertion_costs);
+        }
     }
 }

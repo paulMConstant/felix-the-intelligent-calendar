@@ -24,7 +24,6 @@ fn rename_entity_check_renamed_in_activity() {
                 .expect("Could not rename entity");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity")
                 .entities_sorted();
 
             assert_eq!(
@@ -57,7 +56,6 @@ fn remove_entity_check_remove_in_activity() {
                 .expect("Could not remove entity");
             let entities = data
                 .activity(id)
-                .expect("Could not get activity")
                 .entities_sorted();
             assert_eq!(
                 entities.len(),

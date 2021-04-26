@@ -1,4 +1,9 @@
-use crate::data::{Activity, Data};
+use crate::data::{
+    Activity, Data,
+    computation_structs::WorkHoursAndActivityDurationsSorted,
+};
+
+use std::collections::{HashMap, HashSet};
 
 /// Functions to trigger & update activity insertion computation
 impl Data {
@@ -39,8 +44,76 @@ impl Data {
     ///
     /// Panics if one of the entities does not exist.
     pub(crate) fn queue_entities(&mut self, entities: Vec<String>) {
-        self.activities.trigger_update_possible_activity_beginnings(
-            self.work_hours_and_activity_durations_from_entities(&entities),
+        // For each activity
+        // Gather all of its participants
+        let activities_to_update = self.activities_of_entities(&entities);
+        // Compute their schedule
+        let schedules_of_all_participants = self
+            .schedules_of_entities_in_activities(&activities_to_update);
+        
+        // Set it into the activity
+        self.update_schedules_of_participants_of_activities(
+            &activities_to_update, 
+            &schedules_of_all_participants
         );
+
+        // Then update insertion costs 
+        self.activities.trigger_update_possible_activity_beginnings(
+            schedules_of_all_participants.values().cloned().collect::<Vec<_>>()
+        );
+    }
+
+    /// Returns all activities in which at least one entity in the given slice participates.
+    fn activities_of_entities(&self, entities: &[String]) -> HashSet<Activity> {
+        entities.iter()
+            .flat_map(|entity|
+        {
+            self.activities_of(entity).expect("Entity name is empty - this is a bug")
+        })
+        .collect()
+    }
+
+    /// Returns a (Entity, Schedule) map with an entry for each entity taking part in at least one
+    /// activity.
+    fn schedules_of_entities_in_activities(&self, activities: &HashSet<Activity>)
+        -> HashMap<String, WorkHoursAndActivityDurationsSorted> 
+    {
+        let entities = activities.iter()
+            .flat_map(|activity| activity.entities_sorted())
+            .collect::<HashSet<_>>();
+
+        entities
+            .iter()
+            .map(|entity| {
+                (
+                    entity.clone(), 
+                    self.work_hours_and_activity_durations_from_entity(entity)
+                )
+            })
+            .collect()
+    }
+
+    /// Given a list of activities and the schedules of all participants 
+    /// (all activities included),
+    /// fills each activity with the schedules of their participants.
+    fn update_schedules_of_participants_of_activities(
+        &mut self,
+        activities: &HashSet<Activity>,
+        schedules: &HashMap<String, WorkHoursAndActivityDurationsSorted>,
+    ) {
+        for activity in activities {
+            let schedules_of_participants_of_this_activity = 
+                activity
+                .entities_sorted()
+                .iter()
+                .map(|entity| schedules[entity].clone())
+                .collect::<Vec<_>>();
+
+            println!("Schedules for this activity {:?}", schedules_of_participants_of_this_activity);
+            self.activities.update_schedules_of_participants_of_activity(
+                activity.id(),
+                schedules_of_participants_of_this_activity
+            );
+        }
     }
 }

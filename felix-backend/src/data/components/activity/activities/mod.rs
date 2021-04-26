@@ -80,7 +80,7 @@ impl Activities {
     pub fn get_by_id(&self, id: ActivityId) -> Activity {
         self.activities
             .lock()
-            .unwrap()
+            .expect("Some thread panicked with the activities lock. This is a bug.")
             .iter()
             .find(|activity| activity.id() == id)
             .expect("Asking for activity which does not exist")
@@ -114,6 +114,8 @@ impl Activities {
         let activity = Activity::new(id, name);
 
         activities.insert(id, activity);
+        // Free lok
+        drop(activities);
         self.get_by_id(id)
     }
 
@@ -132,6 +134,8 @@ impl Activities {
 
         activities.swap_remove(position);
 
+        // Free lock
+        drop(activities);
         self.update_incompatible_activities();
     }
 
@@ -292,6 +296,23 @@ impl Activities {
         self.mutate_activity(id, |a| a.computation_data.insert(beginning));
     }
 
+    /// Updates the schedules of the participants of the activity with given id.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the activity does not exist.
+    pub(crate) fn update_schedules_of_participants_of_activity(
+        &mut self,
+        id: ActivityId,
+        schedules: Vec<WorkHoursAndActivityDurationsSorted>,
+    ) { 
+        self.mutate_activity(id, |activity| {
+            activity
+                .computation_data
+                .update_schedules_of_participants(schedules)
+        });
+    }
+
     /// Keeps the insertion time of an activity which was removed due to an increase of its
     /// duration. The activity will then be inserted in the closest spot if possible.
     ///
@@ -378,6 +399,8 @@ impl Clone for Activities {
 
 impl PartialEq for Activities {
     fn eq(&self, other: &Self) -> bool {
-        *self.activities.lock().unwrap() == *other.activities.lock().unwrap()
+        // Clone to make sure that both are not locked at the same time if under the same mutex
+        let activities = self.activities.lock().unwrap().clone();
+        activities == *other.activities.lock().unwrap()
     }
 }

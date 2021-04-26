@@ -16,7 +16,7 @@ use felix_computation_api::{
     structs::{ActivityBeginningMinutes, AutoinsertionThreadHandle},
 };
 
-/// Operations on activities
+/// Operations on activities.
 impl Data {
     /// Returns the activities, sorted by name.
     #[must_use]
@@ -24,7 +24,7 @@ impl Data {
         self.activities.get_sorted_by_name()
     }
 
-    /// Returns te activities, not sorted.
+    /// Returns the activities, not sorted.
     #[must_use]
     pub fn activities_not_sorted(&self) -> Vec<Activity> {
         self.activities.get_not_sorted()
@@ -302,7 +302,7 @@ impl Data {
                 // Once we compute its possible beginnings, we will be able to put it back in the
                 // schedule.
                 self.activities.store_activity_was_inserted(id);
-                self.insert_activity(id, None);
+                self.insert_activity(id, None).expect("Could not remove activity from schedule. This is a bug.");
             }
         }
         self.activities.set_duration(id, new_duration);
@@ -414,7 +414,8 @@ impl Data {
         }
     }
 
-    /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the result.
+    /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the 
+    /// result.
     pub fn start_autoinsertion(&mut self) -> Result<AutoinsertionThreadHandle> {
         // Poll insertion data
 
