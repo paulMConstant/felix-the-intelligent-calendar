@@ -7,10 +7,15 @@ use std::collections::{HashMap, HashSet};
 
 /// Functions to trigger & update activity insertion computation
 impl Data {
+    /// Initializes activity computation in a separate thread.
+    /// Must be called on startup.
+    pub fn init_computation_module(&mut self) {
+        self.activities.run_separate_thread_computation();
+        self.queue_every_activity_for_beginning_computation();
+    }
+
     /// Queues up every entity to compute the possible beginnings of their entities.
-    /// Must be called on startup if data is not created from stratch (i.e. instantiated without
-    /// new(), with serde for example).
-    pub fn queue_every_activity_for_beginning_computation(&mut self) {
+    fn queue_every_activity_for_beginning_computation(&mut self) {
         let entity_names = self
             .entities_sorted()
             .iter()

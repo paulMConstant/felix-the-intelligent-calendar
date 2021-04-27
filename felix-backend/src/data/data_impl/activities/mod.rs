@@ -352,6 +352,7 @@ impl Data {
                     self.events()
                         .borrow_mut()
                         .emit_activity_inserted(self, &self.activity(id));
+                    self.queue_activity_participants(self.activity(id).clone());
                     Ok(())
                 } else {
                     let activity = self.activity(id);
@@ -384,6 +385,7 @@ impl Data {
             self.events()
                 .borrow_mut()
                 .emit_activity_inserted(self, &self.activity(id));
+            self.queue_activity_participants(self.activity(id).clone());
             Ok(())
         }
     }

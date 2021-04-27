@@ -42,7 +42,7 @@ fn init_data() -> Rc<RefCell<Data>> {
     let data = if let Ok(contents) = config_file_contents {
         let data_value: serde_json::Result<Data> = serde_json::from_str(&contents);
         if let Ok(mut data) = data_value {
-            data.queue_every_activity_for_beginning_computation();
+            data.init_computation_module();
             data
         } else {
             // TODO error message then start

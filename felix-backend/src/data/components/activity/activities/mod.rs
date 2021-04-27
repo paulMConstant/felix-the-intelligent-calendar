@@ -48,7 +48,6 @@ impl Activities {
         // This thread will silently update the activities insertion costs when durations, 
         // entities or work hours change
         let separate_thread_computation = SeparateThreadActivityComputation::new();
-        separate_thread_computation.run_update_insertion_costs_thread(activities.clone());
 
         Activities {
             activities,
@@ -56,6 +55,11 @@ impl Activities {
             activities_removed_because_duration_increased: 
                 ActivitiesAndOldInsertionBeginnings::new(),
         }
+    }
+
+    pub fn run_separate_thread_computation(&self) {
+        self.separate_thread_computation
+            .run_update_insertion_costs_thread(self.activities.clone());
     }
 
     /// Simple getter for the activity list, sorted by name.

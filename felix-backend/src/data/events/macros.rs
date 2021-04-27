@@ -12,7 +12,7 @@ macro_rules! create_callback_vec {
 
 macro_rules! create_events_struct {
     ($events_name: ident: $($element: ident { $($param_type: ty),* }),*) => {
-        /// Manages events. Connect callbacks which are called in emit functions.
+        /// Manages events. Connects callbacks which are called in emit functions.
         ///
         /// PartialEq, Eq, Clone, Debug are implemented for compatibility with other structs which
         /// may contain this struct. They do not do anything relevant: the containing

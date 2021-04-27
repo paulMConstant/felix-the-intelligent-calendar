@@ -53,6 +53,7 @@ impl SeparateThreadActivityComputation {
         let computation_done_semaphore = self.computation_done_semaphore.clone();
         let possible_beginnings_pool = self.possible_beginnings_pool.clone();
 
+        println!("RUN UPDATE INSERTION COSTS");
         self.thread_pool.spawn(move || {
             loop {
                 // Wait until a result is up
@@ -62,6 +63,7 @@ impl SeparateThreadActivityComputation {
                     activities.clone(), 
                     possible_beginnings_pool.clone()
                 ) {
+                    println!("EXITING SEPARATE COMPUTATION");
                     break;
                 }
             }

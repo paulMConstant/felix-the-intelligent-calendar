@@ -233,6 +233,7 @@ fn set_activity_duration_invalid_id() {
 #[test]
 fn set_activity_duration_too_short() {
     // TODO this test is not up to date
+    // TODO instead, choose what to do when inserting activity with duration 0
     //test_err!(
       //  data,
       //  DataBuilder::new().with_activity(Activity::default()),
@@ -631,5 +632,49 @@ fn possible_insertion_costs_compute_possible_insertions_of_incompatible_activiti
                     .is_empty(),
               "Incompatible activities beginnings were not updated and therefore possible insertion times are empty");
         }
+    );
+}
+
+#[test]
+fn possible_insertion_costs_updated_when_activity_inserted() {
+    let name1 = "Paul";
+    test_err!(
+        data,
+        DataBuilder::new()
+        .with_entities(vec![name1])
+        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+        .with_activities(vec![
+         Activity {
+            name: "Activity1",
+            entities: vec![name1],
+            duration: Time::new(1, 0),
+            ..Default::default()
+        },
+        Activity {
+            name: "Activity2",
+            entities: vec![name1],
+            duration: Time::new(1, 0),
+            ..Default::default()
+        }]
+        ),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            let id2 = data.activities_sorted()[1].id();
+            while data.possible_insertion_times_of_activity_with_associated_cost(id1).is_none()
+                || data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none() 
+            {
+                // Wait for computation
+            }
+
+            data.insert_activity(id1, Some(Time::new(8, 30))).expect("Could not insert activity");
+            
+            while data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none() {
+                // Wait for computation
+            }
+            
+            data.insert_activity(id2, Some(Time::new(8, 0)))
+        },
+        "Activity2 cannot be inserted with beginning 08:00 because it would overlap with 'Activity1'.",
+        "Possible insertion costs were not updated when activity was inserted"
     );
 }

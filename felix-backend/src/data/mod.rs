@@ -114,13 +114,15 @@ pub struct Data {
 impl Data {
     /// Creates a new data object.
     pub fn new() -> Data {
-        Data {
+        let mut data = Data {
             work_hours: WorkHours::new(),
             entities: Entities::new(),
             groups: Groups::new(),
             activities: Activities::new(),
             events: Rc::new(RefCell::new(Events::new())),
-        }
+        };
+        data.init_computation_module();
+        data
     }
 }
 
