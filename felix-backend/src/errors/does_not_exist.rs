@@ -16,18 +16,6 @@ pub enum ComponentType {
 /// Throw this error when the user asked for a component which does not exist.
 ///
 /// The error is built from a constructor function in the form 'xxx\_does\_not\_exist'.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::does_not_exist::{DoesNotExist, ComponentType};
-///
-/// let error = DoesNotExist::entity_does_not_exist("Entity Name");
-///
-/// assert_eq!(format!("{}", error), "Entity Name does not exist.");
-/// assert_eq!(error.what(), ComponentType::Entity);
-/// assert_eq!(error.who(), "Entity Name");
-/// ```
 #[derive(Debug, Clone)]
 pub struct DoesNotExist {
     what: ComponentType,

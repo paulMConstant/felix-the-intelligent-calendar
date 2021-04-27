@@ -20,19 +20,6 @@ pub enum InvalidOrNotComputed {
 
 /// Throw this error when the user tries to insert an activity where it cannot be inserted,
 /// or when the possible insertion times are queried but not availabe.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::invalid_insertion::InvalidInsertion;
-/// use felix_backend::data::Time;
-///
-/// let error = InvalidInsertion::would_overlap_with_activity("Activity", Time::new(10, 0),
-///     "Other Activity");
-///
-/// assert_eq!(format!("{}", error),
-///     "Activity cannot be inserted with beginning 10:00 because it would overlap with 'Other Activity'.");
-/// ```
 #[derive(Debug, Clone)]
 pub struct InvalidInsertion {
     who: String,

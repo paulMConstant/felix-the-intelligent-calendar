@@ -3,17 +3,6 @@ use std::error::Error;
 use std::fmt;
 
 /// Throw this error when the user adds an invalid time interval.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::invalid_interval::InvalidInterval;
-///
-/// let error = InvalidInterval::new();
-///
-/// assert_eq!(format!("{}", error),
-///     "This interval is not valid. The end must be greater than the beginning.");
-/// ```
 #[derive(Debug, Clone)]
 pub struct InvalidInterval {}
 

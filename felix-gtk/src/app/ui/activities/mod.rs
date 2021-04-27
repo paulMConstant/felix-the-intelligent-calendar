@@ -95,9 +95,9 @@ impl Ui {
             let new_current_activity = data
                 .activities_not_sorted()
                 .into_iter()
-                .find(|&activity| activity.id() == current_activity.id());
+                .find(|activity| activity.id() == current_activity.id());
 
-            self.update_current_activity(&data.groups_sorted(), new_current_activity.cloned());
+            self.update_current_activity(&data.groups_sorted(), new_current_activity);
         }
     }
 }

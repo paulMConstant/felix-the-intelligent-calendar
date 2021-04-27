@@ -18,20 +18,6 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the formatted name is empty or if the group does not exist.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Data;
-    /// let mut data = Data::new();
-    ///
-    /// // name = "Group" because of formatting
-    /// let name = data.add_group("group").unwrap();
-    /// assert!(data.group(name).is_ok());
-    ///
-    /// let invalid_name = "Group which does not exist";
-    /// assert!(data.entity(invalid_name).is_err());
-    /// ```
     pub fn group<S>(&self, name: S) -> Result<Group>
     where
         S: Into<String>,
@@ -45,16 +31,6 @@ impl Data {
     ///
     /// Returns Err if the group has the same name as another group or entity
     /// or if the formatted name is empty.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Data;
-    /// let mut data = Data::new();
-    ///
-    /// data.add_group("New group").unwrap();
-    /// assert_eq!(data.groups_sorted().len(), 1);
-    /// ```
     pub fn add_group<S>(&mut self, name: S) -> Result<String>
     where
         S: Into<String>,
@@ -77,17 +53,6 @@ impl Data {
     /// # Errors
     ///
     /// Returns Err if the group does not exist or if the formatted name is empty.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Data;
-    /// let mut data = Data::new();
-    ///
-    /// let group_name = data.add_group("New group").unwrap();
-    /// data.remove_group(group_name).unwrap();
-    /// assert!(data.groups_sorted().is_empty());
-    /// ```
     pub fn remove_group<S>(&mut self, name: S) -> Result<()>
     where
         S: Into<String>,
@@ -115,20 +80,6 @@ impl Data {
     /// Returns Err if the group does not exist, if any formatted name is empty,
     /// if the entity does not have enough time for the activities of the group,
     /// if the entity does not exist or if the entity is already part of the group.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Data;
-    /// let mut data = Data::new();
-    ///
-    /// let group_name = data.add_group("New group").unwrap();
-    /// let entity_name = data.add_entity("Entity").unwrap();
-    ///
-    /// data.add_entity_to_group(group_name.clone(), entity_name.clone());
-    /// let entities = data.group(group_name).unwrap().entities_sorted();
-    /// assert_eq!(entities[0], entity_name);
-    /// ```
     pub fn add_entity_to_group<S1, S2>(&mut self, group_name: S1, entity_name: S2) -> Result<()>
     where
         S1: Into<String>,
@@ -165,22 +116,6 @@ impl Data {
     ///
     /// Returns Err if the group does not exist, if any formatted name is empty,
     /// if the entity does not exist or if the entity is not part of the group.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Data;
-    /// let mut data = Data::new();
-    ///
-    /// let group_name = data.add_group("Group").unwrap();
-    /// let entity_name = data.add_entity("Entity").unwrap();
-    ///
-    /// data.add_entity_to_group(group_name.clone(), entity_name.clone()).unwrap();
-    /// data.remove_entity_from_group(group_name.clone(), entity_name.clone()).unwrap();
-    ///
-    /// let entities = data.group(group_name).unwrap().entities_sorted();
-    /// assert!(entities.is_empty());
-    /// ```
     pub fn remove_entity_from_group<S1, S2>(
         &mut self,
         group_name: S1,

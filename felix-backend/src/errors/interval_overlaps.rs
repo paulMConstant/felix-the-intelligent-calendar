@@ -3,17 +3,6 @@ use std::error::Error;
 use std::fmt;
 
 /// Throw this error when the user creates a time interval which overlaps with others.
-///
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::interval_overlaps::IntervalOverlaps;
-///
-/// let error = IntervalOverlaps::new();
-///
-/// assert_eq!(format!("{}", error), "The given interval overlaps with others.");
-/// ```
 #[derive(Debug, Clone)]
 pub struct IntervalOverlaps {}
 

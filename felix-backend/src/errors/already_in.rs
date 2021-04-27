@@ -15,19 +15,6 @@ pub enum ActivityOrGroup {
 }
 
 /// Throw this error when the user adds a component into a component which already contains it.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::already_in::{AlreadyIn, ActivityOrGroup};
-///
-/// let error = AlreadyIn::entity_already_in_group("Entity Name", "Group Name");
-///
-/// assert_eq!(format!("{}", error), "Entity Name is already in the group 'Group Name'.");
-/// assert_eq!(error.who(), "Entity Name");
-/// assert_eq!(error.in_what(), ActivityOrGroup::Group);
-/// assert_eq!(error.in_who(), "Group Name");
-/// ```
 #[derive(Debug, Clone)]
 pub struct AlreadyIn {
     what: EntityOrGroup,

@@ -10,23 +10,6 @@ pub enum WhySpotIsInvalid {
 
 /// Throw this error when the user adds an entity to an activity which is inserted
 /// and the entity is not free for the activity's insertion slot.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::add_entity_to_inserted_activity_invalid_spot::{
-///     AddEntityToInsertedActivityInvalidSpot,
-///     WhySpotIsInvalid
-///};
-///
-/// let error = AddEntityToInsertedActivityInvalidSpot::blocking_activity("Entity", "Activity", "BlockingActivity");
-///
-/// assert_eq!(format!("{}", error),
-///     "Entity cannot be added to 'Activity' because it would overlap with 'BlockingActivity'.");
-/// assert_eq!(error.who(), "Entity");
-/// assert_eq!(error.in_what(), "Activity");
-/// assert_eq!(error.why(), WhySpotIsInvalid::BlockingActivity("BlockingActivity".to_string()));
-/// ```
 #[derive(Debug, Clone)]
 pub struct AddEntityToInsertedActivityInvalidSpot {
     who: String,

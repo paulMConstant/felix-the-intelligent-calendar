@@ -14,19 +14,6 @@ pub enum WhyNotEnoughTime {
 /// Throw this error when the requested operation leaves an entity with not enough time.
 ///
 /// The error is built from functions in the form 'reason\_for(entity_name)'.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::not_enough_time::{NotEnoughTime, WhyNotEnoughTime};
-///
-/// let error = NotEnoughTime::activity_added_for("Entity Name", "Activity");
-///
-/// assert_eq!(format!("{}", error),
-/// "Entity Name will not have enough time if they are added to 'Activity'.");
-/// assert_eq!(error.entity_name(), "Entity Name");
-/// assert_eq!(error.why(), WhyNotEnoughTime::ActivityAdded);
-/// ```
 #[derive(Debug, Clone)]
 pub struct NotEnoughTime {
     reason: WhyNotEnoughTime,

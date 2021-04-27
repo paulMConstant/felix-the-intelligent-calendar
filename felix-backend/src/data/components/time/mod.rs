@@ -39,20 +39,6 @@ impl Time {
     ///
     /// Panics if the time is invalid, i.e. not in [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// let time_earliest = Time::new(0, 0);
-    /// let time_latest = Time::new(24, 0);
-    ///
-    /// // Too late
-    /// assert!(std::panic::catch_unwind(|| Time::new(24, 5)).is_err()) ;
-    ///
-    /// // Not a multiple of MIN_TIME_DISCRETIZATION
-    /// assert!(std::panic::catch_unwind(|| Time::new(23, 54)).is_err());
-    /// ```
     #[must_use]
     pub fn new(hours: i8, minutes: i8) -> Time {
         assert!(
@@ -71,16 +57,6 @@ impl Time {
     /// # Panics
     ///
     /// Panics if the resulting time is invalid, i.e. not in [00:00, 24:00]
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// let n_times_min_discretization = 30;
-    /// // Assuming MIN_TIME_DISCRETIZATION = 5 minutes
-    /// let expected = Time::new(2, 30);
-    /// assert_eq!(Time::from_n_times_min_discretization(n_times_min_discretization), expected);
-    /// ```
     #[must_use]
     pub fn from_n_times_min_discretization(n_times_min_discretization: i32) -> Time {
         let total_minutes = n_times_min_discretization * MIN_TIME_DISCRETIZATION_MINUTES as i32;
@@ -92,15 +68,6 @@ impl Time {
     /// # Panics
     ///
     /// Panics if the resulting time is invalid, i.e. not in [00:00, 24:00]
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// let total_minutes = 60 * 3 + 15;
-    /// let expected = Time::new(3, 15);
-    /// assert_eq!(Time::from_total_minutes(total_minutes), expected);
-    /// ```
     #[must_use]
     pub fn from_total_minutes(total_minutes: u16) -> Time {
         let hours = (total_minutes / 60) as i8;
@@ -127,16 +94,6 @@ impl Time {
     }
 
     /// Returns the number of times MIN\_TIME\_DISCRETIZATION fits in the Time.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// // Assuming MIN_TIME_DISCRETIZATION = 5
-    /// let time = Time::new(2, 30);
-    /// let expected = 2 * 60 / 5 + 30 / 5;
-    /// assert_eq!(time.n_times_min_discretization(), expected);
-    /// ```
     #[must_use]
     pub fn n_times_min_discretization(&self) -> i32 {
         self.minutes as i32 / MIN_TIME_DISCRETIZATION.minutes() as i32
@@ -150,15 +107,6 @@ impl Time {
     ///
     /// Panics if the result is invalid, i.e. not in [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// let mut time = Time::new(1, 0);
-    /// time.add_hours(2);
-    /// assert_eq!(time, Time::new(3, 0));
-    /// ```
     pub fn add_hours(&mut self, hours: i8) {
         let new_hours = self.hours + hours;
         assert!(
@@ -175,15 +123,6 @@ impl Time {
     ///
     /// Panics if minutes.abs() >= 60 or if the result is invalid, i.e. not in [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// let mut time = Time::new(1, 50);
-    /// time.add_minutes(20);
-    /// assert_eq!(time, Time::new(2, 10));
-    /// ```
     pub fn add_minutes(&mut self, minutes: i8) {
         assert!(
             minutes.abs() < 60,
@@ -206,15 +145,6 @@ impl Time {
     ///
     /// Panics if minutes.abs() >= 60 or if the result is invalid, i.e. [00:00, 24:00]
     /// and not a multiple of MIN\_TIME\_DISCRETIZATION.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use felix_backend::data::Time;
-    /// let mut time = Time::new(1, 50);
-    /// time.add_hours_and_minutes(1, 20);
-    /// assert_eq!(time, Time::new(3, 10));
-    /// ```
     pub fn add_hours_and_minutes(&mut self, hours: i8, minutes: i8) {
         self.add_minutes(minutes);
         self.add_hours(hours);

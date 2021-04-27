@@ -3,16 +3,6 @@ use std::error::Error;
 use std::fmt;
 
 /// Throw this error when the user sets the duration of an activity to 0.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::duration_too_short::DurationTooShort;
-///
-/// let error = DurationTooShort::new();
-///
-/// assert_eq!(format!("{}", error), "The given duration is too short.");
-/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct DurationTooShort;
 

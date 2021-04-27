@@ -13,18 +13,6 @@ pub enum GroupOrEntity {
 ///
 /// The error is built from functions in the form 'name\_taken\_by\_xxx' where xxx is either a name
 /// or a group.
-///
-/// # Example
-///
-/// ```
-/// use felix_backend::errors::name_taken::{NameTaken, GroupOrEntity};
-///
-/// let error = NameTaken::name_taken_by_entity("New Name");
-///
-/// assert_eq!(format!("{}", error), "The name 'New Name' is already taken by an entity.");
-/// assert_eq!(error.by(), GroupOrEntity::Entity);
-/// assert_eq!(error.name(), "New Name");
-/// ```
 #[derive(Debug, Clone)]
 pub struct NameTaken {
     by: GroupOrEntity,
