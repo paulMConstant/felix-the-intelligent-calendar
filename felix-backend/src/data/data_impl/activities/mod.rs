@@ -6,7 +6,9 @@ use super::helpers::clean_string;
 
 use crate::{
     data::{
-        components::activity::activities_into_computation_data, Activity, ActivityId,
+        components::activity::{activities_into_computation_data, activities_sorted_filtered_for_computation},
+        Activity, 
+        ActivityId,
         ActivityInsertionCosts, Data, Rgba, Time,
     },
     errors::{invalid_insertion::InvalidInsertion, Result},
@@ -296,14 +298,20 @@ impl Data {
 
         if new_duration > activity.duration() {
             self.check_entity_without_enough_time_to_set_duration(id, new_duration)?;
+            // Remove the activity from the schedule if its duration is greater.
+            // Because we may not be sure that it will fit there again, we have to perform the
+            // computation in another thread before we can insert it again.
             if activity.insertion_interval().is_some() {
                 // Remember that the activity was inserted because we will remove it from the
                 // schedule.
                 // Once we compute its possible beginnings, we will be able to put it back in the
                 // schedule.
                 self.activities.store_activity_was_inserted(id);
-                self.insert_activity(id, None).expect("Could not remove activity from schedule. This is a bug.");
+                self.insert_activity(id, None).expect("Could not remove activity from schedule. Thisis a bug.");
             }
+        } else if new_duration == Time::new(0, 0) {
+            // Activity with empty duration cannot be inserted
+            self.insert_activity(id, None).expect("Could not remove activity from schedule. This is a bug.");
         }
         self.activities.set_duration(id, new_duration);
 
@@ -420,12 +428,9 @@ impl Data {
     /// result.
     pub fn start_autoinsertion(&mut self) -> Result<AutoinsertionThreadHandle> {
         // Poll insertion data
-
-        let activities = self
-            .activities_not_sorted()
-            .iter()
-            .cloned()
-            .collect::<Vec<Activity>>();
+        let activities = activities_sorted_filtered_for_computation(
+            &self.activities_not_sorted()
+            );
 
         if let Some(activity_not_computed_yet) = activities
             .iter()
@@ -435,8 +440,7 @@ impl Data {
                 activity_not_computed_yet.name(),
             ))
         } else {
-            let (static_data, insertion_data) =
-                activities_into_computation_data(&self.activities_not_sorted());
+            let (static_data, insertion_data) = activities_into_computation_data(&activities);
 
             Ok(autoinsert(&static_data, &insertion_data))
         }

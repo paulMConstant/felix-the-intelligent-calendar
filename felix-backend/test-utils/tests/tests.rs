@@ -221,7 +221,7 @@ fn add_activity() {
         {
             let activities = data.activities_sorted();
             assert_eq!(activities.len(), 1, "Activity was not added");
-            let activity = activities[0];
+            let activity = &activities[0];
             assert_eq!(activity.name(), activity_name, "Activity name is wrong");
             assert_eq!(activity.duration(), duration, "Activity name is wrong");
             assert_eq!(
@@ -249,7 +249,7 @@ fn add_default_activity() {
         data,
         DataBuilder::new().with_activity(Activity::default()),
         {
-            let activity = data.activities_sorted()[0];
+            let activity = &data.activities_sorted()[0];
             assert_eq!(
                 activity.name(),
                 "Activity",

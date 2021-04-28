@@ -10,7 +10,10 @@ use activity_metadata::ActivityMetadata;
 
 pub use activity_computation_data::ActivityInsertionCosts;
 pub use activity_metadata::Rgba;
-pub use computation::activities_into_computation_data::activities_into_computation_data;
+pub(crate) use computation::activities_into_computation_data::{
+    activities_into_computation_data,
+    activities_sorted_filtered_for_computation
+};
 
 use serde::{Deserialize, Serialize};
 

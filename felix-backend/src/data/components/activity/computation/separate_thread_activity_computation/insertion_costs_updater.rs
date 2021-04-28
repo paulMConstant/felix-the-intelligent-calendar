@@ -10,7 +10,7 @@ use super::{
     PossibleBeginningsPool, 
     super::activities_into_computation_data::{
         activities_into_computation_data,
-        activities_sorted_for_computation
+        activities_sorted_filtered_for_computation
     },
 };
 
@@ -24,27 +24,28 @@ use std::sync::{Arc, Mutex};
 ///
 /// # Panic
 ///
-/// If any activity does not have possible beginnings, panics. This is a logic error and should
+/// If any activity does not have possible beginnings(None), panics. This is a logic error and should
 /// never happen.
 pub(super) fn poll_and_fuse_possible_beginnings(
     activities: Arc<Mutex<Vec<Activity>>>,
     possible_beginnings_pool: Arc<Mutex<PossibleBeginningsPool>>
 ) -> bool {
-    if let Ok(mut activities) = activities.lock() {
+    if let Ok(activities) = activities.lock() {
+        // Sort and filter activities in computation form
+        let activities_sorted_filtered = activities_sorted_filtered_for_computation(&activities);
+
         let maybe_all_possible_beginnings_for_each_activity = 
-            possible_beginnings_for_activities(possible_beginnings_pool, &activities);
+            possible_beginnings_for_activities(possible_beginnings_pool, &activities_sorted_filtered);
         if let Some(all_possible_beginnings_for_each_activity) = maybe_all_possible_beginnings_for_each_activity {
-            // Sort activities in computation form
-            *activities = activities_sorted_for_computation(&activities);
 
             // Intersect all possible beginnings for each activity
             merge_beginnings_of_all_participants_of_each_activity(
                 all_possible_beginnings_for_each_activity, 
-                &activities
+                &activities_sorted_filtered
             );
 
             // Once every merge has been done, compute insertion costs
-            compute_insertion_costs_for_each_activity(&activities);
+            compute_insertion_costs_for_each_activity(&activities_sorted_filtered);
         }
         true
     } else {

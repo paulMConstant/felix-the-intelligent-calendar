@@ -177,7 +177,7 @@ fn set_activity_name_check_formatting() {
 fn set_activity_name_invalid_id() {
     std::panic::catch_unwind(|| {
         let mut data = DataBuilder::new().with_activity(Activity::default()).into_data();
-        data.set_activity_name(3, "New Name");
+        data.set_activity_name(3, "New Name").expect("Sould panic: id is invalid");
     }).expect_err("Could set name of activity with invalid id");
 }
 
@@ -231,19 +231,26 @@ fn set_activity_duration_invalid_id() {
 }
 
 #[test]
-fn set_activity_duration_too_short() {
-    // TODO this test is not up to date
-    // TODO instead, choose what to do when inserting activity with duration 0
-    //test_err!(
-      //  data,
-      //  DataBuilder::new().with_activity(Activity::default()),
-      //  {
-      //      let id = data.activities_sorted()[0].id();
-      //      data.set_activity_duration(id, Time::new(0, 0))
-      //  },
-      //  "The given duration is too short.",
-      //  "Could add activity with duration 0"
-      //  );
+fn set_activity_duration_zero_remove_from_schedule_if_inserted() {
+    let name = "Lyuba";
+    test_ok!(
+        data,
+        DataBuilder::new()
+        .with_entity(name)
+        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+        .with_activity(Activity {
+            entities: vec![name],
+            duration: Time::new(0, 10),
+            insertion_time: Some(Time::new(8, 0)),
+            ..Default::default()
+        }),
+    {
+        let id = data.activities_sorted()[0].id();
+        data.set_activity_duration(id, Time::new(0, 0)).expect("Cannot set activity duration");
+        assert!(data.activity(id).insertion_interval().is_none(),
+                "Activity is inserted with empty duration");
+    }
+    );
 }
 
 #[test]
@@ -259,7 +266,7 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
             name: "Activity",
             groups: Vec::new(),
             entities: vec![name],
-            insertion_time: Some(Time::new(8, 00)),
+            insertion_time: Some(Time::new(8, 0)),
             ..Default::default()
         }),
         {
@@ -591,6 +598,61 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
     );
 }
 
+#[test]
+fn activities_with_empty_duration_not_taken_into_account_in_insertion_costs() {
+    let name1 = "Paul";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1])
+            .with_work_interval(TimeInterval::new(Time::new(10, 0), Time::new(13, 0)))
+            .with_activities(vec![Activity {
+                name: "Activity1",
+                entities: vec![name1],
+                duration: Time::new(1, 0),
+                groups: Vec::new(),
+                ..Default::default()
+            }, Activity {
+                name: "Activity2",
+                entities: vec![name1],
+                duration: Time::new(1, 0),
+                groups: Vec::new(),
+                ..Default::default()
+            }]
+            ),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            let id2 = data.activities_sorted()[1].id();
+            while data
+                .possible_insertion_times_of_activity_with_associated_cost(id1)
+                .is_none() || data.possible_insertion_times_of_activity_with_associated_cost(id2)
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+
+            // Set empty duration -> Will invalidate insertion times of every incompatible activity
+            data.set_activity_duration(id2, Time::new(0, 0)).expect("Could not set activity duration");
+            while data.possible_insertion_times_of_activity_with_associated_cost(id1)
+                .is_none() 
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
+
+            // Make sure there are no insertion costs for empty duration (never calculated)
+            assert!(data
+                    .possible_insertion_times_of_activity_with_associated_cost(id2)
+                    .is_none());
+
+            // Make sure it does not affect other activities
+            assert!(!data
+                    .possible_insertion_times_of_activity_with_associated_cost(id1)
+                    .expect("We did not wait for possible insertion costs to be calculated")
+                    .is_empty());
+        }
+    );
+}
+
 /// This is a response to a bug in which the possible insertions of incompatible activities were
 /// not calculated.
 /// Insertion cost computation thought inserting the activity at any beginning would leave others
@@ -677,4 +739,14 @@ fn possible_insertion_costs_updated_when_activity_inserted() {
         "Activity2 cannot be inserted with beginning 08:00 because it would overlap with 'Activity1'.",
         "Possible insertion costs were not updated when activity was inserted"
     );
+}
+
+#[test]
+fn autoinsertion_launches_and_ignores_activities_with_zero_duration() {
+    // TODO
+}
+
+#[test]
+fn autoinsertion_launches_and_ignores_activities_with_no_participants() {
+
 }

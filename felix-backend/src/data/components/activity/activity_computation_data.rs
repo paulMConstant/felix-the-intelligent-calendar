@@ -81,7 +81,7 @@ impl ActivityComputationData {
     /// If the duration is greater, we don't know where the activity will fit : It is the
     /// responsibility of higher level collections to deal with the change in insertion time.
     pub fn set_duration(&mut self, duration: Time) {
-        if duration < self.duration {
+        if duration < self.duration && duration != Time::new(0, 0) {
             if let Some(insertion_interval) = self.insertion_interval {
                 self.insertion_interval = Some(TimeInterval::new(
                     insertion_interval.beginning(),

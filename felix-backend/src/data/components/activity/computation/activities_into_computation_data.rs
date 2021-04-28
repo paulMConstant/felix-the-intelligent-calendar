@@ -1,4 +1,4 @@
-use crate::data::{Activity, ActivityId};
+use crate::data::{Activity, ActivityId, Time};
 use felix_computation_api::structs::{ActivityBeginningMinutes, ActivityComputationStaticData};
 
 use std::collections::HashMap;
@@ -17,7 +17,7 @@ pub fn activities_into_computation_data(
     // Insertion data is only as large as the number of inserted activities
     let mut insertion_data_vec = Vec::new();
 
-    let sorted_activities = activities_sorted_for_computation(activities);
+    let sorted_activities = activities_sorted_filtered_for_computation(activities);
 
     let ids = sorted_activities
         .iter()
@@ -73,27 +73,12 @@ pub fn activities_into_computation_data(
     (static_data_vec, insertion_data_vec)
 }
 
-/// Given a number of activities, returns the id -> index conversion performed when activities are
-/// turned into computation data.
-#[must_use]
-pub fn id_to_index_map(activities: &[Activity]) -> HashMap<ActivityId, usize> {
-    let index_to_id_map = index_to_id_map(activities);
-    let mut id_to_index_map = HashMap::new();
-
-    // Reverse the index to id map
-    for (index, id) in index_to_id_map {
-        id_to_index_map.insert(id, index);
-    }
-
-    id_to_index_map
-}
-
 /// Given a number of activities, returns the index -> id conversion performed when activities are
 /// turned into computation data.
 #[must_use]
 pub fn index_to_id_map(activities: &[Activity]) -> HashMap<usize, ActivityId> {
     let mut index_to_id_map = HashMap::new();
-    let sorted_activities = activities_sorted_for_computation(activities);
+    let sorted_activities = activities_sorted_filtered_for_computation(activities);
 
     for (index, sorted_activity) in sorted_activities.iter().enumerate() {
         index_to_id_map.insert(index, sorted_activity.id());
@@ -103,18 +88,21 @@ pub fn index_to_id_map(activities: &[Activity]) -> HashMap<usize, ActivityId> {
 }
 
 /// From a slice of activities, returns them in a sorted order.
+/// Filters out activities with zero-duration.
 /// This is the order which is used for computation.
 #[must_use]
-pub fn activities_sorted_for_computation(activities: &[Activity]) -> Vec<Activity> {
+pub fn activities_sorted_filtered_for_computation(activities: &[Activity]) -> Vec<Activity> {
     // Split inserted and non inserted activities.
     // Inserted activities are put first as the insertion order is fixed.
     let inserted_activities = activities
         .iter()
+        // Inserted activities always have a non-null duration
         .filter(|activity| activity.computation_data.insertion_interval().is_some());
 
     let mut non_inserted_activities = activities
         .iter()
-        .filter(|activity| activity.computation_data.insertion_interval().is_none())
+        .filter(|activity| activity.computation_data.insertion_interval().is_none()
+                && activity.duration() > Time::new(0,0))
         .collect::<Vec<_>>();
 
     // Harder to insert activities should be inserted first - insertion order is fixed

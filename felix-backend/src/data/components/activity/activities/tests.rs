@@ -127,7 +127,7 @@ fn incompatible_ids() {
 }
 
 #[test]
-fn test_fetch_computation() {
+fn test_activities_into_computation_data() {
     let activity_collection = Activities::new();
     activity_collection.add("0".to_owned());
     activity_collection.add("1".to_owned());
@@ -258,9 +258,13 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     activity_collection.add("2".to_owned());
 
 
-    let activity1_possible_beginnings = (0..=10)
+    let activity1_insertion_costs = (0..=10)
         .step_by(5)
-        .map(|i| Time::from_total_minutes(i))
+        .map(|n_minutes| Time::from_total_minutes(n_minutes))
+        .map(|beginning| InsertionCost {
+            beginning,
+            cost: 0,
+        })
         .collect::<Vec<_>>();
 
     activity_collection.mutate_activity(0, |activity1| {
@@ -269,6 +273,7 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
             .set_incompatible_activity_ids(vec![]);
 
         activity1.computation_data.set_duration(Time::new(0, 30));
+        *activity1.computation_data.insertion_costs().lock().unwrap() = Some(activity1_insertion_costs.clone());
     });
 
     activity_collection.mutate_activity(1, |activity2| {
@@ -283,23 +288,13 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
         activity3.computation_data.insert(Some(Time::new(1, 0)));
     });
 
-    // TODO what does this test do ?
     // Activity 1 will be reordered internally.
     // Check that its beginnings are the ones we fetch (id != index)
     let result = activity_collection
         .get_by_id(0)
         .insertion_costs();
 
-    let expected = Some(
-        activity1_possible_beginnings
-            .into_iter()
-            // Base cost = 10 000 divided by 1 + nb_activities_inserted
-            .map(|beginning| InsertionCost {
-                beginning,
-                cost: 10000 / (1 + 2),
-            })
-            .collect::<Vec<_>>(),
-    );
-    // TODO
-    //assert_eq!(result, expected);
+    let expected = Some(activity1_insertion_costs);
+
+    assert_eq!(result, expected);
 }

@@ -53,17 +53,14 @@ impl SeparateThreadActivityComputation {
         let computation_done_semaphore = self.computation_done_semaphore.clone();
         let possible_beginnings_pool = self.possible_beginnings_pool.clone();
 
-        println!("RUN UPDATE INSERTION COSTS");
         self.thread_pool.spawn(move || {
             loop {
                 // Wait until a result is up
                 computation_done_semaphore.acquire();
-                println!("POLLING");
                 if !insertion_costs_updater::poll_and_fuse_possible_beginnings(
                     activities.clone(), 
                     possible_beginnings_pool.clone()
                 ) {
-                    println!("EXITING SEPARATE COMPUTATION");
                     break;
                 }
             }
@@ -78,7 +75,6 @@ impl SeparateThreadActivityComputation {
         work_hours_and_activity_durations: Vec<WorkHoursAndActivityDurationsSorted>,
         activities: Arc<Mutex<Vec<Activity>>>,
     ) {
-        println!("QUEUING");
         invalidate_activities(activities);
 
         self.computation_done_semaphore
@@ -128,7 +124,6 @@ impl SeparateThreadActivityComputation {
                     if let Ok(mut pool) = pool.lock() {
                         pool.insert(key.clone(), result);
                     }
-                    println!("Added data to pool : {:?}", key);
                     computation_done_semaphore.release();
                 });
             } else {

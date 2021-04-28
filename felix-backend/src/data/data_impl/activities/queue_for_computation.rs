@@ -1,5 +1,7 @@
 use crate::data::{
-    Activity, Data,
+    Activity, 
+    Data,
+    Time,
     computation_structs::WorkHoursAndActivityDurationsSorted,
 };
 
@@ -51,7 +53,7 @@ impl Data {
     pub(crate) fn queue_entities(&mut self, entities: Vec<String>) {
         // For each activity
         // Gather all of its participants
-        let activities_to_update = self.activities_of_entities(&entities);
+        let activities_to_update = self.activities_of_entities_with_non_empty_duration(&entities);
         // Compute their schedule
         let schedules_of_all_participants = self
             .schedules_of_entities_in_activities(&activities_to_update);
@@ -69,12 +71,14 @@ impl Data {
     }
 
     /// Returns all activities in which at least one entity in the given slice participates.
-    fn activities_of_entities(&self, entities: &[String]) -> HashSet<Activity> {
+    /// Does not return activities with empty duration (0 minutes, 0 hours).
+    fn activities_of_entities_with_non_empty_duration(&self, entities: &[String]) -> HashSet<Activity> {
         entities.iter()
             .flat_map(|entity|
         {
             self.activities_of(entity).expect("Entity name is empty - this is a bug")
         })
+        .filter(|activity| activity.duration() > Time::new(0, 0))
         .collect()
     }
 
@@ -114,7 +118,6 @@ impl Data {
                 .map(|entity| schedules[entity].clone())
                 .collect::<Vec<_>>();
 
-            println!("Schedules for this activity {:?}", schedules_of_participants_of_this_activity);
             self.activities.update_schedules_of_participants_of_activity(
                 activity.id(),
                 schedules_of_participants_of_this_activity

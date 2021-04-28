@@ -75,7 +75,7 @@ mod tests {
         ]
         .iter()
         .cloned()
-        .collect::<BTreeSet<_>>();
+        .collect::<Vec<_>>();
 
         let rgb = costs_to_rgb(&costs);
 

@@ -86,7 +86,6 @@ impl Data {
             .map(|activity| activity.duration())
             .collect::<Vec<_>>();
 
-        println!("ACTIVITY DURATIONS {:?}", activity_durations);
         WorkHoursAndActivityDurationsSorted::new(work_hours, activity_durations)
     }
 }

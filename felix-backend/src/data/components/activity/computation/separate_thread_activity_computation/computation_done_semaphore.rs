@@ -53,14 +53,12 @@ impl Semaphore {
             count = self.cvar.wait(count).unwrap();
         }
         *count -= 1;
-        println!("COUNT {}", *count);
     }
 
     /// Acquires a resource of this semaphore, without blocking the current thread.
     pub fn acquire_nonblocking(&self, n_acquire: usize) {
         let mut count = self.lock.lock().unwrap();
         *count -= n_acquire as isize;
-        println!("COUNT {}", *count);
     }
 
     /// Release a resource from this semaphore.
@@ -70,7 +68,6 @@ impl Semaphore {
     pub fn release(&self) {
         let mut count = self.lock.lock().unwrap();
         *count += 1;
-        println!("COUNT {}", *count);
         self.cvar.notify_one();
     }
 

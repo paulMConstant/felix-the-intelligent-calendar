@@ -123,12 +123,10 @@ impl DataBuilder {
                 .add_group_to_activity(id, group)
                 .expect("Could not add group to activity");
         }
-        println!("BEFORE SET DURATION");
         self.data
             .set_activity_duration(id, activity.duration)
             .expect("Could not set activity duration");
 
-        println!("BEFORE WAIT");
         while self
             .data
             .possible_insertion_times_of_activity_with_associated_cost(id)
@@ -136,7 +134,6 @@ impl DataBuilder {
         {
             // Wait for possible insertion times to be asynchronously calculated
         }
-        println!("BEFORE INSERT");
         self.data
             .insert_activity(id, activity.insertion_time)
             .expect("Could not insert activity");
