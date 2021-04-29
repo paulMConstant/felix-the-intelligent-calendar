@@ -1,13 +1,10 @@
 //! Utilities used by the activities collections.
 
 use super::{
-    Activities, 
-    super::{
-        ActivityMetadata,
-        computation::id_computation::compute_incompatible_ids,
-    },
+    super::{computation::id_computation::compute_incompatible_ids, ActivityMetadata},
+    Activities,
 };
-use crate::data::{ActivityId, Activity};
+use crate::data::{Activity, ActivityId};
 
 impl Activities {
     /// Performs the given operation on the activity with given id.
@@ -19,17 +16,17 @@ impl Activities {
     // It is not possible to return a &mut Activity from inside the mutex because once the mutex
     // goes out of scope, it is unlocked.
     pub(super) fn mutate_activity<Res>(
-        &self, 
-        id: ActivityId, 
-        operation: impl FnOnce(&mut Activity) -> Res)
-        -> Res {
+        &self,
+        id: ActivityId,
+        operation: impl FnOnce(&mut Activity) -> Res,
+    ) -> Res {
         operation(
             self.activities
-              .lock()
-              .unwrap()
-              .iter_mut()
-              .find(|activity| activity.id() == id)
-              .expect("Asking for activity which does not exist")
+                .lock()
+                .unwrap()
+                .iter_mut()
+                .find(|activity| activity.id() == id)
+                .expect("Asking for activity which does not exist"),
         )
     }
 
@@ -40,7 +37,8 @@ impl Activities {
         // 1. Create a copy of the metadata
         let metadata_vec: Vec<ActivityMetadata> = self
             .activities
-            .lock().unwrap()
+            .lock()
+            .unwrap()
             .iter()
             .map(|activity| activity.metadata.clone())
             .collect();
@@ -50,10 +48,12 @@ impl Activities {
         // If the activity has the same id, it is the same activity, don't add it
         for metadata in &metadata_vec {
             self.mutate_activity(metadata.id(), |activity| {
-                activity.computation_data
-                .set_incompatible_activity_ids(
-                    compute_incompatible_ids(&metadata, &metadata_vec)
-                );
+                activity
+                    .computation_data
+                    .set_incompatible_activity_ids(compute_incompatible_ids(
+                        &metadata,
+                        &metadata_vec,
+                    ));
             });
         }
     }

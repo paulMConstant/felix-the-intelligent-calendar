@@ -1,9 +1,4 @@
-use crate::data::{
-    Activity, 
-    Data,
-    Time,
-    computation_structs::WorkHoursAndActivityDurationsSorted,
-};
+use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity, Data, Time};
 
 use std::collections::{HashMap, HashSet};
 
@@ -55,39 +50,48 @@ impl Data {
         // Gather all of its participants
         let activities_to_update = self.activities_of_entities_with_non_empty_duration(&entities);
         // Compute their schedule
-        let schedules_of_all_participants = self
-            .schedules_of_entities_in_activities(&activities_to_update);
-        
+        let schedules_of_all_participants =
+            self.schedules_of_entities_in_activities(&activities_to_update);
+
         // Set it into the activity
         self.update_schedules_of_participants_of_activities(
-            &activities_to_update, 
-            &schedules_of_all_participants
+            &activities_to_update,
+            &schedules_of_all_participants,
         );
 
-        // Then update insertion costs 
+        // Then update insertion costs
         self.activities.trigger_update_possible_activity_beginnings(
-            schedules_of_all_participants.values().cloned().collect::<Vec<_>>()
+            schedules_of_all_participants
+                .values()
+                .cloned()
+                .collect::<Vec<_>>(),
         );
     }
 
     /// Returns all activities in which at least one entity in the given slice participates.
     /// Does not return activities with empty duration (0 minutes, 0 hours).
-    fn activities_of_entities_with_non_empty_duration(&self, entities: &[String]) -> HashSet<Activity> {
-        entities.iter()
-            .flat_map(|entity|
-        {
-            self.activities_of(entity).expect("Entity name is empty - this is a bug")
-        })
-        .filter(|activity| activity.duration() > Time::new(0, 0))
-        .collect()
+    fn activities_of_entities_with_non_empty_duration(
+        &self,
+        entities: &[String],
+    ) -> HashSet<Activity> {
+        entities
+            .iter()
+            .flat_map(|entity| {
+                self.activities_of(entity)
+                    .expect("Entity name is empty - this is a bug")
+            })
+            .filter(|activity| activity.duration() > Time::new(0, 0))
+            .collect()
     }
 
     /// Returns a (Entity, Schedule) map with an entry for each entity taking part in at least one
     /// activity.
-    fn schedules_of_entities_in_activities(&self, activities: &HashSet<Activity>)
-        -> HashMap<String, WorkHoursAndActivityDurationsSorted> 
-    {
-        let entities = activities.iter()
+    fn schedules_of_entities_in_activities(
+        &self,
+        activities: &HashSet<Activity>,
+    ) -> HashMap<String, WorkHoursAndActivityDurationsSorted> {
+        let entities = activities
+            .iter()
             .flat_map(|activity| activity.entities_sorted())
             .collect::<HashSet<_>>();
 
@@ -95,14 +99,14 @@ impl Data {
             .iter()
             .map(|entity| {
                 (
-                    entity.clone(), 
-                    self.work_hours_and_activity_durations_from_entity(entity)
+                    entity.clone(),
+                    self.work_hours_and_activity_durations_from_entity(entity),
                 )
             })
             .collect()
     }
 
-    /// Given a list of activities and the schedules of all participants 
+    /// Given a list of activities and the schedules of all participants
     /// (all activities included),
     /// fills each activity with the schedules of their participants.
     fn update_schedules_of_participants_of_activities(
@@ -111,17 +115,17 @@ impl Data {
         schedules: &HashMap<String, WorkHoursAndActivityDurationsSorted>,
     ) {
         for activity in activities {
-            let schedules_of_participants_of_this_activity = 
-                activity
+            let schedules_of_participants_of_this_activity = activity
                 .entities_sorted()
                 .iter()
                 .map(|entity| schedules[entity].clone())
                 .collect::<Vec<_>>();
 
-            self.activities.update_schedules_of_participants_of_activity(
-                activity.id(),
-                schedules_of_participants_of_this_activity
-            );
+            self.activities
+                .update_schedules_of_participants_of_activity(
+                    activity.id(),
+                    schedules_of_participants_of_this_activity,
+                );
         }
     }
 }

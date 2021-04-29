@@ -1,6 +1,6 @@
 use felix_backend::data::{InsertionCost, Rgba, Time};
 
-use std::collections::{HashMap};
+use std::collections::HashMap;
 
 /// From a set of possible insertion beginnings with their associated costs,
 /// returns the color associated to each time.

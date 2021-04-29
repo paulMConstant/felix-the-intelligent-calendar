@@ -19,9 +19,7 @@ fn simple_add_group() {
             let id = data.activities_sorted()[0].id();
             data.add_group_to_activity(id, group_name)
                 .expect("Could not add group to activity");
-            let groups = data
-                .activity(id)
-                .groups_sorted();
+            let groups = data.activity(id).groups_sorted();
             assert_eq!(groups.len(), 1, "Group was not added to the activity");
             assert_eq!(
                 groups[0], group_name,
@@ -61,9 +59,7 @@ fn add_group_check_sorting() {
             data.add_group_to_activity(id, group2)
                 .expect("Could not add group to activity");
 
-            let groups = data
-                .activity(id)
-                .groups_sorted();
+            let groups = data.activity(id).groups_sorted();
             assert_eq!(groups.len(), 3, "Groups were not added to the activity");
             assert_eq!(groups[0], group1, "Groups are not sorted");
             assert_eq!(groups[1], group2, "Groups are not sorted");
@@ -109,7 +105,8 @@ fn add_group_activity_does_not_exist() {
             .with_group(Group::default(group_name))
             .into_data();
         data.add_group_to_activity(123, group_name).unwrap()
-    }).expect_err("Could add group to nonexistent activity");
+    })
+    .expect_err("Could add group to nonexistent activity");
 }
 
 #[test]
@@ -150,9 +147,7 @@ fn add_group_check_entities_added() {
             let id = data.activities_sorted()[0].id();
             data.add_group_to_activity(id, group_name)
                 .expect("Could not add group to activity");
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(entities.len(), 2, "Entities were not added to the activity");
             assert_eq!(entities[0], entity1, "The entities were not added right");
             assert_eq!(entities[1], entity2, "The entities were not added right");
@@ -181,9 +176,7 @@ fn add_group_check_entities_not_added_twice() {
             let id = data.activities_sorted()[0].id();
             data.add_group_to_activity(id, group_name)
                 .expect("Could not add group to activity");
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(
                 entities.len(),
                 2,
@@ -234,9 +227,7 @@ fn simple_remove_group_from_activity() {
 
             data.remove_group_from_activity(id, group1)
                 .expect("Could not remove group");
-            let groups = data
-                .activity(id)
-                .groups_sorted();
+            let groups = data.activity(id).groups_sorted();
             assert_eq!(groups.len(), 1, "Group was not removed from the activity");
             assert_eq!(
                 groups[0], group2,
@@ -283,7 +274,8 @@ fn remove_group_from_activity_activity_does_not_exist() {
             .with_activity(Activity::default())
             .into_data();
         data.remove_group_from_activity(193, group_name).unwrap();
-    }).expect_err("Could remove group from activity with empty name");
+    })
+    .expect_err("Could remove group from activity with empty name");
 }
 
 #[test]
@@ -326,9 +318,7 @@ fn remove_group_from_activity_check_entities_removed() {
             data.remove_group_from_activity(id, group_name)
                 .expect("Could not remove group from activity");
 
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(
                 entities.len(),
                 1,
@@ -370,9 +360,7 @@ fn remove_group_from_activity_check_entities_in_other_groups_stay() {
             data.remove_group_from_activity(id, group1)
                 .expect("Could not remove group from activity");
 
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(
                 entities.len(),
                 1,

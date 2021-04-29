@@ -86,7 +86,7 @@ fn add_activity_empty_name() {
         data.add_activity(" \t"),
         "The given name is empty.",
         "Could add entity with empty name"
-        );
+    );
 }
 
 // *** Remove ***
@@ -104,7 +104,7 @@ fn simple_remove_activity() {
             assert_eq!(activities.len(), 1, "Activity was not removed");
             assert_eq!(activities[0].id(), id2, "The wrong activity was removed");
         }
-        );
+    );
 }
 
 #[test]
@@ -125,7 +125,7 @@ fn simple_get_activity() {
             let activity = data.activity(id);
             assert_eq!(activity.id(), id, "Fetched activity with wrong id");
         }
-        );
+    );
 }
 
 #[test]
@@ -133,7 +133,8 @@ fn get_activity_with_wrong_id() {
     std::panic::catch_unwind(|| {
         let data = DataBuilder::new().into_data();
         data.activity(0);
-    }).expect_err("Could get activity with wrong id");
+    })
+    .expect_err("Could get activity with wrong id");
 }
 
 // *** Set name ***
@@ -151,7 +152,7 @@ fn simple_set_activity_name() {
 
             assert_eq!(new_name, actual_name, "Activity was not renamed");
         }
-        );
+    );
 }
 
 #[test]
@@ -165,20 +166,22 @@ fn set_activity_name_check_formatting() {
             let formatted_name = "New Name";
             data.set_activity_name(id, unformatted_name)
                 .expect("Could not set activity name");
-            let name = data
-                .activity(id)
-                .name();
+            let name = data.activity(id).name();
             assert_eq!(name, formatted_name, "Activity name was not formatted");
         }
-        );
+    );
 }
 
 #[test]
 fn set_activity_name_invalid_id() {
     std::panic::catch_unwind(|| {
-        let mut data = DataBuilder::new().with_activity(Activity::default()).into_data();
-        data.set_activity_name(3, "New Name").expect("Sould panic: id is invalid");
-    }).expect_err("Could set name of activity with invalid id");
+        let mut data = DataBuilder::new()
+            .with_activity(Activity::default())
+            .into_data();
+        data.set_activity_name(3, "New Name")
+            .expect("Sould panic: id is invalid");
+    })
+    .expect_err("Could set name of activity with invalid id");
 }
 
 #[test]
@@ -192,7 +195,7 @@ fn set_activity_name_empty_name() {
         },
         "The given name is empty.",
         "Could set empty activity name"
-        );
+    );
 }
 
 // *** Set duration ***
@@ -204,19 +207,15 @@ fn simple_set_activity_duration() {
         {
             let id = data.activities_sorted()[0].id();
             let duration = Time::new(1, 0);
-            let activity_duration = data
-                .activity(id)
-                .duration();
+            let activity_duration = data.activity(id).duration();
             assert_ne!(
                 activity_duration, duration,
                 "Test is pointless: duration is the same"
-                );
+            );
 
             data.set_activity_duration(id, duration)
                 .expect("Could not set activity duration");
-            let activity_duration = data
-                .activity(id)
-                .duration();
+            let activity_duration = data.activity(id).duration();
             assert_eq!(activity_duration, duration, "Duration was not set properly");
         }
     );
@@ -225,9 +224,12 @@ fn simple_set_activity_duration() {
 #[test]
 fn set_activity_duration_invalid_id() {
     std::panic::catch_unwind(|| {
-        let mut data = DataBuilder::new().with_activity(Activity::default()).into_data();
+        let mut data = DataBuilder::new()
+            .with_activity(Activity::default())
+            .into_data();
         data.set_activity_duration(2, Time::new(1, 0)).unwrap();
-    }).expect_err("Could set the duration of nonexistent activity");
+    })
+    .expect_err("Could set the duration of nonexistent activity");
 }
 
 #[test]
@@ -236,20 +238,23 @@ fn set_activity_duration_zero_remove_from_schedule_if_inserted() {
     test_ok!(
         data,
         DataBuilder::new()
-        .with_entity(name)
-        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
-        .with_activity(Activity {
-            entities: vec![name],
-            duration: Time::new(0, 10),
-            insertion_time: Some(Time::new(8, 0)),
-            ..Default::default()
-        }),
-    {
-        let id = data.activities_sorted()[0].id();
-        data.set_activity_duration(id, Time::new(0, 0)).expect("Cannot set activity duration");
-        assert!(data.activity(id).insertion_interval().is_none(),
-                "Activity is inserted with empty duration");
-    }
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activity(Activity {
+                entities: vec![name],
+                duration: Time::new(0, 10),
+                insertion_time: Some(Time::new(8, 0)),
+                ..Default::default()
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.set_activity_duration(id, Time::new(0, 0))
+                .expect("Cannot set activity duration");
+            assert!(
+                data.activity(id).insertion_interval().is_none(),
+                "Activity is inserted with empty duration"
+            );
+        }
     );
 }
 
@@ -259,16 +264,16 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
     test_ok!(
         data,
         DataBuilder::new()
-        .with_entity(name)
-        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
-        .with_activity(Activity {
-            duration: Time::new(1, 0),
-            name: "Activity",
-            groups: Vec::new(),
-            entities: vec![name],
-            insertion_time: Some(Time::new(8, 0)),
-            ..Default::default()
-        }),
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
+            .with_activity(Activity {
+                duration: Time::new(1, 0),
+                name: "Activity",
+                groups: Vec::new(),
+                entities: vec![name],
+                insertion_time: Some(Time::new(8, 0)),
+                ..Default::default()
+            }),
         {
             let id = data.activities_sorted()[0].id();
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(9, 0));
@@ -279,7 +284,7 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
             assert_eq!(
                 data.activity(id).insertion_interval(),
                 Some(expected_insertion_interval)
-                );
+            );
 
             // Decrease the duration, check that the insertion interval is still valid
             data.set_activity_duration(id, Time::new(0, 30)).unwrap();
@@ -290,7 +295,7 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
             assert_eq!(
                 data.activity(id).insertion_interval(),
                 Some(expected_insertion_interval)
-                );
+            );
         }
     );
 }
@@ -301,16 +306,16 @@ fn increase_activity_duration_check_insertion_interval_removed() {
     test_ok!(
         data,
         DataBuilder::new()
-        .with_entity(name)
-        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
-        .with_activity(Activity {
-            duration: Time::new(0, 30),
-            name: "Activity",
-            groups: Vec::new(),
-            entities: vec![name],
-            insertion_time: Some(Time::new(8, 00)),
-            ..Default::default()
-        }),
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
+            .with_activity(Activity {
+                duration: Time::new(0, 30),
+                name: "Activity",
+                groups: Vec::new(),
+                entities: vec![name],
+                insertion_time: Some(Time::new(8, 00)),
+                ..Default::default()
+            }),
         {
             let id = data.activities_sorted()[0].id();
             let activity = data.activity(id);
@@ -318,7 +323,7 @@ fn increase_activity_duration_check_insertion_interval_removed() {
             assert_eq!(
                 activity.insertion_interval(),
                 Some(expected_insertion_interval)
-                );
+            );
 
             // Change the duration, check that the insertion interval is removed
             data.set_activity_duration(id, Time::new(1, 0)).unwrap();
@@ -335,16 +340,16 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
     test_ok!(
         data,
         DataBuilder::new()
-        .with_entity(name)
-        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
-        .with_activity(Activity {
-            duration: Time::new(0, 30),
-            name: "Activity",
-            groups: Vec::new(),
-            entities: vec![name],
-            insertion_time: Some(Time::new(8, 30)),
-            ..Default::default()
-        }),
+            .with_entity(name)
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(9, 0)))
+            .with_activity(Activity {
+                duration: Time::new(0, 30),
+                name: "Activity",
+                groups: Vec::new(),
+                entities: vec![name],
+                insertion_time: Some(Time::new(8, 30)),
+                ..Default::default()
+            }),
         {
             let id = data.activities_sorted()[0].id();
             let activity = data.activity(id);
@@ -352,7 +357,7 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
             assert_eq!(
                 activity.insertion_interval(),
                 Some(expected_insertion_interval)
-                );
+            );
 
             // Change the duration, check that the insertion interval is removed
             data.set_activity_duration(id, Time::new(1, 0)).unwrap();
@@ -363,10 +368,10 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
             // Wait for computation result
             while data
                 .possible_insertion_times_of_activity_with_associated_cost(id)
-                    .is_none()
-                    {
-                        // For the purpose of this test, wait for asynchronous computation of possible beginnings.
-                    }
+                .is_none()
+            {
+                // For the purpose of this test, wait for asynchronous computation of possible beginnings.
+            }
 
             // Ask data to find the closest spot for the activity
             data.insert_activities_removed_because_duration_increased_in_closest_spot();
@@ -398,7 +403,7 @@ fn basic_set_color() {
             let activity = data.activity(id);
             assert_eq!(activity.color(), color);
         }
-        );
+    );
 }
 
 // *** Activity insertion ***
@@ -409,23 +414,23 @@ fn basic_insert_activity() {
     test_ok!(
         data,
         DataBuilder::new()
-        .with_entities(vec![name1, name2])
-        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
-        .with_activity(Activity {
-            name: "Activity",
-            entities: vec![name1, name2],
-            duration: activity_duration,
-            groups: Vec::new(),
-            ..Default::default()
-        }),
+            .with_entities(vec![name1, name2])
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activity(Activity {
+                name: "Activity",
+                entities: vec![name1, name2],
+                duration: activity_duration,
+                groups: Vec::new(),
+                ..Default::default()
+            }),
         {
             let id = data.activities_sorted()[0].id();
             while data
                 .possible_insertion_times_of_activity_with_associated_cost(id)
-                    .is_none()
-                    {
-                        // Wait for possible insertion times to be asynchronously calculated
-                    }
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
 
             let beginning = Time::new(10, 0);
             let expected_insertion_interval =
@@ -436,7 +441,7 @@ fn basic_insert_activity() {
             assert_eq!(
                 activity.insertion_interval().unwrap(),
                 expected_insertion_interval
-                );
+            );
         }
     );
 }
@@ -606,49 +611,55 @@ fn activities_with_empty_duration_not_taken_into_account_in_insertion_costs() {
         DataBuilder::new()
             .with_entities(vec![name1])
             .with_work_interval(TimeInterval::new(Time::new(10, 0), Time::new(13, 0)))
-            .with_activities(vec![Activity {
-                name: "Activity1",
-                entities: vec![name1],
-                duration: Time::new(1, 0),
-                groups: Vec::new(),
-                ..Default::default()
-            }, Activity {
-                name: "Activity2",
-                entities: vec![name1],
-                duration: Time::new(1, 0),
-                groups: Vec::new(),
-                ..Default::default()
-            }]
-            ),
+            .with_activities(vec![
+                Activity {
+                    name: "Activity1",
+                    entities: vec![name1],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                    ..Default::default()
+                },
+                Activity {
+                    name: "Activity2",
+                    entities: vec![name1],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                    ..Default::default()
+                }
+            ]),
         {
             let id1 = data.activities_sorted()[0].id();
             let id2 = data.activities_sorted()[1].id();
             while data
                 .possible_insertion_times_of_activity_with_associated_cost(id1)
-                .is_none() || data.possible_insertion_times_of_activity_with_associated_cost(id2)
                 .is_none()
+                || data
+                    .possible_insertion_times_of_activity_with_associated_cost(id2)
+                    .is_none()
             {
                 // Wait for possible insertion times to be asynchronously calculated
             }
 
             // Set empty duration -> Will invalidate insertion times of every incompatible activity
-            data.set_activity_duration(id2, Time::new(0, 0)).expect("Could not set activity duration");
-            while data.possible_insertion_times_of_activity_with_associated_cost(id1)
-                .is_none() 
+            data.set_activity_duration(id2, Time::new(0, 0))
+                .expect("Could not set activity duration");
+            while data
+                .possible_insertion_times_of_activity_with_associated_cost(id1)
+                .is_none()
             {
                 // Wait for possible insertion times to be asynchronously calculated
             }
 
             // Make sure there are no insertion costs for empty duration (never calculated)
             assert!(data
-                    .possible_insertion_times_of_activity_with_associated_cost(id2)
-                    .is_none());
+                .possible_insertion_times_of_activity_with_associated_cost(id2)
+                .is_none());
 
             // Make sure it does not affect other activities
             assert!(!data
-                    .possible_insertion_times_of_activity_with_associated_cost(id1)
-                    .expect("We did not wait for possible insertion costs to be calculated")
-                    .is_empty());
+                .possible_insertion_times_of_activity_with_associated_cost(id1)
+                .expect("We did not wait for possible insertion costs to be calculated")
+                .is_empty());
         }
     );
 }
@@ -723,17 +734,17 @@ fn possible_insertion_costs_updated_when_activity_inserted() {
             let id1 = data.activities_sorted()[0].id();
             let id2 = data.activities_sorted()[1].id();
             while data.possible_insertion_times_of_activity_with_associated_cost(id1).is_none()
-                || data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none() 
+                || data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none()
             {
                 // Wait for computation
             }
 
             data.insert_activity(id1, Some(Time::new(8, 30))).expect("Could not insert activity");
-            
+
             while data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none() {
                 // Wait for computation
             }
-            
+
             data.insert_activity(id2, Some(Time::new(8, 0)))
         },
         "Activity2 cannot be inserted with beginning 08:00 because it would overlap with 'Activity1'.",
@@ -743,10 +754,83 @@ fn possible_insertion_costs_updated_when_activity_inserted() {
 
 #[test]
 fn autoinsertion_launches_and_ignores_activities_with_zero_duration() {
-    // TODO
+    let name1 = "Paul";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1])
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activities(vec![
+                Activity {
+                    name: "Activity1",
+                    entities: vec![name1],
+                    duration: Time::new(1, 0),
+                    ..Default::default()
+                },
+                Activity {
+                    name: "Activity2",
+                    entities: vec![name1],
+                    duration: Time::new(0, 0),
+                    ..Default::default()
+                }
+            ]),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity_with_associated_cost(id1)
+                .is_none()
+            {
+                // Wait for computation
+            }
+
+            let autoinsertion_handle = data.start_autoinsertion().expect(
+                "Could not start autoinsertion: results should be computed for valid activities",
+            );
+
+            autoinsertion_handle
+                .get_result()
+                .expect("Autoinsertion failed");
+        }
+    );
 }
 
 #[test]
 fn autoinsertion_launches_and_ignores_activities_with_no_participants() {
+    let name1 = "Paul";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1])
+            .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+            .with_activities(vec![
+                Activity {
+                    name: "Activity1",
+                    entities: vec![name1],
+                    duration: Time::new(1, 0),
+                    ..Default::default()
+                },
+                Activity {
+                    name: "Activity2",
+                    duration: Time::new(1, 0),
+                    ..Default::default()
+                }
+            ]),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            while data
+                .possible_insertion_times_of_activity_with_associated_cost(id1)
+                .is_none()
+            {
+                // Wait for computation
+            }
 
+            let autoinsertion_handle = data.start_autoinsertion().expect(
+                "Could not start autoinsertion: results should be computed for valid activities",
+            );
+
+            autoinsertion_handle
+                .get_result()
+                .expect("Autoinsertion failed");
+        }
+    );
 }

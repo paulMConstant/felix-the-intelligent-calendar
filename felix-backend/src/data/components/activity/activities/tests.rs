@@ -135,12 +135,20 @@ fn test_activities_into_computation_data() {
     activity_collection.add("3".to_owned());
     activity_collection.remove(2);
 
+    // We will add one participant to each activity, if we don't, then the activity will be
+    // filtered out
+    let participant = "Participant".to_string();
+
     // Ids are [0, 1, 3]
     activity_collection.mutate_activity(0, |activity1| {
         activity1
             .computation_data
             .set_incompatible_activity_ids(vec![3]);
         activity1.computation_data.set_duration(Time::new(0, 30));
+        activity1
+            .metadata
+            .add_entity(participant.clone())
+            .expect("Could not add entity");
         *activity1.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
     });
 
@@ -151,22 +159,31 @@ fn test_activities_into_computation_data() {
             .computation_data
             .set_incompatible_activity_ids(vec![0, 3]);
         activity2.computation_data.set_duration(Time::new(0, 20));
+        activity2
+            .metadata
+            .add_entity(participant.clone())
+            .expect("Could not add entity");
         *activity2.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
     });
     let activity2 = activity_collection.get_by_id(1);
 
-
     activity_collection.mutate_activity(3, |activity3| {
-        activity3.computation_data.set_incompatible_activity_ids(vec![1]);
+        activity3
+            .computation_data
+            .set_incompatible_activity_ids(vec![1]);
 
         activity3.computation_data.set_duration(Time::new(0, 15));
         activity3.computation_data.insert(Some(Time::new(1, 0)));
+        activity3
+            .metadata
+            .add_entity(participant.clone())
+            .expect("Could not add entity");
         *activity3.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
     });
 
     let activity3 = activity_collection.get_by_id(3);
 
-    let (static_data, insertion_data) = 
+    let (static_data, insertion_data) =
         activities_into_computation_data(&activity_collection.get_not_sorted());
 
     // Order should be Activity3 (inserted), activity2(harder to insert - 20 mins * 2 incompatible
@@ -257,14 +274,10 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
     activity_collection.add("1".to_owned());
     activity_collection.add("2".to_owned());
 
-
     let activity1_insertion_costs = (0..=10)
         .step_by(5)
         .map(|n_minutes| Time::from_total_minutes(n_minutes))
-        .map(|beginning| InsertionCost {
-            beginning,
-            cost: 0,
-        })
+        .map(|beginning| InsertionCost { beginning, cost: 0 })
         .collect::<Vec<_>>();
 
     activity_collection.mutate_activity(0, |activity1| {
@@ -273,11 +286,14 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
             .set_incompatible_activity_ids(vec![]);
 
         activity1.computation_data.set_duration(Time::new(0, 30));
-        *activity1.computation_data.insertion_costs().lock().unwrap() = Some(activity1_insertion_costs.clone());
+        *activity1.computation_data.insertion_costs().lock().unwrap() =
+            Some(activity1_insertion_costs.clone());
     });
 
     activity_collection.mutate_activity(1, |activity2| {
-        activity2.computation_data.set_incompatible_activity_ids(vec![0, 3]);
+        activity2
+            .computation_data
+            .set_incompatible_activity_ids(vec![0, 3]);
 
         activity2.computation_data.set_duration(Time::new(0, 20));
         activity2.computation_data.insert(Some(Time::new(2, 0)));
@@ -290,9 +306,7 @@ fn test_possible_insertion_times_of_activity_with_associated_cost() {
 
     // Activity 1 will be reordered internally.
     // Check that its beginnings are the ones we fetch (id != index)
-    let result = activity_collection
-        .get_by_id(0)
-        .insertion_costs();
+    let result = activity_collection.get_by_id(0).insertion_costs();
 
     let expected = Some(activity1_insertion_costs);
 

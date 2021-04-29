@@ -1,13 +1,10 @@
+mod inner;
 #[cfg(test)]
 mod tests;
-mod inner;
 
-use super::{
-    computation::{
-        activities_into_computation_data::index_to_id_map,
-        id_computation::generate_next_id,
-        separate_thread_activity_computation::SeparateThreadActivityComputation,
-    },
+use super::computation::{
+    activities_into_computation_data::index_to_id_map, id_computation::generate_next_id,
+    separate_thread_activity_computation::SeparateThreadActivityComputation,
 };
 
 use crate::data::{
@@ -45,15 +42,15 @@ impl Activities {
     pub fn new() -> Activities {
         let activities = Arc::new(Mutex::new(Vec::new()));
 
-        // This thread will silently update the activities insertion costs when durations, 
+        // This thread will silently update the activities insertion costs when durations,
         // entities or work hours change
         let separate_thread_computation = SeparateThreadActivityComputation::new();
 
         Activities {
             activities,
             separate_thread_computation,
-            activities_removed_because_duration_increased: 
-                ActivitiesAndOldInsertionBeginnings::new(),
+            activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
+            ),
         }
     }
 
@@ -91,7 +88,7 @@ impl Activities {
             .clone()
     }
 
-    /// Getter for activities which were removed from the schedule because their duration 
+    /// Getter for activities which were removed from the schedule because their duration
     /// increased.
     pub fn get_activities_removed_because_duration_increased(
         &self,
@@ -110,10 +107,7 @@ impl Activities {
     pub fn add(&self, name: String) -> Activity {
         let mut activities = self.activities.lock().unwrap();
 
-        let used_ids = activities
-            .iter()
-            .map(|activity| activity.id())
-            .collect();
+        let used_ids = activities.iter().map(|activity| activity.id()).collect();
         let id = generate_next_id(used_ids);
         let activity = Activity::new(id, name);
 
@@ -309,7 +303,7 @@ impl Activities {
         &mut self,
         id: ActivityId,
         schedules: Vec<WorkHoursAndActivityDurationsSorted>,
-    ) { 
+    ) {
         self.mutate_activity(id, |activity| {
             activity
                 .computation_data
@@ -382,9 +376,10 @@ impl Activities {
         let index_to_id_map = index_to_id_map(&self.get_not_sorted());
         for (index, insertion) in insertion_data.into_iter().enumerate() {
             let id = index_to_id_map[&index];
-            self.mutate_activity(id,
-                |a| a.computation_data.insert(Some(Time::from_total_minutes(insertion)))
-            );
+            self.mutate_activity(id, |a| {
+                a.computation_data
+                    .insert(Some(Time::from_total_minutes(insertion)))
+            });
         }
     }
 }

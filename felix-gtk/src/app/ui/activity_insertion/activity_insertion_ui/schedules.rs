@@ -3,7 +3,6 @@ use crate::app::ui::EntityToShow;
 
 use felix_backend::data::{ActivityInsertionCosts, Time, MIN_TIME_DISCRETIZATION};
 
-
 const MIN_SCHEDULE_WIDTH: f64 = 350.0;
 const MAX_SCHEDULE_WIDTH: f64 = 550.0;
 

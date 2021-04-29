@@ -22,9 +22,7 @@ fn rename_entity_check_renamed_in_activity() {
             let entity3 = data
                 .set_entity_name(entity1, "Entity3")
                 .expect("Could not rename entity");
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
 
             assert_eq!(
                 entities[0], entity2,
@@ -54,9 +52,7 @@ fn remove_entity_check_remove_in_activity() {
             let id = data.activities_sorted()[0].id();
             data.remove_entity(entity1)
                 .expect("Could not remove entity");
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(
                 entities.len(),
                 1,

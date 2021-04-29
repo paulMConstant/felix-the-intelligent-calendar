@@ -1,10 +1,6 @@
 use crate::data::{
-    ActivityId,
-    InsertionCost,
-    Time,
-    TimeInterval,
-    MIN_TIME_DISCRETIZATION,
-    computation_structs::WorkHoursAndActivityDurationsSorted,
+    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost, Time,
+    TimeInterval, MIN_TIME_DISCRETIZATION,
 };
 
 use serde::{Deserialize, Serialize};
@@ -101,8 +97,9 @@ impl ActivityComputationData {
 
     /// Simple setter for schedules of participants.
     pub fn update_schedules_of_participants(
-        &mut self, 
-        schedules: Vec<WorkHoursAndActivityDurationsSorted>) {
+        &mut self,
+        schedules: Vec<WorkHoursAndActivityDurationsSorted>,
+    ) {
         self.schedules_of_participants = schedules;
     }
 

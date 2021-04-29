@@ -24,7 +24,9 @@ pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;
 
-use felix_backend::data::{Activity, ActivityInsertionCosts, AutoinsertionThreadHandle, Entity, Group};
+use felix_backend::data::{
+    Activity, ActivityInsertionCosts, AutoinsertionThreadHandle, Entity, Group,
+};
 
 use std::cell::RefCell;
 use std::rc::Rc;

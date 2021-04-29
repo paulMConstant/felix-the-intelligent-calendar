@@ -96,13 +96,16 @@ pub fn activities_sorted_filtered_for_computation(activities: &[Activity]) -> Ve
     // Inserted activities are put first as the insertion order is fixed.
     let inserted_activities = activities
         .iter()
-        // Inserted activities always have a non-null duration
+        // Inserted activities always have a non-null duration and participants
         .filter(|activity| activity.computation_data.insertion_interval().is_some());
 
     let mut non_inserted_activities = activities
         .iter()
-        .filter(|activity| activity.computation_data.insertion_interval().is_none()
-                && activity.duration() > Time::new(0,0))
+        .filter(|activity| {
+            activity.computation_data.insertion_interval().is_none()
+                && activity.duration() > Time::new(0, 0)
+                && !activity.entities_sorted().is_empty()
+        })
         .collect::<Vec<_>>();
 
     // Harder to insert activities should be inserted first - insertion order is fixed

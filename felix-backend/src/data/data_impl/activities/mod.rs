@@ -6,10 +6,10 @@ use super::helpers::clean_string;
 
 use crate::{
     data::{
-        components::activity::{activities_into_computation_data, activities_sorted_filtered_for_computation},
-        Activity, 
-        ActivityId,
-        ActivityInsertionCosts, Data, Rgba, Time,
+        components::activity::{
+            activities_into_computation_data, activities_sorted_filtered_for_computation,
+        },
+        Activity, ActivityId, ActivityInsertionCosts, Data, Rgba, Time,
     },
     errors::{invalid_insertion::InvalidInsertion, Result},
 };
@@ -307,11 +307,13 @@ impl Data {
                 // Once we compute its possible beginnings, we will be able to put it back in the
                 // schedule.
                 self.activities.store_activity_was_inserted(id);
-                self.insert_activity(id, None).expect("Could not remove activity from schedule. Thisis a bug.");
+                self.insert_activity(id, None)
+                    .expect("Could not remove activity from schedule. Thisis a bug.");
             }
         } else if new_duration == Time::new(0, 0) {
             // Activity with empty duration cannot be inserted
-            self.insert_activity(id, None).expect("Could not remove activity from schedule. This is a bug.");
+            self.insert_activity(id, None)
+                .expect("Could not remove activity from schedule. This is a bug.");
         }
         self.activities.set_duration(id, new_duration);
 
@@ -424,13 +426,15 @@ impl Data {
         }
     }
 
-    /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the 
+    /// Starts autoinsertion in a separate thread and returns a mpsc::receiver handle for the
     /// result.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the insertions have not been computed yet.
     pub fn start_autoinsertion(&mut self) -> Result<AutoinsertionThreadHandle> {
         // Poll insertion data
-        let activities = activities_sorted_filtered_for_computation(
-            &self.activities_not_sorted()
-            );
+        let activities = activities_sorted_filtered_for_computation(&self.activities_not_sorted());
 
         if let Some(activity_not_computed_yet) = activities
             .iter()

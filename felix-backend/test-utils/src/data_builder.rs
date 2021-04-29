@@ -127,13 +127,20 @@ impl DataBuilder {
             .set_activity_duration(id, activity.duration)
             .expect("Could not set activity duration");
 
-        while self
-            .data
-            .possible_insertion_times_of_activity_with_associated_cost(id)
-            .is_none()
+        let real_activity = self.data.activity(id);
+        // Insertion costs will be computed if duration is non null and if there are participants
+        if real_activity.duration() != Time::new(0, 0)
+            && !real_activity.entities_sorted().is_empty()
         {
-            // Wait for possible insertion times to be asynchronously calculated
+            while self
+                .data
+                .possible_insertion_times_of_activity_with_associated_cost(id)
+                .is_none()
+            {
+                // Wait for possible insertion times to be asynchronously calculated
+            }
         }
+
         self.data
             .insert_activity(id, activity.insertion_time)
             .expect("Could not insert activity");

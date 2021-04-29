@@ -23,9 +23,7 @@ fn simple_add_entity() {
             let id = data.activities_sorted()[0].id();
             data.add_entity_to_activity(id, name)
                 .expect("Could not add entity to activity");
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(entities.len(), 1, "Participant was not added");
             assert_eq!(entities[0], name, "Participant was added with wrong name");
         }
@@ -46,9 +44,7 @@ fn add_entities_check_sorting() {
             }),
         {
             let id = data.activities_sorted()[0].id();
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
             assert_eq!(entities.len(), 3, "Participants were not added");
             assert_eq!(entities[0], name1, "Participants are not sorted");
             assert_eq!(entities[1], name2, "Participants are not sorted");
@@ -111,7 +107,8 @@ fn add_entity_wrong_id() {
             .with_activity(Activity::default())
             .into_data();
         data.add_entity_to_activity(4, entity_name).unwrap();
-    }).expect_err("Could add entity to activity with wrong id");
+    })
+    .expect_err("Could add entity to activity with wrong id");
 }
 
 #[test]
@@ -223,9 +220,7 @@ fn simple_remove_entity() {
             let id = data.activities_sorted()[0].id();
             data.remove_entity_from_activity(id, entity1)
                 .expect("Could not remove entity");
-            let entities = data
-                .activity(id)
-                .entities_sorted();
+            let entities = data.activity(id).entities_sorted();
 
             assert_eq!(entities.len(), 1, "Participant was not removed");
             assert_eq!(entities[0], entity2, "The wrong entity was removed");
@@ -277,7 +272,8 @@ fn remove_entity_wrong_activity_id() {
             .with_entity(entity_name)
             .into_data();
         data.remove_entity_from_activity(15, entity_name).unwrap();
-    }).expect_err("Could remove entity from nonexsistent activity");
+    })
+    .expect_err("Could remove entity from nonexsistent activity");
 }
 
 #[test]
