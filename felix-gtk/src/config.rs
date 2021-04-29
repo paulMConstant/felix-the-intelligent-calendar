@@ -4,4 +4,4 @@ pub const APP_NAME: &str = "Felix";
 
 pub const NOTIFICATION_TIMEOUT_MS: i32 = 3000;
 
-pub const DATA_CONF_FILE: &str = "./data.json";
+pub const DATA_CONF_FILE: &str = "./felix.json";
