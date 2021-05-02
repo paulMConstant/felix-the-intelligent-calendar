@@ -169,7 +169,7 @@ impl App {
                     // Try to insert the activity in the best spot
                     let mut data = data.borrow_mut();
 
-                    if let Some(insertion_costs) = data.insertion_costs_of_activity(id) {
+                    if let Some(insertion_costs) = data.activity(id).insertion_costs() {
                         if let Some(best_spot) = insertion_costs
                             .iter()
                             .min_by_key(|insertion_cost| insertion_cost.cost)
@@ -286,7 +286,7 @@ impl App {
                 let data = data.borrow();
                 let activity_participants = data.activity(id).entities_sorted();
 
-                let maybe_possible_insertion_times = data.insertion_costs_of_activity(id);
+                let maybe_possible_insertion_times = data.activity(id).insertion_costs();
 
                 EntitiesAndInsertionTimes {
                     entities: activity_participants,

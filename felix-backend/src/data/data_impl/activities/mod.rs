@@ -58,19 +58,9 @@ impl Data {
             .collect())
     }
 
-    /// Returns the possible insertion times of an activity.
-    /// If they are not calculated, returns None.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the activity is not found.
-    pub fn insertion_costs_of_activity(&self, id: ActivityId) -> ActivityInsertionCosts {
-        self.activities.get_by_id(id).insertion_costs()
-    }
-
     /// Waits until the insertion costs of an activity have been computed.
     pub fn wait_for_possible_insertion_costs_computation(&self, id: ActivityId) {
-        while self.insertion_costs_of_activity(id).is_none() {
+        while self.activity(id).insertion_costs().is_none() {
             // Active wait
         }
     }
@@ -375,7 +365,7 @@ impl Data {
     pub fn insert_activity(&mut self, id: ActivityId, insertion_time: Option<Time>) -> Result<()> {
         if let Some(insertion_time) = insertion_time {
             // We want to insert the activity
-            if let Some(possible_insertion_costs) = self.insertion_costs_of_activity(id) {
+            if let Some(possible_insertion_costs) = self.activity(id).insertion_costs() {
                 if possible_insertion_costs
                     .iter()
                     .any(|insertion_cost| insertion_cost.beginning == insertion_time)
@@ -439,7 +429,7 @@ impl Data {
 
         for (id, old_beginning) in activity_ids_and_old_beginnings {
             // Possible insertion times have been computed ?
-            if let Some(possible_insertion_times) = self.insertion_costs_of_activity(id) {
+            if let Some(possible_insertion_times) = self.activity(id).insertion_costs() {
                 if self.activities.insert_activity_in_spot_closest_to(
                     id,
                     old_beginning,

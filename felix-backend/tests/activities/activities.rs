@@ -394,13 +394,13 @@ fn set_activity_duration_check_insertion_costs_updated() {
             let id = data.activities_sorted()[0].id();
             data.wait_for_possible_insertion_costs_computation(id);
 
-            assert!(data.insertion_costs_of_activity(id).unwrap().len() > 1);
+            assert!(data.activity(id).insertion_costs().unwrap().len() > 1);
 
             // Change duration and check that possible beginnings are updated
             data.set_activity_duration(id, Time::new(4, 0)).expect("Could not set activtiy duration");
 
             data.wait_for_possible_insertion_costs_computation(id);
-            let insertion_costs = data.insertion_costs_of_activity(id).unwrap();
+            let insertion_costs = data.activity(id).insertion_costs().unwrap();
             assert_eq!(insertion_costs.len(), 1);
             assert_eq!(insertion_costs[0].beginning, Time::new(8, 0));
         }
@@ -559,7 +559,8 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
 
             // The only beginnings left are 10:00 and 12:00
             // (work hours are [10:00 - 13:00] with [11:00 - 12:00] taken by activity 1)
-            assert_eq!(data.insertion_costs_of_activity(id2)
+            assert_eq!(data.activity(id2)
+                       .insertion_costs()
                         .unwrap().iter().map(|insertion_cost| insertion_cost.beginning)
                         .collect::<BTreeSet<_>>(),
                        [Time::new(10, 0), Time::new(12, 0)].iter().copied().collect::<BTreeSet<_>>(),
@@ -593,7 +594,7 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
 
             // The only beginnings is 10:00
             // Activity duration is 01:00 and intersection of work hours is [10:00 - 11:00]
-            assert_eq!(data.insertion_costs_of_activity(id)
+            assert_eq!(data.activity(id).insertion_costs()
                        .unwrap().iter().map(|insertion_cost| insertion_cost.beginning)
                        .collect::<BTreeSet<_>>(),
                       [Time::new(10, 0)].iter().copied().collect::<BTreeSet<_>>(),
@@ -633,12 +634,11 @@ fn activities_with_empty_duration_not_taken_into_account_in_insertion_costs() {
             data.wait_for_possible_insertion_costs_computation(id2);
 
             // Make sure there are no insertion costs for empty duration (never calculated)
-            assert_eq!(data.insertion_costs_of_activity(id2), 
-                       Some(Vec::new()));
+            assert_eq!(data.activity(id2).insertion_costs(), Some(Vec::new()));
 
             // Make sure it does not affect other activities
             assert!(!data
-                .insertion_costs_of_activity(id1)
+                .activity(id1).insertion_costs()
                 .expect("We did not wait for possible insertion costs to be calculated")
                 .is_empty());
         }
@@ -675,12 +675,11 @@ fn activities_with_zero_participants_not_taken_into_account_in_insertion_costs()
             data.wait_for_possible_insertion_costs_computation(id2);
 
             // Make sure there are no insertion costs for zero participants activity (never calculated)
-            assert_eq!(data.insertion_costs_of_activity(id2), 
-                       Some(Vec::new()));
+            assert_eq!(data.activity(id2).insertion_costs(), Some(Vec::new()));
 
             // Make sure it does not affect other activities
-            assert!(!data
-                .insertion_costs_of_activity(id1)
+            assert!(!data.activity(id1)
+                    .insertion_costs()
                 .expect("We did not wait for possible insertion costs to be calculated")
                 .is_empty());
         }
@@ -719,7 +718,8 @@ fn possible_insertion_costs_compute_possible_insertions_of_incompatible_activiti
 
             // Check that insertion times for activity with one entity only have been computed
             // (if this result is empty, they haven't)
-            assert!(!data.insertion_costs_of_activity(id)
+            assert!(!data.activity(id)
+                    .insertion_costs()
                     .unwrap()
                     .is_empty(),
               "Incompatible activities beginnings were not updated and therefore possible insertion times are empty");
