@@ -804,7 +804,45 @@ fn possible_insertion_costs_updated_when_activity_removed_from_schedule() {
 }
 
 #[test]
-fn possible_insertion_costs_updated_when_incompatible_activity_duration_changes() {
+fn possible_insertion_costs_updated_when_not_inserted_incompatible_activity_duration_changes() {
+    let entity = "Paul";
+    test_ok!(
+        data,
+        DataBuilder::new()
+        .with_entities(vec![entity])
+        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+        .with_activities(vec![
+         Activity {
+            name: "Activity1",
+            entities: vec![entity],
+            duration: Time::new(1, 0),
+            ..Default::default()
+        },
+        Activity {
+            name: "Activity2",
+            entities: vec![entity],
+            duration: Time::new(1, 0),
+            ..Default::default()
+        }]
+        ),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            let id2 = data.activities_sorted()[1].id();
+
+            // Interval not taken by activity2 YET
+            assert!(data.activity(id1).insertion_costs().expect("Insertion costs not computed").iter().any(|insertion_cost| insertion_cost.beginning == Time::new(10, 0)));
+
+            data.set_activity_duration(id2, Time::new(3, 0)).expect("Could not set activity duration");
+            data.wait_for_possible_insertion_costs_computation(id1);
+
+            // Interval taken
+            assert!(data.activity(id1).insertion_costs().expect("Insertion costs not computed").iter().all(|insertion_cost| insertion_cost.beginning != Time::new(10, 0)));
+        }
+    );
+}
+
+#[test]
+fn possible_insertion_costs_updated_when_inserted_incompatible_activity_duration_changes() {
     let entity = "Paul";
     test_ok!(
         data,
@@ -835,12 +873,16 @@ fn possible_insertion_costs_updated_when_incompatible_activity_duration_changes(
 
             data.set_activity_duration(id2, Time::new(2, 0)).expect("Could not set activity duration");
             data.wait_for_possible_insertion_costs_computation(id1);
+            data.wait_for_possible_insertion_costs_computation(id2);
+
+            data.insert_activities_removed_because_duration_increased_in_closest_spot();
+            data.wait_for_possible_insertion_costs_computation(id1);
+            data.wait_for_possible_insertion_costs_computation(id2);
 
             // Interval taken
             assert!(data.activity(id1).insertion_costs().expect("Insertion costs not computed").iter().all(|insertion_cost| insertion_cost.beginning != Time::new(9, 0)));
         }
     );
-    
 }
 
 #[test]
@@ -849,7 +891,6 @@ fn possible_insertion_costs_updated_when_an_incompatible_activity_changes() {
     // TODO incompatible activity removed from schedule
     // TODO incompatible activity added (common participant)
     // TODO incompatible activity removed (no more common participant)
-    // TODO incompatible activity duration changes
     // TODO incompatible activity entity changes
 }
 

@@ -327,7 +327,7 @@ impl Data {
         self.activities.set_duration(id, new_duration);
 
         // Don't queue activity with no duration or participants
-        if new_duration != Time::new(0, 0) && !activity.entities_sorted().is_empty() {
+        if new_duration > Time::new(0, 0) && !activity.entities_sorted().is_empty() {
             self.queue_activity_participants(self.activity(id));
         }
 
@@ -409,11 +409,13 @@ impl Data {
                 .borrow_mut()
                 .emit_activity_inserted(self, &self.activity(id));
 
+            // TODO remove condition and always queue
             // If the activity has no entities or no duration, it is useless to queue it.
             // This also makes sure that its insertion costs are not invalidated here.
             if !self.activity(id).entities_sorted().is_empty()
                 && self.activity(id).duration() > Time::new(0, 0)
             {
+                println!("Queuing activity");
                 self.queue_activity_participants(self.activity(id));
             }
             Ok(())
@@ -428,17 +430,16 @@ impl Data {
             .get_activities_removed_because_duration_increased();
 
         for (id, old_beginning) in activity_ids_and_old_beginnings {
-            // Possible insertion times have been computed ?
             if let Some(possible_insertion_times) = self.activity(id).insertion_costs() {
-                if self.activities.insert_activity_in_spot_closest_to(
+                // Possible insertion times have been computed
+                if let Some(closest_spot) = self.activities.get_closest_spot_to_insert_activity(
                     id,
                     old_beginning,
                     possible_insertion_times,
                 ) {
-                    // Insertion was succesful
-                    self.events()
-                        .borrow_mut()
-                        .emit_activity_inserted(self, &self.activity(id));
+                    // Activity can be inserted
+                    self.insert_activity(id, Some(closest_spot))
+                        .expect("Activity could not be inserted, but we computed that it could");
                 }
             }
         }

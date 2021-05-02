@@ -348,29 +348,29 @@ impl Activities {
             .insert(id, insertion_beginning);
     }
 
-    /// Tries to insert the given activity in the spot which is the closest to the given beginning.
-    /// If the activity is inserted succesfuly, returns true.
+    /// Returns the closest insertion spot to the given beginning for the given activity.
+    /// If the activity cannot be inserted, returns None.
     ///
     /// # Panics
     ///
-    /// Panics if the activity is not found. This should never happen as this function is only
-    /// called internally (no invalid user input).
-    pub fn insert_activity_in_spot_closest_to(
+    /// Panics if the id is invalid.
+    pub fn get_closest_spot_to_insert_activity(
         &mut self,
         id: ActivityId,
         ideal_beginning: Time,
         possible_beginnings: Vec<InsertionCost>,
-    ) -> bool {
+    ) -> Option<Time> {
         // We remove this activity from the list of activities to insert back.
         self.activities_removed_because_duration_increased
             .remove(&id);
 
         // We try to insert the activity.
-        if let Some(closest_spot) = possible_beginnings
+        possible_beginnings
             .into_iter()
-            // Map into (time_distance, beginning) tuples
+            // Map into (time_difference, beginning) tuples
             .map(|insertion_cost| {
                 let beginning = insertion_cost.beginning;
+                // Abs with usize => avoid substract with overflow
                 if beginning > ideal_beginning {
                     (beginning - ideal_beginning, beginning)
                 } else {
@@ -382,12 +382,8 @@ impl Activities {
             // If two distances are equal, takes the one with the smallest beginning (default tuple
             // Ord behaviour).
             .min()
-        {
-            self.insert_activity(id, Some(closest_spot.1));
-            true
-        } else {
-            false
-        }
+            // Only return the beginning and not the time difference
+            .map(|closest_spot| closest_spot.1)
     }
 
     /// Associates each computation data to its rightful activity then overwrites it.
