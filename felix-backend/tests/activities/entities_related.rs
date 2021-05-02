@@ -5,6 +5,7 @@
 //! - Addition of entities to the activity
 //! - Deletion of entities from the activity
 //! - Changing the duration of the activity (makes sure all entities have enough time)
+//! - Making sure insertion costs change when entities are added / removed
 
 use felix_backend::data::{Time, TimeInterval};
 use test_utils::{Activity, DataBuilder};
@@ -342,4 +343,77 @@ fn set_activity_duration_not_enough_free_time() {
         "Entity will not have enough time if the duration of 'Activity' is increased.",
         "Could set duration where an entity has not enough free time"
     );
+}
+
+// *** Insertion costs ***
+#[test]
+fn add_entity_to_activity_check_insertion_costs_updated() {
+    let entity_name = "Charles";
+    test_ok!(data,
+             DataBuilder::new()
+             .with_entity(entity_name)
+             .with_work_interval_of_duration(1)
+             .with_activity(Activity {
+                duration: Time::new(0, 30),
+                ..Default::default()
+             }),
+     {
+        let id = data.activities_sorted()[0].id();
+        assert_eq!(data.activity(id).insertion_costs(), Some(Vec::new()));
+        data.add_entity_to_activity(id, entity_name).expect("Could not add entity to activity");
+
+        data.wait_for_possible_insertion_costs_computation(id);
+        assert!(data.activity(id).insertion_costs().expect("Insertion costs were not computed").len() > 1);
+     });
+}
+
+#[test]
+fn remove_entity_from_activity_check_insertion_costs_updated() {
+    let (entity1, entity2) = ("Charles", "Gaspard");
+    test_ok!(data,
+             DataBuilder::new()
+             .with_entities(vec![entity1, entity2])
+             .with_custom_work_interval_for(entity1, TimeInterval::new(Time::new(10, 0), Time::new(12, 0)))
+             .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+             .with_activity(Activity {
+                duration: Time::new(0, 30),
+                entities: vec![entity1, entity2],
+                ..Default::default()
+             }),
+     {
+        let id = data.activities_sorted()[0].id();
+        let insertion_costs = data.activity(id).insertion_costs().expect("Insertion costs were not computed");
+        assert!(insertion_costs.len() > 1);
+
+        data.remove_entity_from_activity(id, entity1).expect("Could not add entity to activity");
+        data.wait_for_possible_insertion_costs_computation(id);
+
+        // Check that insertion costs are still valid and different from the previous ones
+        let new_insertion_costs = data.activity(id).insertion_costs().expect("Insertion costs were not computed");
+        assert!(new_insertion_costs.len() > 1);
+        assert!(insertion_costs != new_insertion_costs);
+     });
+}
+
+#[test]
+fn remove_last_entity_from_activity_check_insertion_costs_updated() {
+    let entity_name = "Charles";
+    test_ok!(data,
+             DataBuilder::new()
+             .with_entity(entity_name)
+             .with_work_interval_of_duration(1)
+             .with_activity(Activity {
+                duration: Time::new(0, 30),
+                entities: vec![entity_name],
+                ..Default::default()
+             }),
+     {
+        let id = data.activities_sorted()[0].id();
+        assert!(data.activity(id).insertion_costs().expect("Insertion costs were not computed").len() > 1);
+        data.remove_entity_from_activity(id, entity_name).expect("Could not remove entity from activity");
+
+        // No more participants => Empty insertion costs
+        data.wait_for_possible_insertion_costs_computation(id);
+        assert_eq!(data.activity(id).insertion_costs(), Some(Vec::new()));
+     });
 }

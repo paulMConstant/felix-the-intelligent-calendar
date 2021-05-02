@@ -373,3 +373,50 @@ fn remove_group_from_activity_check_entities_in_other_groups_stay() {
         }
     );
 }
+
+#[test]
+fn add_group_to_activity_check_insertion_costs_updated() {
+    let entity_name = "Charles";
+    let group_name = "Group";
+    test_ok!(data,
+             DataBuilder::new()
+             .with_entity(entity_name)
+             .with_group(Group { name: group_name, entities: vec![entity_name] })
+             .with_work_interval_of_duration(1)
+             .with_activity(Activity::default()),
+     {
+        let id = data.activities_sorted()[0].id();
+        assert_eq!(data.activity(id).insertion_costs(), Some(Vec::new()));
+        data.add_group_to_activity(id, group_name).expect("Could not add group to activity");
+
+        // Added one participant => insertion costs updated
+        data.wait_for_possible_insertion_costs_computation(id);
+        assert!(data.activity(id).insertion_costs().expect("Insertion costs were not computed").len() > 1);
+     });
+}
+
+#[test]
+fn remove_group_from_activity_check_insertion_costs_updated() {
+    let entity_name = "Charles";
+    let group_name = "Group";
+    test_ok!(data,
+             DataBuilder::new()
+             .with_entity(entity_name)
+             .with_group(Group { name: group_name, entities: vec![entity_name] })
+             .with_work_interval_of_duration(1)
+             .with_activity(Activity {
+                groups: vec![group_name],
+                ..Default::default()
+             }),
+     {
+        let id = data.activities_sorted()[0].id();
+        assert!(data.activity(id).insertion_costs().expect("Insertion costs were not computed").len() > 1);
+        data.remove_group_from_activity(id, group_name).expect("Could not remove group from activity");
+
+        // Removed one participant => insertion costs updated
+        data.wait_for_possible_insertion_costs_computation(id);
+        assert_eq!(data.activity(id).insertion_costs(), Some(Vec::new()));
+     });
+}
+
+

@@ -49,6 +49,7 @@ impl Data {
         // For each activity
         // Gather all of its participants
         let activities_to_update = self.activities_of_entities_with_non_empty_duration(&entities);
+
         // Compute their schedule
         let schedules_of_all_participants =
             self.schedules_of_entities_in_activities(&activities_to_update);

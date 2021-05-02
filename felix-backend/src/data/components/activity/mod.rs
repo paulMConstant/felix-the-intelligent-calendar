@@ -96,7 +96,7 @@ impl Activity {
     /// Returns the possible insertion times with their respective costs.
     /// If None is returned, then they haven't been computed yet.
     #[must_use]
-    pub(crate) fn insertion_costs(&self) -> ActivityInsertionCosts {
+    pub fn insertion_costs(&self) -> ActivityInsertionCosts {
         self.computation_data
             .insertion_costs()
             .lock()

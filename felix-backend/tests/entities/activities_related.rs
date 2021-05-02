@@ -62,3 +62,26 @@ fn remove_entity_check_remove_in_activity() {
         }
     );
 }
+
+#[test]
+fn remove_entity_check_activity_insertion_costs_updated() {
+    let entity = "Jean";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_work_interval_of_duration(4)
+            .with_entity(entity)
+            .with_activity(Activity {
+                entities: vec![entity],
+                ..Default::default()
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            assert!(data.activity(id).insertion_costs().expect("Insertion costs were not computed").len() > 1);
+            data.remove_entity(entity).expect("Could not remove entity");
+
+            data.wait_for_possible_insertion_costs_computation(id);
+            assert_eq!(data.activity(id).insertion_costs(), Some(Vec::new()));
+        }
+    );
+}

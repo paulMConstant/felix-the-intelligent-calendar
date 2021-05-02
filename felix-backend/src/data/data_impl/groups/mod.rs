@@ -62,10 +62,22 @@ impl Data {
             .groups_sorted()
             .into_iter()
             .position(|group| group.name() == name);
+
+        // Remove group in all activities
+        for id in self
+            .activities_not_sorted()
+            .iter()
+            .map(|activity| activity.id())
+            .collect::<Vec<_>>()
+        {
+            // If the group is already out of the activity, ok
+            let _ = self.remove_group_from_activity(id, &name);
+        }
+
         self.groups.remove(&name)?;
-        self.activities.remove_group_from_all(&name);
         let position_of_removed_group =
             position_of_removed_group.expect("Group was removed so it should have existed");
+
         self.events()
             .borrow_mut()
             .emit_group_removed(self, position_of_removed_group);

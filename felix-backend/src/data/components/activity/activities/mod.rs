@@ -187,19 +187,34 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn remove_entity(&mut self, id: ActivityId, entity: &str) -> Result<()> {
-        self.mutate_activity(id, |a| a.metadata.remove_entity(entity))?;
+        self.mutate_activity(id, |a| -> Result<()> {
+            a.metadata.remove_entity(entity)?;
+            if a.metadata.entities_sorted().is_empty() {
+                // TODO comment out this line and make tests fail
+                *a.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
+            }
+            Ok(())
+        })?;
         self.update_incompatible_activities();
         Ok(())
     }
 
+    // TODO remove this ! All operations should pass by the data collection.
     /// Removes the entity with given name from all activities.
     pub fn remove_entity_from_all(&mut self, entity: &str) {
-        for activity in self.activities.lock().unwrap().iter_mut() {
+        let ids = self
+            .activities
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|activity| activity.id())
+            .collect::<Vec<_>>();
+
+        for id in ids {
             // We don't care about the result : if the entity is not
             // taking part in the activity, that is what we want in the first place
-            let _ = activity.metadata.remove_entity(entity);
+            let _ = self.remove_entity(id, &entity);
         }
-        self.update_incompatible_activities();
     }
 
     /// Renames the entity with given name in all activities.
@@ -231,17 +246,9 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn remove_group(&mut self, id: ActivityId, group_name: &str) -> Result<()> {
-        self.mutate_activity(id, |a| a.metadata.remove_group(group_name))
-    }
-
-    /// Removes the group with the given name from all activities.
-    pub fn remove_group_from_all(&mut self, group: &str) {
-        for activity in self.activities.lock().unwrap().iter_mut() {
-            // We don't care about the result: if the group is not in the activity, this
-            // is what we want.
-            let _ = activity.metadata.remove_group(group);
-        }
+        self.mutate_activity(id, |a| a.metadata.remove_group(group_name))?;
         self.update_incompatible_activities();
+        Ok(())
     }
 
     /// Renames the group with given name in all activities.
@@ -259,7 +266,13 @@ impl Activities {
     ///
     /// Panics if the activity with given ID does not exist.
     pub fn set_duration(&mut self, id: ActivityId, duration: Time) {
-        self.mutate_activity(id, |a| a.computation_data.set_duration(duration));
+        self.mutate_activity(id, |a| {
+            a.computation_data.set_duration(duration);
+            // Empty duration => Set insertion costs to computed but empty
+            if duration == Time::new(0, 0) {
+                *a.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
+            }
+        });
     }
 
     /// Sets the color of the activity with the given id.
@@ -291,7 +304,13 @@ impl Activities {
     ///
     /// Panics if the activity with given ID is not found.
     pub fn insert_activity(&mut self, id: ActivityId, beginning: Option<Time>) {
-        self.mutate_activity(id, |a| a.computation_data.insert(beginning));
+        self.mutate_activity(id, |a| {
+            a.computation_data.insert(beginning);
+            if a.metadata.entities_sorted().is_empty() {
+                // No participants => Set insertion costs to computed but empty
+                *a.computation_data.insertion_costs().lock().unwrap() = Some(Vec::new());
+            }
+        });
     }
 
     /// Updates the schedules of the participants of the activity with given id.

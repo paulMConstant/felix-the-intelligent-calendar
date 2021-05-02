@@ -32,7 +32,7 @@ impl ActivityComputationData {
         ActivityComputationData {
             duration: MIN_TIME_DISCRETIZATION,
             insertion_interval: None,
-            insertion_costs: Arc::new(Mutex::new(None)),
+            insertion_costs: Arc::new(Mutex::new(Some(Vec::new()))),
             incompatible_activity_ids: Vec::new(),
             schedules_of_participants: Vec::new(),
         }

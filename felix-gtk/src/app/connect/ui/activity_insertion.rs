@@ -169,9 +169,7 @@ impl App {
                     // Try to insert the activity in the best spot
                     let mut data = data.borrow_mut();
 
-                    if let Some(insertion_costs) =
-                        data.possible_insertion_times_of_activity_with_associated_cost(id)
-                    {
+                    if let Some(insertion_costs) = data.insertion_costs_of_activity(id) {
                         if let Some(best_spot) = insertion_costs
                             .iter()
                             .min_by_key(|insertion_cost| insertion_cost.cost)
@@ -288,8 +286,7 @@ impl App {
                 let data = data.borrow();
                 let activity_participants = data.activity(id).entities_sorted();
 
-                let maybe_possible_insertion_times =
-                    data.possible_insertion_times_of_activity_with_associated_cost(id);
+                let maybe_possible_insertion_times = data.insertion_costs_of_activity(id);
 
                 EntitiesAndInsertionTimes {
                     entities: activity_participants,
@@ -299,10 +296,12 @@ impl App {
 
         let data = self.data.clone();
         let remove_activity_from_schedule_callback = Rc::new(Box::new(move |id: ActivityId| {
-            // Error should never happen here
-            data.borrow_mut()
-                .insert_activity(id, None)
-                .expect("Could not remove activity from schedule");
+            let mut data = data.borrow_mut();
+
+            if data.activity(id).insertion_interval().is_some() {
+                data.insert_activity(id, None)
+                    .expect("Could not remove activity from schedule");
+            }
         }));
 
         self.ui.borrow_mut().set_activity_ui_callbacks(

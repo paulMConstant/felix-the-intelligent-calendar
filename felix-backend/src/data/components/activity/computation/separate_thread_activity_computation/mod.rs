@@ -3,7 +3,7 @@ mod computation_done_semaphore;
 mod insertion_costs_updater;
 mod thread_pool;
 
-use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity};
+use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity, Time};
 
 use computation_done_semaphore::Semaphore;
 use felix_computation_api::find_possible_beginnings;
@@ -134,16 +134,14 @@ impl SeparateThreadActivityComputation {
 /// Sets the possible insertion costs of the activities to None.
 fn invalidate_activities(activities: Arc<Mutex<Vec<Activity>>>) {
     // TODO move this elsewhere
-    for activity in activities.lock().unwrap().iter() {
-        let insertion_costs = activity.computation_data.insertion_costs();
+    for activity in activities
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|a| a.duration() > Time::new(0, 0) && !a.entities_sorted().is_empty())
+    {
         // Invalidate current possible insertions
-        *insertion_costs.lock().unwrap() = None;
-    }
-}
-
-impl Drop for SeparateThreadActivityComputation {
-    fn drop(&mut self) {
-        // TODO stop update insertion costs thread
+        *activity.computation_data.insertion_costs().lock().unwrap() = None;
     }
 }
 

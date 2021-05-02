@@ -58,6 +58,31 @@ fn remove_group_check_removed_in_activities() {
 }
 
 #[test]
+fn remove_group_check_insertion_costs_of_activity_updated() {
+    let group = "Group";
+    let entity = "Entity";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_work_interval_of_duration(4)
+            .with_entity(entity)
+            .with_group(Group { name: group, entities: vec![entity] })
+            .with_activity( Activity {
+                groups: vec![group],
+                ..Default::default()
+            }),
+        {
+            let id = data.activities_sorted()[0].id();
+            assert!(data.activity(id).insertion_costs().expect("Insertion costs were not computed").len() > 0);
+            
+            data.remove_group(group).expect("Could not remove group");
+            data.wait_for_possible_insertion_costs_computation(id);
+            // Last entity of the activity was removed
+            assert_eq!(data.activity(id).insertion_costs(), Some(Vec::new()))
+        });
+}
+
+#[test]
 fn add_entity_to_group_check_added_to_activities() {
     let (group, entity) = ("Group", "Entity");
     test_ok!(

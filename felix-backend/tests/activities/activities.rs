@@ -277,9 +277,7 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
         {
             let id = data.activities_sorted()[0].id();
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(9, 0));
-            while data.activity(id).insertion_interval().is_none() {
-                // Wait until insertion interval is updated
-            }
+            data.wait_for_possible_insertion_costs_computation(id);
 
             assert_eq!(
                 data.activity(id).insertion_interval(),
@@ -289,9 +287,8 @@ fn decrease_activity_duration_check_insertion_interval_updated() {
             // Decrease the duration, check that the insertion interval is still valid
             data.set_activity_duration(id, Time::new(0, 30)).unwrap();
             let expected_insertion_interval = TimeInterval::new(Time::new(8, 00), Time::new(8, 30));
-            while data.activity(id).insertion_interval().is_none() {
-                // Wait until insertion interval is updated
-            }
+            data.wait_for_possible_insertion_costs_computation(id);
+
             assert_eq!(
                 data.activity(id).insertion_interval(),
                 Some(expected_insertion_interval)
@@ -366,12 +363,7 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
             assert_eq!(activity.insertion_interval(), expected_insertion_interval);
 
             // Wait for computation result
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                .is_none()
-            {
-                // For the purpose of this test, wait for asynchronous computation of possible beginnings.
-            }
+            data.wait_for_possible_insertion_costs_computation(id);
 
             // Ask data to find the closest spot for the activity
             data.insert_activities_removed_because_duration_increased_in_closest_spot();
@@ -381,6 +373,36 @@ fn increase_activity_duration_then_insert_activity_automatically_in_closest_spot
                 .expect("Activity was not reinserted in the schedule")
                 .beginning();
             assert_eq!(insertion_beginning, Time::new(8, 0));
+        }
+    );
+}
+
+#[test]
+fn set_activity_duration_check_insertion_costs_updated() {
+    let name = "Gaspard";
+    test_ok!(
+        data,
+        DataBuilder::new()
+        .with_work_interval(TimeInterval::new(Time::new(8, 0), Time::new(12, 0)))
+        .with_entity(name)
+        .with_activity(Activity { 
+            entities: vec![name],
+            duration: Time::new(1, 0),
+            ..Default::default()
+        }),
+        {
+            let id = data.activities_sorted()[0].id();
+            data.wait_for_possible_insertion_costs_computation(id);
+
+            assert!(data.insertion_costs_of_activity(id).unwrap().len() > 1);
+
+            // Change duration and check that possible beginnings are updated
+            data.set_activity_duration(id, Time::new(4, 0)).expect("Could not set activtiy duration");
+
+            data.wait_for_possible_insertion_costs_computation(id);
+            let insertion_costs = data.insertion_costs_of_activity(id).unwrap();
+            assert_eq!(insertion_costs.len(), 1);
+            assert_eq!(insertion_costs[0].beginning, Time::new(8, 0));
         }
     );
 }
@@ -425,12 +447,7 @@ fn basic_insert_activity() {
             }),
         {
             let id = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
+            data.wait_for_possible_insertion_costs_computation(id);
 
             let beginning = Time::new(10, 0);
             let expected_insertion_interval =
@@ -464,12 +481,7 @@ fn basic_insert_activity_invalid_time() {
         }),
         {
             let id = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                    .is_none()
-                    {
-                        // Wait for possible insertion times to be asynchronously calculated
-                    }
+            data.wait_for_possible_insertion_costs_computation(id);
 
             let beginning = Time::new(14, 0);
             data.insert_activity(id, Some(beginning))
@@ -507,12 +519,7 @@ fn insert_activity_invalid_time_overlaps() {
             }]),
         {
             let id = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
+            data.wait_for_possible_insertion_costs_computation(id);
 
             data.insert_activity(id, Some(beginning2))
         },
@@ -548,15 +555,11 @@ fn possible_insertion_times_takes_insertion_conflict_into_account() {
             ]),
         {
             let id2 = data.activities_sorted()[1].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id2)
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
+            data.wait_for_possible_insertion_costs_computation(id2);
+
             // The only beginnings left are 10:00 and 12:00
             // (work hours are [10:00 - 13:00] with [11:00 - 12:00] taken by activity 1)
-            assert_eq!(data.possible_insertion_times_of_activity_with_associated_cost(id2)
+            assert_eq!(data.insertion_costs_of_activity(id2)
                         .unwrap().iter().map(|insertion_cost| insertion_cost.beginning)
                         .collect::<BTreeSet<_>>(),
                        [Time::new(10, 0), Time::new(12, 0)].iter().copied().collect::<BTreeSet<_>>(),
@@ -586,15 +589,11 @@ fn possible_insertion_times_takes_heterogeneous_work_hours_of_participants_into_
             }),
         {
             let id = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
+            data.wait_for_possible_insertion_costs_computation(id);
+
             // The only beginnings is 10:00
             // Activity duration is 01:00 and intersection of work hours is [10:00 - 11:00]
-            assert_eq!(data.possible_insertion_times_of_activity_with_associated_cost(id)
+            assert_eq!(data.insertion_costs_of_activity(id)
                        .unwrap().iter().map(|insertion_cost| insertion_cost.beginning)
                        .collect::<BTreeSet<_>>(),
                       [Time::new(10, 0)].iter().copied().collect::<BTreeSet<_>>(),
@@ -622,6 +621,48 @@ fn activities_with_empty_duration_not_taken_into_account_in_insertion_costs() {
                 Activity {
                     name: "Activity2",
                     entities: vec![name1],
+                    duration: Time::new(0, 0),
+                    groups: Vec::new(),
+                    ..Default::default()
+                }
+            ]),
+        {
+            let id1 = data.activities_sorted()[0].id();
+            let id2 = data.activities_sorted()[1].id();
+            data.wait_for_possible_insertion_costs_computation(id1);
+            data.wait_for_possible_insertion_costs_computation(id2);
+
+            // Make sure there are no insertion costs for empty duration (never calculated)
+            assert_eq!(data.insertion_costs_of_activity(id2), 
+                       Some(Vec::new()));
+
+            // Make sure it does not affect other activities
+            assert!(!data
+                .insertion_costs_of_activity(id1)
+                .expect("We did not wait for possible insertion costs to be calculated")
+                .is_empty());
+        }
+    );
+}
+
+#[test]
+fn activities_with_zero_participants_not_taken_into_account_in_insertion_costs() {
+    let name1 = "Paul";
+    test_ok!(
+        data,
+        DataBuilder::new()
+            .with_entities(vec![name1])
+            .with_work_interval(TimeInterval::new(Time::new(10, 0), Time::new(13, 0)))
+            .with_activities(vec![
+                Activity {
+                    name: "Activity1",
+                    entities: vec![name1],
+                    duration: Time::new(1, 0),
+                    groups: Vec::new(),
+                    ..Default::default()
+                },
+                Activity {
+                    name: "Activity2",
                     duration: Time::new(1, 0),
                     groups: Vec::new(),
                     ..Default::default()
@@ -630,34 +671,16 @@ fn activities_with_empty_duration_not_taken_into_account_in_insertion_costs() {
         {
             let id1 = data.activities_sorted()[0].id();
             let id2 = data.activities_sorted()[1].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id1)
-                .is_none()
-                || data
-                    .possible_insertion_times_of_activity_with_associated_cost(id2)
-                    .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
+            data.wait_for_possible_insertion_costs_computation(id1);
+            data.wait_for_possible_insertion_costs_computation(id2);
 
-            // Set empty duration -> Will invalidate insertion times of every incompatible activity
-            data.set_activity_duration(id2, Time::new(0, 0))
-                .expect("Could not set activity duration");
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id1)
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
-
-            // Make sure there are no insertion costs for empty duration (never calculated)
-            assert!(data
-                .possible_insertion_times_of_activity_with_associated_cost(id2)
-                .is_none());
+            // Make sure there are no insertion costs for zero participants activity (never calculated)
+            assert_eq!(data.insertion_costs_of_activity(id2), 
+                       Some(Vec::new()));
 
             // Make sure it does not affect other activities
             assert!(!data
-                .possible_insertion_times_of_activity_with_associated_cost(id1)
+                .insertion_costs_of_activity(id1)
                 .expect("We did not wait for possible insertion costs to be calculated")
                 .is_empty());
         }
@@ -682,7 +705,7 @@ fn possible_insertion_costs_compute_possible_insertions_of_incompatible_activiti
                 ..Default::default()
             }),
         {
-            let id = data.activities_sorted()[0].id();
+            // Add new activity and make it incompatible with the current one
             data.add_activity("Other activity")
                 .expect("Could not add activity");
             let other_id = data.activities_sorted()[1].id();
@@ -691,16 +714,12 @@ fn possible_insertion_costs_compute_possible_insertions_of_incompatible_activiti
             data.add_entity_to_activity(other_id, name1)
                 .expect("Could not add participant to activity");
 
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id)
-                .is_none()
-            {
-                // Wait for possible insertion times to be asynchronously calculated
-            }
+            let id = data.activities_sorted()[0].id();
+            data.wait_for_possible_insertion_costs_computation(id);
 
             // Check that insertion times for activity with one entity only have been computed
             // (if this result is empty, they haven't)
-            assert!(!data.possible_insertion_times_of_activity_with_associated_cost(id)
+            assert!(!data.insertion_costs_of_activity(id)
                     .unwrap()
                     .is_empty(),
               "Incompatible activities beginnings were not updated and therefore possible insertion times are empty");
@@ -733,23 +752,33 @@ fn possible_insertion_costs_updated_when_activity_inserted() {
         {
             let id1 = data.activities_sorted()[0].id();
             let id2 = data.activities_sorted()[1].id();
-            while data.possible_insertion_times_of_activity_with_associated_cost(id1).is_none()
-                || data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none()
-            {
-                // Wait for computation
-            }
+            data.wait_for_possible_insertion_costs_computation(id1);
+            data.wait_for_possible_insertion_costs_computation(id2);
 
             data.insert_activity(id1, Some(Time::new(8, 30))).expect("Could not insert activity");
 
-            while data.possible_insertion_times_of_activity_with_associated_cost(id2).is_none() {
-                // Wait for computation
-            }
+            data.wait_for_possible_insertion_costs_computation(id2);
 
             data.insert_activity(id2, Some(Time::new(8, 0)))
         },
         "Activity2 cannot be inserted with beginning 08:00 because it would overlap with 'Activity1'.",
         "Possible insertion costs were not updated when activity was inserted"
     );
+}
+
+#[test]
+fn possible_insertion_costs_updated_when_activity_removed_from_schedule() {
+    // TODO
+}
+
+#[test]
+fn possible_insertion_costs_updated_when_an_incompatible_activity_changes() {
+    // TODO incompatible activity inserted
+    // TODO incompatible activity removed from schedule
+    // TODO incompatible activity added (common participant)
+    // TODO incompatible activity removed (no more common participant)
+    // TODO incompatible activity duration changes
+    // TODO incompatible activity entity changes
 }
 
 #[test]
@@ -776,12 +805,7 @@ fn autoinsertion_launches_and_ignores_activities_with_zero_duration() {
             ]),
         {
             let id1 = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id1)
-                .is_none()
-            {
-                // Wait for computation
-            }
+            data.wait_for_possible_insertion_costs_computation(id1);
 
             let autoinsertion_handle = data.start_autoinsertion().expect(
                 "Could not start autoinsertion: results should be computed for valid activities",
@@ -817,12 +841,7 @@ fn autoinsertion_launches_and_ignores_activities_with_no_participants() {
             ]),
         {
             let id1 = data.activities_sorted()[0].id();
-            while data
-                .possible_insertion_times_of_activity_with_associated_cost(id1)
-                .is_none()
-            {
-                // Wait for computation
-            }
+            data.wait_for_possible_insertion_costs_computation(id1);
 
             let autoinsertion_handle = data.start_autoinsertion().expect(
                 "Could not start autoinsertion: results should be computed for valid activities",

@@ -64,11 +64,15 @@ impl Data {
     /// # Panics
     ///
     /// Panics if the activity is not found.
-    pub fn possible_insertion_times_of_activity_with_associated_cost(
-        &self,
-        id: ActivityId,
-    ) -> ActivityInsertionCosts {
+    pub fn insertion_costs_of_activity(&self, id: ActivityId) -> ActivityInsertionCosts {
         self.activities.get_by_id(id).insertion_costs()
+    }
+
+    /// Waits until the insertion costs of an activity have been computed.
+    pub fn wait_for_possible_insertion_costs_computation(&self, id: ActivityId) {
+        while self.insertion_costs_of_activity(id).is_none() {
+            // Active wait
+        }
     }
 
     /// Adds an activity with the formatted given name.
@@ -160,9 +164,14 @@ impl Data {
         // Remove the entity from the activity
         self.activities.remove_entity(id, &entity_name)?;
 
+        // Queue the entity which was just removed
+        // TODO add test here: entity schedule changes when entity removed from one activity
+        // After adding tests, comment self.queue_entities line and see if tests fail
         self.queue_entities(vec![entity_name]);
 
-        if self.activity(id).entities_sorted().is_empty() {
+        if self.activity(id).entities_sorted().is_empty()
+            || self.activity(id).duration() == Time::new(0, 0)
+        {
             // Remove activity from schedule because it has no participants anymore
             self.insert_activity(id, None)?;
         } else {
@@ -206,13 +215,17 @@ impl Data {
         // Add each entity in the group to the activity.
         // We do not care about the result: if the entity is already in the activity, it is fine.
         for entity_name in entities {
-            let _ = self.activities.add_entity(id, entity_name);
+            let _ = self.add_entity_to_activity(id, entity_name);
         }
 
         // Add the group to the activity
         self.activities.add_group(id, clean_string(group_name)?)?;
 
-        self.queue_activity_participants(self.activity(id).clone());
+        if !self.activity(id).entities_sorted().is_empty()
+            && self.activity(id).duration() > Time::new(0, 0)
+        {
+            self.queue_activity_participants(self.activity(id).clone());
+        }
 
         self.events()
             .borrow_mut()
@@ -242,17 +255,22 @@ impl Data {
         // Check that the group exists and get name formatted
         let group_name = self.group(group_name)?.name();
 
+        self.activities.remove_group(id, &group_name)?;
+
         let entities_to_remove =
             self.entities_participating_through_this_group_only(id, &group_name)?;
 
         for entity_name in &entities_to_remove {
-            // The entity may not be in the activity if excluded from group.
-            let _ = self.activities.remove_entity(id, entity_name);
+            // The entity may already be out of the activity if excluded from group.
+            // Therefore, don't check for errors.
+            let _ = self.remove_entity_from_activity(id, entity_name);
         }
 
-        self.activities.remove_group(id, &group_name)?;
-
-        self.queue_activity_participants(self.activity(id).clone());
+        if self.activity(id).duration() > Time::new(0, 0)
+            && !self.activity(id).entities_sorted().is_empty()
+        {
+            self.queue_activity_participants(self.activity(id).clone());
+        }
 
         self.events()
             .borrow_mut()
@@ -308,19 +326,25 @@ impl Data {
                 // schedule.
                 self.activities.store_activity_was_inserted(id);
                 self.insert_activity(id, None)
-                    .expect("Could not remove activity from schedule. Thisis a bug.");
+                    .expect("Could not remove activity from schedule. This is a bug.");
             }
-        } else if new_duration == Time::new(0, 0) {
+        } else if new_duration == Time::new(0, 0) && activity.insertion_interval().is_some() {
             // Activity with empty duration cannot be inserted
             self.insert_activity(id, None)
                 .expect("Could not remove activity from schedule. This is a bug.");
         }
+
         self.activities.set_duration(id, new_duration);
 
-        self.queue_activity_participants(self.activity(id).clone());
+        // Don't queue activity with no duration or participants
+        if new_duration != Time::new(0, 0) && !activity.entities_sorted().is_empty() {
+            self.queue_activity_participants(self.activity(id).clone());
+        }
+
         self.events()
             .borrow_mut()
             .emit_activity_duration_changed(self, &self.activity(id));
+
         Ok(())
     }
 
@@ -351,9 +375,7 @@ impl Data {
     pub fn insert_activity(&mut self, id: ActivityId, insertion_time: Option<Time>) -> Result<()> {
         if let Some(insertion_time) = insertion_time {
             // We want to insert the activity
-            if let Some(possible_insertion_costs) =
-                self.possible_insertion_times_of_activity_with_associated_cost(id)
-            {
+            if let Some(possible_insertion_costs) = self.insertion_costs_of_activity(id) {
                 if possible_insertion_costs
                     .iter()
                     .any(|insertion_cost| insertion_cost.beginning == insertion_time)
@@ -390,12 +412,20 @@ impl Data {
                 ))
             }
         } else {
+            // TODO split function
             // Remove activity from schedule
             self.activities.insert_activity(id, None);
             self.events()
                 .borrow_mut()
                 .emit_activity_inserted(self, &self.activity(id));
-            self.queue_activity_participants(self.activity(id).clone());
+
+            // If the activity has no entities or no duration, it is useless to queue it.
+            // This also makes sure that its insertion costs are not invalidated here.
+            if !self.activity(id).entities_sorted().is_empty()
+                && self.activity(id).duration() > Time::new(0, 0)
+            {
+                self.queue_activity_participants(self.activity(id).clone());
+            }
             Ok(())
         }
     }
@@ -409,9 +439,7 @@ impl Data {
 
         for (id, old_beginning) in activity_ids_and_old_beginnings {
             // Possible insertion times have been computed ?
-            if let Some(possible_insertion_times) =
-                self.possible_insertion_times_of_activity_with_associated_cost(id)
-            {
+            if let Some(possible_insertion_times) = self.insertion_costs_of_activity(id) {
                 if self.activities.insert_activity_in_spot_closest_to(
                     id,
                     old_beginning,

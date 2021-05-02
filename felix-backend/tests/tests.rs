@@ -8,6 +8,7 @@ mod activities {
     mod activities;
     mod entities_related;
     mod groups_related;
+    mod work_hours_related;
 }
 
 mod entities {

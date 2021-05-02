@@ -268,7 +268,7 @@ fn test_activities_into_computation_data() {
 /// (by order of addition)
 /// and in felix-computation-api (by difficulty of insertion) are not inverted.
 #[test]
-fn test_possible_insertion_times_of_activity_with_associated_cost() {
+fn test_insertion_costs_of_activity() {
     let activity_collection = Activities::new();
     activity_collection.add("0".to_owned());
     activity_collection.add("1".to_owned());
