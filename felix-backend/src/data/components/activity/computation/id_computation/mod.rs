@@ -9,7 +9,7 @@ use crate::data::ActivityId;
 /// Generates the smallest unused id.
 pub fn generate_next_id(mut used_ids: Vec<ActivityId>) -> ActivityId {
     // Fetch the ids in ascending order.
-    used_ids.sort();
+    used_ids.sort_unstable();
 
     // If 0 is unused, assign it.
     if used_ids.is_empty() || used_ids[0] != 0 {

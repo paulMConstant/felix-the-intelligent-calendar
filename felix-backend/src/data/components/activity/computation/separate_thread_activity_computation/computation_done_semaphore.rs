@@ -70,16 +70,6 @@ impl Semaphore {
         *count += 1;
         self.cvar.notify_one();
     }
-
-    /// Acquires a resource of this semaphore, returning an RAII guard to
-    /// release the semaphore when dropped.
-    ///
-    /// This function is semantically equivalent to an `acquire` followed by a
-    /// `release` when the guard returned is dropped.
-    pub fn access(&self) -> SemaphoreGuard {
-        self.acquire();
-        SemaphoreGuard { sem: self }
-    }
 }
 
 impl<'a> Drop for SemaphoreGuard<'a> {
@@ -115,7 +105,7 @@ mod tests {
     #[test]
     fn test_sem_basic() {
         let s = Semaphore::new(1);
-        let _g = s.access();
+        let _g = s.acquire();
     }
 
     #[test]
@@ -123,9 +113,10 @@ mod tests {
         let s = Arc::new(Semaphore::new(1));
         let s2 = s.clone();
         let _t = thread::spawn(move || {
-            let _g = s2.access();
+            let _g = s2.acquire();
+            s2.release();
         });
-        let _g = s.access();
+        let _g = s.acquire();
     }
 
     #[test]
@@ -162,11 +153,12 @@ mod tests {
         let (tx1, rx1) = channel();
         let (tx2, rx2) = channel();
         let _t = thread::spawn(move || {
-            let _g = s2.access();
+            let _g = s2.acquire();
             let _ = rx2.recv();
             tx1.send(()).unwrap();
+            s2.release();
         });
-        let _g = s.access();
+        let _g = s.acquire();
         tx2.send(()).unwrap();
         rx1.recv().unwrap();
     }
@@ -177,13 +169,15 @@ mod tests {
         let s2 = s.clone();
         let (tx, rx) = channel();
         {
-            let _g = s.access();
+            let _g = s.acquire();
             thread::spawn(move || {
                 tx.send(()).unwrap();
-                drop(s2.access());
+                s2.acquire();
                 tx.send(()).unwrap();
+                s2.release();
             });
             rx.recv().unwrap(); // wait for child to come alive
+            s.release();
         }
         rx.recv().unwrap(); // wait for child to be done
     }

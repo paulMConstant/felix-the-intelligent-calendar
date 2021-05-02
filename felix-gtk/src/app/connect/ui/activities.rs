@@ -89,7 +89,7 @@ impl App {
                         .expect("Error when parsing activity ID from model");
 
                     let data = data.borrow();
-                    let activity = data.activity(activity_id).clone();
+                    let activity = data.activity(activity_id);
                     ui.borrow_mut().on_activity_selected(&data, activity);
                 }
             })

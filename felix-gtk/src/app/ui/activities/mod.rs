@@ -72,7 +72,7 @@ impl Ui {
 
     pub fn on_group_members_changed_update_activity(&mut self, data: &Data) {
         if let Some(current_activity) = &self.current_activity {
-            let activity = data.activity(current_activity.id()).clone();
+            let activity = data.activity(current_activity.id());
             self.update_current_activity(&data.groups_sorted(), Some(activity));
         }
     }

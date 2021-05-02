@@ -109,7 +109,7 @@ fn merge_beginnings_of_all_participants_of_each_activity(
 
         let insertion_scores = Some(if let Some(first_set) = first_set {
             first_set
-                .into_iter()
+                .iter()
                 .filter(|time| {
                     possible_beginnings_for_this_activity[1..]
                         .iter()

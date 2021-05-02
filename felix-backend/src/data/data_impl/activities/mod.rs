@@ -9,7 +9,7 @@ use crate::{
         components::activity::{
             activities_into_computation_data, activities_sorted_filtered_for_computation,
         },
-        Activity, ActivityId, ActivityInsertionCosts, Data, Rgba, Time,
+        Activity, ActivityId, Data, Rgba, Time,
     },
     errors::{invalid_insertion::InvalidInsertion, Result},
 };
@@ -166,7 +166,7 @@ impl Data {
             self.insert_activity(id, None)?;
         } else {
             // Queue the activity because it has one less participant
-            self.queue_activity_participants(self.activity(id).clone());
+            self.queue_activity_participants(self.activity(id));
         }
 
         self.events()
@@ -214,7 +214,7 @@ impl Data {
         if !self.activity(id).entities_sorted().is_empty()
             && self.activity(id).duration() > Time::new(0, 0)
         {
-            self.queue_activity_participants(self.activity(id).clone());
+            self.queue_activity_participants(self.activity(id));
         }
 
         self.events()
@@ -259,7 +259,7 @@ impl Data {
         if self.activity(id).duration() > Time::new(0, 0)
             && !self.activity(id).entities_sorted().is_empty()
         {
-            self.queue_activity_participants(self.activity(id).clone());
+            self.queue_activity_participants(self.activity(id));
         }
 
         self.events()
@@ -328,7 +328,7 @@ impl Data {
 
         // Don't queue activity with no duration or participants
         if new_duration != Time::new(0, 0) && !activity.entities_sorted().is_empty() {
-            self.queue_activity_participants(self.activity(id).clone());
+            self.queue_activity_participants(self.activity(id));
         }
 
         self.events()
@@ -374,7 +374,7 @@ impl Data {
                     self.events()
                         .borrow_mut()
                         .emit_activity_inserted(self, &self.activity(id));
-                    self.queue_activity_participants(self.activity(id).clone());
+                    self.queue_activity_participants(self.activity(id));
                     Ok(())
                 } else {
                     let activity = self.activity(id);
@@ -414,7 +414,7 @@ impl Data {
             if !self.activity(id).entities_sorted().is_empty()
                 && self.activity(id).duration() > Time::new(0, 0)
             {
-                self.queue_activity_participants(self.activity(id).clone());
+                self.queue_activity_participants(self.activity(id));
             }
             Ok(())
         }
