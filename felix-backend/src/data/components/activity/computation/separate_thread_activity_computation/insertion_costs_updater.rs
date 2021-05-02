@@ -147,11 +147,6 @@ fn compute_insertion_costs_for_each_activity(activities: &[Activity]) {
             })
             .collect();
 
-        println!(
-            "Store insertion costs for {:?}: {:?}",
-            activity.id(),
-            insertion_costs
-        );
         if let Ok(mut costs) = activity.computation_data.insertion_costs().lock() {
             *costs = Some(insertion_costs);
         }

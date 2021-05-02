@@ -50,13 +50,6 @@ impl Data {
         // Gather all of its participants
         let activities_to_update = self.activities_of_entities_with_non_empty_duration(&entities);
 
-        println!(
-            "Activities to update {:?}",
-            activities_to_update
-                .iter()
-                .map(|a| a.id())
-                .collect::<Vec<_>>()
-        );
         // Compute their schedule
         let schedules_of_all_participants =
             self.schedules_of_entities_in_activities(&activities_to_update);
@@ -129,11 +122,6 @@ impl Data {
                 .map(|entity| schedules[entity].clone())
                 .collect::<Vec<_>>();
 
-            println!(
-                "Schedules updated for {:?} : {:?}",
-                activity.id(),
-                schedules_of_participants_of_this_activity
-            );
             self.activities
                 .update_schedules_of_participants_of_activity(
                     activity.id(),

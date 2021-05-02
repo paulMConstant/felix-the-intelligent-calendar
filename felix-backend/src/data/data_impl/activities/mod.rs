@@ -415,7 +415,6 @@ impl Data {
             if !self.activity(id).entities_sorted().is_empty()
                 && self.activity(id).duration() > Time::new(0, 0)
             {
-                println!("Queuing activity");
                 self.queue_activity_participants(self.activity(id));
             }
             Ok(())
