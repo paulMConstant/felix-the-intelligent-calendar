@@ -39,4 +39,9 @@ impl Ui {
     pub fn notification_label(&self) -> gtk::Label {
         fetch_ui_from_builder!(self, "NotificationLabel")
     }
+
+    #[must_use]
+    pub fn clear_notification_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "ClearNotificationButton")
+    }
 }
