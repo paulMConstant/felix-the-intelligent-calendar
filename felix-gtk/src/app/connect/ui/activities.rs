@@ -120,7 +120,7 @@ impl App {
             self,
             activity_name_entry,
             activity_name_entry.connect_changed(move |entry| {
-                
+
             let activity_to_rename_id = ui
                 .borrow()
                 .current_activity()
@@ -424,7 +424,8 @@ impl App {
                         glib::Continue(false)
                     } else {
                         // We have got no solution - autoinsertion is done
-                        ui.borrow().notify_str(&tr("There is no solution for these activities"));
+                        ui.borrow()
+                            .notify_str(&tr("There is no solution for these activities"));
                         data.borrow()
                             .events()
                             .borrow_mut()

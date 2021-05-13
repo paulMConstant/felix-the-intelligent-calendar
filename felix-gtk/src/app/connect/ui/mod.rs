@@ -8,6 +8,6 @@ mod entities;
 mod groups;
 mod header;
 mod init_ui_with_existing_data;
+mod notification;
 mod work_hours;
 mod wrap_duration;
-mod notification;

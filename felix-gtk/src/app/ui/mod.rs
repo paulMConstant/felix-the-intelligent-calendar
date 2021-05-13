@@ -8,8 +8,8 @@ mod activities;
 mod activity_insertion;
 mod common;
 mod entities;
-mod notify;
 mod groups;
+mod notify;
 mod work_hours;
 
 use glib::signal::SignalHandlerId;

@@ -121,7 +121,10 @@ impl App {
                 if cleaned_input(&new_name) == group_to_rename {
                     return;
                 }
-                return_if_err!(ui, data.borrow_mut().set_group_name(group_to_rename, new_name));
+                return_if_err!(
+                    ui,
+                    data.borrow_mut().set_group_name(group_to_rename, new_name)
+                );
             })
         );
     }
