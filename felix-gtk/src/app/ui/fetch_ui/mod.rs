@@ -29,4 +29,14 @@ impl Ui {
     pub fn entity_and_group_completion_list_store(&self) -> gtk::ListStore {
         fetch_ui_from_builder!(self, "EntityAndGroupCompletionListStore")
     }
+
+    #[must_use]
+    pub fn notification_revealer(&self) -> gtk::Revealer {
+        fetch_ui_from_builder!(self, "NotificationRevealer")
+    }
+    
+    #[must_use]
+    pub fn notification_label(&self) -> gtk::Label {
+        fetch_ui_from_builder!(self, "NotificationLabel")
+    }
 }

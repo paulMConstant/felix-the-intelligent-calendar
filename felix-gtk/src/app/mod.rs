@@ -3,7 +3,6 @@ pub mod macros;
 
 pub mod app_builder;
 pub mod connect;
-pub mod notify;
 pub mod save_state;
 pub mod ui;
 

@@ -10,7 +10,6 @@ build = "build.rs"
 [dependencies]
 felix-backend = { path = "../felix-backend" }
 glib = "0.10.3"
-notify-rust = "4.0.0"
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 cairo-rs = "0.9"
 gdk = "0.13.0"

@@ -1,4 +1,3 @@
-use crate::app::notify::notify_err;
 use crate::app::App;
 
 use gtk::prelude::*;
@@ -11,13 +10,13 @@ use felix_backend::errors::invalid_interval::InvalidInterval;
 use felix_backend::errors::Result;
 
 macro_rules! reset_custom_work_hours_if_err {
-    ($data:ident, $operation:expr) => {
+    ($ui:ident, $data:ident, $operation:expr) => {
         if let Err(e) = $operation {
             $data
                 .events()
                 .borrow_mut()
                 .emit_custom_work_hours_changed(&$data);
-            notify_err(e);
+            $ui.notify_err(e);
             return;
         }
     };
@@ -76,17 +75,17 @@ impl App {
                                        interval_end_minutes => end_minutes);
 
             let mut data = data.borrow_mut();
+            let ui = ui.borrow();
 
             let beginning = Time::new(begin_hours, begin_minutes);
             let end = Time::new(end_hours, end_minutes);
 
             if beginning > end || end - beginning < MIN_TIME_DISCRETIZATION {
                 let error: Result<()> = Err(InvalidInterval::new());
-                reset_custom_work_hours_if_err!(data, error);
+                reset_custom_work_hours_if_err!(ui, data, error);
             }
 
             let current_entity = ui
-                .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = current_entity.custom_work_hours();
@@ -94,6 +93,7 @@ impl App {
 
             if position < work_hours.len() {
                 reset_custom_work_hours_if_err!(
+                    ui,
                     data,
                     data.update_custom_work_interval_for(
                         current_entity.name(),
@@ -103,6 +103,7 @@ impl App {
                 );
             } else {
                 reset_custom_work_hours_if_err!(
+                    ui,
                     data,
                     data.add_custom_work_interval_for(current_entity.name(), interval)
                 );
@@ -120,14 +121,15 @@ impl App {
         let data = self.data.clone();
         let work_hour_editing_done_callback = Rc::new(move |position| {
             let mut data = data.borrow_mut();
+            let ui = ui.borrow();
             let current_entity = ui
-                .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = current_entity.custom_work_hours();
 
             if position < work_hours.len() {
                 reset_custom_work_hours_if_err!(
+                    ui,
                     data,
                     data.remove_custom_work_interval_for(
                         current_entity.name(),

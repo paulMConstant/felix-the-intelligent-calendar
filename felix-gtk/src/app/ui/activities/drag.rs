@@ -102,10 +102,8 @@ impl Ui {
             let mut concerned_entities_and_possible_insertion_times =
                 get_possible_insertions_callback(selected_activity_id);
 
-            // TODO put the drawing in a separate thread
-            // Wait until computation is done
-            // Set insertion costs to Some([]) when duration = 0 or no participants.
-            // This way we know that None == not computed and None != no insertion times.
+            // TODO if possible beginnings of all activities have been computed, wait
+            // else, warn user that possible insertion times have not been computed
             while concerned_entities_and_possible_insertion_times
                 .insertion_times
                 .is_none()

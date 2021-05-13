@@ -728,7 +728,7 @@ fn possible_insertion_costs_compute_possible_insertions_of_incompatible_activiti
 }
 
 #[test]
-fn possible_insertion_costs_updated_when_activity_inserted() {
+fn possible_insertion_costs_updated_when_incompatible_activity_inserted() {
     let name1 = "Paul";
     test_err!(
         data,
@@ -765,7 +765,7 @@ fn possible_insertion_costs_updated_when_activity_inserted() {
 }
 
 #[test]
-fn possible_insertion_costs_updated_when_activity_removed_from_schedule() {
+fn possible_insertion_costs_updated_when_incompatible_activity_removed_from_schedule() {
     let entity = "Paul";
     test_ok!(
         data,
@@ -883,15 +883,6 @@ fn possible_insertion_costs_updated_when_inserted_incompatible_activity_duration
             assert!(data.activity(id1).insertion_costs().expect("Insertion costs not computed").iter().all(|insertion_cost| insertion_cost.beginning != Time::new(9, 0)));
         }
     );
-}
-
-#[test]
-fn possible_insertion_costs_updated_when_an_incompatible_activity_changes() {
-    // TODO incompatible activity inserted
-    // TODO incompatible activity removed from schedule
-    // TODO incompatible activity added (common participant)
-    // TODO incompatible activity removed (no more common participant)
-    // TODO incompatible activity entity changes
 }
 
 #[test]

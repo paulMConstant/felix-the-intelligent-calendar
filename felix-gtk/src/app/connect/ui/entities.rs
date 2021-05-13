@@ -32,7 +32,7 @@ impl App {
                 with_blocked_signals!($ui.borrow_mut(), $entry.set_text(""), $entry);
                 // If the name is empty, return without doing anything
                 no_notify_assign_or_return!(entity_name, clean_string(entity_name));
-                return_if_err!($data.borrow_mut().add_entity(&entity_name));
+                return_if_err!($ui, $data.borrow_mut().add_entity(&entity_name));
             };
         }
 
@@ -67,7 +67,7 @@ impl App {
             entities_tree_view.connect_cursor_changed(move |tree_view| {
                 let selected_entity = get_selection_from_treeview(&tree_view, ENTITY_NAME_COLUMN);
                 if let Some(entity_name) = selected_entity {
-                    assign_or_return!(entity, data.borrow().entity(entity_name));
+                    assign_or_return!(ui, entity, data.borrow().entity(entity_name));
                     ui.borrow_mut().on_entity_selected(entity);
                 }
             })
@@ -86,7 +86,7 @@ impl App {
                 let entity_to_remove = ui.borrow().current_entity().expect(
                     "Current entity should be selected before accessing any entity-related filed",
                 );
-                return_if_err!(data.borrow_mut().remove_entity(entity_to_remove.name()));
+                return_if_err!(ui, data.borrow_mut().remove_entity(entity_to_remove.name()));
             })
         );
     }
@@ -128,7 +128,7 @@ impl App {
                 let entity = ui.borrow().current_entity().as_ref().expect(
                     "Current entity should be selected before accessing any entity-related field",
             ).name();
-                return_if_err!(data.borrow_mut().set_entity_mail(entity, mail));
+                return_if_err!(ui, data.borrow_mut().set_entity_mail(entity, mail));
             })
         );
     }
@@ -147,7 +147,7 @@ impl App {
                     let entity = ui.borrow().current_entity().as_ref().expect(
                             "Current entity should be selected before accessing any entity-related field",
                             ).name();
-        return_if_err!(data.borrow_mut().set_send_mail_to(entity, send));
+        return_if_err!(ui, data.borrow_mut().set_send_mail_to(entity, send));
                 })
         );
     }

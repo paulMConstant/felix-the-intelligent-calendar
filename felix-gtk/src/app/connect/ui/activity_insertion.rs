@@ -1,5 +1,5 @@
 use crate::app::{
-    connect::ui::wrap_duration::wrap_duration, notify::notify_err, ui::EntitiesAndInsertionTimes,
+    connect::ui::wrap_duration::wrap_duration, ui::EntitiesAndInsertionTimes,
     ui::EntityToShow, App,
 };
 
@@ -49,7 +49,7 @@ impl App {
                     }
                 } else {
                     let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_show);
-                    notify_err(err);
+                    ui.notify_err(err);
                 }
                 })
             };
@@ -174,18 +174,18 @@ impl App {
                             .iter()
                             .min_by_key(|insertion_cost| insertion_cost.cost)
                         {
-                            return_if_err!(data.insert_activity(id, Some(best_spot.beginning)));
+                            return_if_err!(ui, data.insert_activity(id, Some(best_spot.beginning)));
                         } else {
                             // Insertion costs is empty
-                            return_if_err!(data.insert_activity(id, None));
+                            return_if_err!(ui, data.insert_activity(id, None));
                         }
                     } else {
                         // Insertion costs not computed yet
-                        return_if_err!(data.insert_activity(id, None));
+                        return_if_err!(ui, data.insert_activity(id, None));
                     }
                 } else {
                     // Remove the activity from the schedule
-                    return_if_err!(data.borrow_mut().insert_activity(id, None));
+                    return_if_err!(ui, data.borrow_mut().insert_activity(id, None));
                 }
             })
         );
@@ -222,7 +222,7 @@ impl App {
                 let new_beginning = wrap_duration(activity_beginning, Time::new(hours, minutes));
 
                 if let Err(e) = data.insert_activity(id, Some(new_beginning)) {
-                    notify_err(e);
+                    $ui.borrow().notify_err(e);
 
                     // Update the spinbuttons to the old value
                     $minutes_spin.set_value(activity_beginning.minutes() as f64);
@@ -312,6 +312,7 @@ impl App {
 
     fn init_set_activity_duration_callback(&self) {
         let data = self.data.clone();
+        let ui = self.ui.clone();
 
         self.ui
             .borrow_mut()
@@ -325,7 +326,7 @@ impl App {
                     } else {
                         activity_duration - MIN_TIME_DISCRETIZATION
                     };
-                    return_if_err!(data.set_activity_duration(id, new_duration));
+                    return_if_err!(ui, data.set_activity_duration(id, new_duration));
                 },
             )));
     }

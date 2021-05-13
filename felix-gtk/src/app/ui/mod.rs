@@ -8,6 +8,7 @@ mod activities;
 mod activity_insertion;
 mod common;
 mod entities;
+mod notify;
 mod groups;
 mod work_hours;
 

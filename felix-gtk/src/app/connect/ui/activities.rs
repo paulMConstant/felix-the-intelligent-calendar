@@ -5,8 +5,6 @@ use gettextrs::gettext as tr;
 
 use crate::app::{
     connect::ui::wrap_duration::wrap_duration,
-    notify::notify_err,
-    notify::toast_notify,
     ui::{activities_treeview_config::*, helpers::tree::get_selection_from_treeview},
     App,
 };
@@ -41,7 +39,7 @@ impl App {
                     with_blocked_signals!($ui.borrow_mut(), $activity_add_entry.set_text(""), $activity_add_entry);
 
                     no_notify_assign_or_return!(activity_name, clean_string(activity_name));
-                    return_if_err!($data.borrow_mut().add_activity(activity_name));
+                    return_if_err!($ui, $data.borrow_mut().add_activity(activity_name));
                 })
             };
         }
@@ -122,13 +120,15 @@ impl App {
             self,
             activity_name_entry,
             activity_name_entry.connect_changed(move |entry| {
-            let activity_to_rename_id = ui.borrow()
+                
+            let activity_to_rename_id = ui
+                .borrow()
                 .current_activity()
                 .expect("Current activity should be selected before accessing the activity name entry")
                 .id();
             let new_name = entry.get_text();
             no_notify_assign_or_return!(new_name, clean_string(new_name));
-            return_if_err!(data.borrow_mut().set_activity_name(activity_to_rename_id, new_name));
+            return_if_err!(ui, data.borrow_mut().set_activity_name(activity_to_rename_id, new_name));
             })
         );
     }
@@ -161,7 +161,7 @@ impl App {
                 let set_duration_result = data.set_activity_duration(id, new_duration);
 
                 if let Err(e) = set_duration_result {
-                    notify_err(e);
+                    $ui.borrow().notify_err(e);
 
                     // Update the spinbuttons to the old value
                     $minutes_spin.set_value(activity_duration.minutes() as f64);
@@ -215,7 +215,7 @@ impl App {
                     .expect("Current activity should be set before adding into it")
                     .id();
                 let entity_or_group_to_add = $entry.get_text();
-                with_blocked_signals!($ui.borrow_mut(), $entry.set_text(""), $entry);
+                with_blocked_signals!($ui.borrow(), $entry.set_text(""), $entry);
 
                 no_notify_assign_or_return!(
                     entity_or_group_to_add,
@@ -225,13 +225,13 @@ impl App {
                 let mut data = $data.borrow_mut();
                 if let Ok(entity) = data.entity(&entity_or_group_to_add) {
                     let entity_name = entity.name();
-                    return_if_err!(data.add_entity_to_activity(activity_id, entity_name));
+                    return_if_err!($ui, data.add_entity_to_activity(activity_id, entity_name));
                 } else if let Ok(group) = data.group(&entity_or_group_to_add) {
                     let group_name = group.name();
-                    return_if_err!(data.add_group_to_activity(activity_id, group_name));
+                    return_if_err!($ui, data.add_group_to_activity(activity_id, group_name));
                 } else {
                     let err = DoesNotExist::entity_does_not_exist(entity_or_group_to_add);
-                    notify_err(err);
+                    $ui.borrow().notify_err(err);
                 }
             })
             };
@@ -293,7 +293,7 @@ impl App {
 
             let current_activity_id = ui.borrow().current_activity().as_ref()
                 .expect("Current activity should be set before performing any action on a group").id();
-            return_if_err!(data.borrow_mut()
+            return_if_err!(ui, data.borrow_mut()
                 .remove_group_from_activity(current_activity_id, group_to_remove));
         }
             }));
@@ -334,10 +334,10 @@ impl App {
             let activity_entities = activity.entities_sorted();
 
             if activity_entities.contains(&entity_to_remove.to_owned()) {
-                return_if_err!(data.remove_entity_from_activity(current_activity_id, entity_to_remove));
+                return_if_err!(ui, data.remove_entity_from_activity(current_activity_id, entity_to_remove));
             } else {
                 // The entity was removed from a group of the activity and should be readded.
-                return_if_err!(data.add_entity_to_activity(current_activity_id, entity_to_remove));
+                return_if_err!(ui, data.add_entity_to_activity(current_activity_id, entity_to_remove));
             }
         }
             }));
@@ -385,12 +385,13 @@ impl App {
             self,
             autoinsert_button,
             autoinsert_button.connect_clicked(move |button| {
-                if !app.ui.borrow_mut().stop_autoinsertion_if_running() {
+                let ui = &app.ui;
+                if !ui.borrow_mut().stop_autoinsertion_if_running() {
                     // Autoinsertion was not running
                     // Start autoinsertion
-                    assign_or_return!(handle, app.data.borrow_mut().start_autoinsertion());
+                    assign_or_return!(ui, handle, app.data.borrow_mut().start_autoinsertion());
 
-                    *app.ui.borrow().autoinsertion_handle().borrow_mut() = Some(handle);
+                    *ui.borrow().autoinsertion_handle().borrow_mut() = Some(handle);
 
                     app.on_autoinsertion_started_start_polling_result();
                     button.set_label(&tr("Stop auto-insertion"));
@@ -423,7 +424,7 @@ impl App {
                         glib::Continue(false)
                     } else {
                         // We have got no solution - autoinsertion is done
-                        toast_notify(tr("Sorry"), tr("There is no solution for these activities"));
+                        ui.borrow().notify_str(&tr("There is no solution for these activities"));
                         data.borrow()
                             .events()
                             .borrow_mut()

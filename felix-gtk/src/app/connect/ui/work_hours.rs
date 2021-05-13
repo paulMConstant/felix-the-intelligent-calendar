@@ -1,4 +1,3 @@
-use crate::app::notify::notify_err;
 use crate::app::App;
 
 use gtk::prelude::*;
@@ -11,10 +10,10 @@ use felix_backend::errors::invalid_interval::InvalidInterval;
 use felix_backend::errors::Result;
 
 macro_rules! reset_work_hours_if_err {
-    ($data:ident, $operation:expr) => {
+    ($ui:ident, $data:ident, $operation:expr) => {
         if let Err(e) = $operation {
             $data.events().borrow_mut().emit_work_hours_changed(&$data);
-            notify_err(e);
+            $ui.notify_err(e);
             return;
         }
     };
@@ -54,8 +53,10 @@ impl App {
 
     fn set_work_hour_editing_done_callback(&self) {
         let data = self.data.clone();
+        let ui = self.ui.clone();
         let work_hour_editing_done_callback = Rc::new(move |position, builder: gtk::Builder| {
             let mut data = data.borrow_mut();
+            let ui = ui.borrow();
             let work_hours = data.work_hours();
 
             fetch_from_builder!(builder,
@@ -74,18 +75,19 @@ impl App {
             let end = Time::new(end_hours, end_minutes);
             if beginning > end || end - beginning < MIN_TIME_DISCRETIZATION {
                 let error: Result<()> = Err(InvalidInterval::new());
-                reset_work_hours_if_err!(data, error);
+                reset_work_hours_if_err!(ui, data, error);
             }
 
             let interval = TimeInterval::new(beginning, end);
 
             if position < work_hours.len() {
                 reset_work_hours_if_err!(
+                    ui,
                     data,
                     data.update_work_interval(work_hours[position], interval)
                 );
             } else {
-                reset_work_hours_if_err!(data, data.add_work_interval(interval));
+                reset_work_hours_if_err!(ui, data, data.add_work_interval(interval));
             }
         });
 
@@ -97,12 +99,14 @@ impl App {
 
     fn set_work_hour_remove_callback(&self) {
         let data = self.data.clone();
+        let ui = self.ui.clone();
         let work_hour_editing_done_callback = Rc::new(move |position| {
             let mut data = data.borrow_mut();
+            let ui = ui.borrow();
             let work_hours = data.work_hours();
 
             if position < work_hours.len() {
-                reset_work_hours_if_err!(data, data.remove_work_interval(work_hours[position]));
+                reset_work_hours_if_err!(ui, data, data.remove_work_interval(work_hours[position]));
             } else {
                 data.events().borrow_mut().emit_work_hours_changed(&data);
             }

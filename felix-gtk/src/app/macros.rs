@@ -62,11 +62,10 @@ macro_rules! with_blocked_signals {
 /// If the given expression fails, notifies the user and returns.
 /// Else, assigns the variable with given name to the result.
 macro_rules! assign_or_return {
-    ($var: ident, $expr: expr) => {
+    ($ui: ident, $var: ident, $expr: expr) => {
         let res = $expr;
         if let Err(e) = res {
-            use crate::app::notify::notify_err;
-            notify_err(e);
+            $ui.borrow().notify_err(e);
             return;
         }
         let $var = res.expect("Error case should have been taken care of in macro above");
@@ -104,10 +103,9 @@ macro_rules! no_notify_assign_or_return {
 
 /// If the given expression fails, notifies the user and returns.
 macro_rules! return_if_err {
-    ($expr: expr) => {
-        use crate::app::notify::notify_err;
+    ($ui: ident, $expr: expr) => {
         if let Err(e) = $expr {
-            notify_err(e);
+            $ui.borrow().notify_err(e);
             return;
         }
     };
