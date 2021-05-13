@@ -16,9 +16,10 @@ impl App {
         ));
 
         events.connect_entity_renamed(Box::new(
-            clone!(@strong self.ui as ui => move |data, entity, _old_name| {
+            clone!(@strong self.ui as ui => move |data, entity, old_name| {
                 let mut ui = ui.borrow_mut();
                 ui.on_entity_renamed(data, entity);
+                ui.on_entity_renamed_update_schedules(data, entity, old_name);
                 ui.on_group_members_changed(data);
                 ui.on_entities_or_groups_changed(data);
             }),
