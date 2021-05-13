@@ -409,7 +409,7 @@ impl Data {
                 .borrow_mut()
                 .emit_activity_inserted(self, &self.activity(id));
 
-            // TODO remove condition and always queue
+            // TODO remove condition and always queue (check done it queue)
             // If the activity has no entities or no duration, it is useless to queue it.
             // This also makes sure that its insertion costs are not invalidated here.
             if !self.activity(id).entities_sorted().is_empty()

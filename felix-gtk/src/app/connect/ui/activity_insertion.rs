@@ -15,6 +15,8 @@ use gtk::prelude::*;
 impl App {
     pub fn connect_activity_insertion(&self) {
         self.connect_show_schedule();
+        self.connect_clear_activities();
+
         self.connect_clicks();
         self.connect_drag_enable();
         self.connect_insert_activity_switch();
@@ -79,6 +81,21 @@ impl App {
                 show_schedule_entry
             ))
         );
+    }
+
+    fn connect_clear_activities(&self) {
+        fetch_from!(self.ui.borrow(), clear_activities_button);
+        let data = self.data.clone();
+
+        app_register_signal!(self, clear_activities_button,
+             clear_activities_button.connect_clicked(move |_| {
+                 let mut data = data.borrow_mut();
+            for id in data.activities_not_sorted().iter().map(|activity| activity.id()) {
+                // TODO faster way (remove all activities from schedule at once)
+                // We don't care if the activity is already out of the schedule
+                let _ = data.insert_activity(id, None);
+            }
+         }));
     }
 
     fn connect_clicks(&self) {

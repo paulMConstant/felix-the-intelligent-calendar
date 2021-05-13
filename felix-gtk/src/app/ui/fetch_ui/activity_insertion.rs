@@ -22,4 +22,9 @@ impl Ui {
     pub fn schedules_top_box(&self) -> gtk::Box {
         fetch_ui_from_builder!(self, "SchedulesTopBox")
     }
+
+    #[must_use]
+    pub fn clear_activities_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "ClearActivitiesButton")
+    }
 }

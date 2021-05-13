@@ -1,4 +1,3 @@
-// TODO timeout use crate::config;
 use crate::app::ui::Ui;
 use gtk::prelude::*;
 
