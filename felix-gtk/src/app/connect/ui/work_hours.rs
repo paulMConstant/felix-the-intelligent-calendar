@@ -13,7 +13,7 @@ macro_rules! reset_work_hours_if_err {
     ($ui:ident, $data:ident, $operation:expr) => {
         if let Err(e) = $operation {
             $data.events().borrow_mut().emit_work_hours_changed(&$data);
-            $ui.notify_err(e);
+            $ui.borrow().notify_err(e);
             return;
         }
     };
@@ -56,7 +56,6 @@ impl App {
         let ui = self.ui.clone();
         let work_hour_editing_done_callback = Rc::new(move |position, builder: gtk::Builder| {
             let mut data = data.borrow_mut();
-            let ui = ui.borrow();
             let work_hours = data.work_hours();
 
             fetch_from_builder!(builder,
@@ -102,7 +101,6 @@ impl App {
         let ui = self.ui.clone();
         let work_hour_editing_done_callback = Rc::new(move |position| {
             let mut data = data.borrow_mut();
-            let ui = ui.borrow();
             let work_hours = data.work_hours();
 
             if position < work_hours.len() {

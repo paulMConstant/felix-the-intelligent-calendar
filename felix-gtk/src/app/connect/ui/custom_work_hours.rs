@@ -16,7 +16,7 @@ macro_rules! reset_custom_work_hours_if_err {
                 .events()
                 .borrow_mut()
                 .emit_custom_work_hours_changed(&$data);
-            $ui.notify_err(e);
+            $ui.borrow().notify_err(e);
             return;
         }
     };
@@ -48,11 +48,11 @@ impl App {
             self,
             custom_work_hours_add_button,
             custom_work_hours_add_button.connect_clicked(move |_| {
-                let ui = ui.borrow_mut();
                 let current_entity = ui
+                    .borrow()
                     .current_entity()
                     .expect("Current entity should be set before adding custom work hours");
-                ui.on_add_custom_work_hour(current_entity.custom_work_hours());
+                ui.borrow_mut().on_add_custom_work_hour(current_entity.custom_work_hours());
             })
         );
     }
@@ -75,7 +75,6 @@ impl App {
                                        interval_end_minutes => end_minutes);
 
             let mut data = data.borrow_mut();
-            let ui = ui.borrow();
 
             let beginning = Time::new(begin_hours, begin_minutes);
             let end = Time::new(end_hours, end_minutes);
@@ -86,6 +85,7 @@ impl App {
             }
 
             let current_entity = ui
+                .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = current_entity.custom_work_hours();
@@ -121,8 +121,8 @@ impl App {
         let data = self.data.clone();
         let work_hour_editing_done_callback = Rc::new(move |position| {
             let mut data = data.borrow_mut();
-            let ui = ui.borrow();
             let current_entity = ui
+                .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = current_entity.custom_work_hours();
