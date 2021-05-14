@@ -134,7 +134,7 @@ impl WorkHoursBuilder {
         work_intervals_box
     }
 
-    /// Creates a new work interval and stores its builder in self.create_work_interval_builders.
+    /// Creates a new work interval and stores its builder in self.work_interval_builders.
     fn new_registered_work_interval(
         &self,
         interval: Option<TimeInterval>,
