@@ -15,7 +15,7 @@ macro_rules! reset_custom_work_hours_if_err {
             $data
                 .events()
                 .borrow_mut()
-                .emit_custom_work_hours_changed(&$data);
+                .emit_work_hours_changed(&$data);
             $ui.borrow().notify_err(e);
             return;
         }
@@ -139,7 +139,7 @@ impl App {
             } else {
                 data.events()
                     .borrow_mut()
-                    .emit_custom_work_hours_changed(&data);
+                    .emit_work_hours_changed(&data);
             }
         });
 

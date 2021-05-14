@@ -185,7 +185,9 @@ fn remove_custom_work_interval_enough_time_with_global_work_hours() {
              .with_work_interval(interval)
              .with_custom_work_interval_for(entity, custom_interval)
              .with_activity( Activity { entities: vec![entity], duration: Time::new(3, 0),  ..Default::default() }),
-    data.remove_custom_work_interval_for(entity, custom_interval).expect("Could not remove time interval even though the entity will have enough time with the global work hours"));
+    data
+    .remove_custom_work_interval_for(entity, custom_interval)
+    .expect("Could not remove time interval even though the entity will have enough time with the global work hours"));
 }
 
 #[test]

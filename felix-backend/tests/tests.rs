@@ -33,6 +33,7 @@ mod time {
 mod errors {
     mod add_entity_to_inserted_activity_invalid_spot;
     mod already_in;
+    mod change_work_hours_while_activity_inserted;
     mod does_not_exist;
     mod duration_too_short;
     mod empty_name;

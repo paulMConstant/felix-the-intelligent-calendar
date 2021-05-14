@@ -9,6 +9,7 @@ pub mod invalid_interval;
 pub mod name_taken;
 pub mod not_enough_time;
 pub mod not_in;
+pub mod change_work_hours_while_activity_inserted;
 
 use std::error::Error;
 

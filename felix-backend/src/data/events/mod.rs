@@ -14,7 +14,6 @@ create_events!(Events:
     entity_added { new_entity: &Entity },
     entity_removed { position_of_removed_entity: usize, name_of_removed_entity: &str },
     entity_renamed { entity: &Entity, old_name: &str },
-    custom_work_hours_changed {},
     group_added {new_group: &Group},
     group_removed {position_of_removed_group: usize },
     group_renamed {group: &Group},

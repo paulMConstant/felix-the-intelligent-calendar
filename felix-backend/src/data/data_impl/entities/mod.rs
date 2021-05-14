@@ -202,17 +202,15 @@ impl Data {
         // If this intervals overrides the global work hours,
         // check if the entity has enough free time
         let entity_name = clean_string(entity_name)?;
+        self.check_no_activity_inserted()?;
         self.check_entity_will_have_enough_time_with_custom_interval(
             &entity_name,
             interval.duration(),
         )?;
         self.entities
             .add_custom_work_interval_for(&entity_name, interval)?;
-        self.queue_entities(vec![entity_name]);
+        self.notify_work_hours_changed();
 
-        self.events()
-            .borrow_mut()
-            .emit_custom_work_hours_changed(self);
         Ok(())
     }
 
@@ -232,17 +230,15 @@ impl Data {
         let entity_name = clean_string(entity_name)?;
 
         self.check_entity_has_custom_interval(&entity_name, &interval)?;
+        self.check_no_activity_inserted()?;
         self.check_entity_will_have_enough_time_after_deletion_of_interval(
             &entity_name,
             interval.duration(),
         )?;
         self.entities
             .remove_custom_work_interval_for(&entity_name, interval)?;
-        self.queue_entities(vec![entity_name]);
 
-        self.events()
-            .borrow_mut()
-            .emit_custom_work_hours_changed(self);
+        self.notify_work_hours_changed();
         Ok(())
     }
 
@@ -264,6 +260,7 @@ impl Data {
         S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
+        self.check_no_activity_inserted()?;
         self.check_entity_has_custom_interval(&entity_name, &old_interval)?;
         self.check_entity_will_have_enough_time_after_update(
             &entity_name,
@@ -274,11 +271,7 @@ impl Data {
         self.entities
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
 
-        self.queue_entities(vec![entity_name]);
-
-        self.events()
-            .borrow_mut()
-            .emit_custom_work_hours_changed(self);
+        self.notify_work_hours_changed();
         Ok(())
     }
 }

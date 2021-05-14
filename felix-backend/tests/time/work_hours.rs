@@ -217,3 +217,76 @@ fn update_time_interval_check_sorted() {
         }
     );
 }
+
+/// Tests that work hours cannot be added while activities are inserted
+#[test]
+fn add_work_hours_with_inserted_activities() {
+    let entity = "Jean";
+    let work_interval1 = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
+    let work_interval2 = TimeInterval::new(Time::new(14, 0), Time::new(16, 0));
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_work_interval(work_interval1)
+            .with_entity(entity)
+            .with_activity(Activity {
+                entities: vec![entity],
+                insertion_time: Some(Time::new(8, 0)),
+                ..Default::default()
+            }),
+        {
+            data.add_work_interval(work_interval2)
+        },
+        "Work hours cannot be modified while an activity is inserted.",
+        "Could add work hours with one inserted activity"
+    );
+}
+
+/// Tests that work hours cannot be removed while activities are inserted
+#[test]
+fn remove_work_hours_with_inserted_activities() {
+    let entity = "Jean";
+    let work_interval1 = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
+    let work_interval2 = TimeInterval::new(Time::new(14, 0), Time::new(16, 0));
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_work_intervals(vec![work_interval1, work_interval2])
+            .with_entity(entity)
+            .with_activity(Activity {
+                entities: vec![entity],
+                insertion_time: Some(Time::new(8, 0)),
+                ..Default::default()
+            }),
+        {
+            data.remove_work_interval(work_interval2)
+        },
+        "Work hours cannot be modified while an activity is inserted.",
+        "Could remove  work hours with one inserted activity"
+    );
+}
+
+/// Tests that work hours cannot be updated while activities are inserted
+#[test]
+fn update_work_hours_with_inserted_activities() {
+    let entity = "Jean";
+    let work_interval1 = TimeInterval::new(Time::new(8, 0), Time::new(11, 0));
+    let work_interval2 = TimeInterval::new(Time::new(14, 0), Time::new(16, 0));
+    test_err!(
+        data,
+        DataBuilder::new()
+            .with_work_intervals(vec![work_interval1, work_interval2])
+            .with_entity(entity)
+            .with_activity(Activity {
+                entities: vec![entity],
+                insertion_time: Some(Time::new(8, 0)),
+                ..Default::default()
+            }),
+        {
+            let new_work_interval = TimeInterval::new(Time::new(14, 0), Time::new(15, 0));
+            data.update_work_interval(work_interval2, new_work_interval)
+        },
+        "Work hours cannot be modified while an activity is inserted.",
+        "Could update work hours with one inserted activity"
+    );
+}
