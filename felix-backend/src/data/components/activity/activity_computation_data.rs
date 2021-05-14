@@ -1,6 +1,9 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost, Time,
-    TimeInterval, MIN_TIME_DISCRETIZATION,
+    computation_structs::WorkHoursAndActivityDurationsSorted,
+    ActivityId,
+    InsertionCost,
+    Time,
+    TimeInterval, 
 };
 
 use serde::{Deserialize, Serialize};
@@ -30,7 +33,7 @@ impl ActivityComputationData {
     /// Creates new computation data.
     pub fn new() -> ActivityComputationData {
         ActivityComputationData {
-            duration: MIN_TIME_DISCRETIZATION,
+            duration: Time::new(0, 0),
             insertion_interval: None,
             insertion_costs: Arc::new(Mutex::new(Some(Vec::new()))),
             incompatible_activity_ids: Vec::new(),
