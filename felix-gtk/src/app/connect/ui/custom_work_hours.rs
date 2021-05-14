@@ -12,10 +12,7 @@ use felix_backend::errors::Result;
 macro_rules! reset_custom_work_hours_if_err {
     ($ui:ident, $data:ident, $operation:expr) => {
         if let Err(e) = $operation {
-            $data
-                .events()
-                .borrow_mut()
-                .emit_work_hours_changed(&$data);
+            $data.events().borrow_mut().emit_work_hours_changed(&$data);
             $ui.borrow().notify_err(e);
             return;
         }
@@ -52,7 +49,8 @@ impl App {
                     .borrow()
                     .current_entity()
                     .expect("Current entity should be set before adding custom work hours");
-                ui.borrow_mut().on_add_custom_work_hour(current_entity.custom_work_hours());
+                ui.borrow_mut()
+                    .on_add_custom_work_hour(current_entity.custom_work_hours());
             })
         );
     }
@@ -137,9 +135,7 @@ impl App {
                     )
                 );
             } else {
-                data.events()
-                    .borrow_mut()
-                    .emit_work_hours_changed(&data);
+                data.events().borrow_mut().emit_work_hours_changed(&data);
             }
         });
 

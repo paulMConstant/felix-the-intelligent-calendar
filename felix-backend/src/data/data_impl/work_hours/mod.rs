@@ -1,5 +1,5 @@
-mod error_checks;
 mod common;
+mod error_checks;
 
 use crate::data::{Data, TimeInterval};
 use crate::errors::Result;
