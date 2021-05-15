@@ -18,15 +18,6 @@ impl ActivityInsertionUi {
     ) {
         self.possible_insertions_callback = possible_insertions_callback;
         self.remove_activity_from_schedule_callback = remove_activity_from_schedule_callback;
-
-        self.enable_click_events();
-    }
-
-    fn enable_click_events(&self) {
-        // Enabling then disabling drag allows catching button_press events.
-        // If we don't do this, we don't detect left clicks on schedule_scrolled_window.
-        self.enable_drag_from_schedules_drawing();
-        self.disable_drag_from_schedules_drawing();
     }
 
     // Public so that connect module can access it

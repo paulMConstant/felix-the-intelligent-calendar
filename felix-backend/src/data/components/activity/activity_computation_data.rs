@@ -1,9 +1,6 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted,
-    ActivityId,
-    InsertionCost,
-    Time,
-    TimeInterval, 
+    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost, Time,
+    TimeInterval,
 };
 
 use serde::{Deserialize, Serialize};

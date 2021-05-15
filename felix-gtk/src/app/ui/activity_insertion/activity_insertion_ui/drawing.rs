@@ -5,6 +5,7 @@ use felix_backend::data::{Rgba, Time};
 use gtk::prelude::*;
 
 use std::cell::RefCell;
+use std::f64::consts::{FRAC_PI_4, PI};
 use std::rc::Rc;
 
 // Cairo calculates from the half of a pixel. This is used as an offset.
@@ -34,6 +35,11 @@ const TIME_TOOLTIP_FONT_RGB: f64 = 0.0;
 const TIME_TOOLTIP_BACKGROUND_RGB: f64 = 0.9;
 const TIME_TOOLTIP_Y_OFFSET: f64 = 18.0;
 const TIME_TOOLTIP_X_OFFSET: f64 = 30.0;
+
+pub const REMOVE_BUTTON_RADIUS: f64 = 9.0;
+const REMOVE_BUTTON_Y_OFFSET: f64 = 17.0;
+const REMOVE_BUTTON_X_OFFSET: f64 = 20.0;
+const REMOVE_BUTTON_LINE_WIDTH: f64 = 1.5;
 
 const ACTIVITY_NAME_FONT_SIZE: f64 = 14.0;
 
@@ -247,13 +253,55 @@ fn draw_header(c: &cairo::Context, w: &gtk::DrawingArea, schedules: Rc<RefCell<S
             entity.free_time(),
             total_time
         );
+
+        c.set_line_width(LINE_WIDTH);
+        c.set_source_rgb(SCHEDULE_FONT_RGB, SCHEDULE_FONT_RGB, SCHEDULE_FONT_RGB);
         let size_of_text = c.text_extents(&text).width;
         // Center the text
         let x_offset = (schedules.width_per_schedule - size_of_text) / 2.0;
         c.move_to(current_x + x_offset, height - SCHEDULE_FONT_Y_OFFSET);
         c.show_text(&text);
+
+        // Draw remove button
+        c.set_line_width(REMOVE_BUTTON_LINE_WIDTH);
+        c.set_source_rgb(FULL_LINE_RGB, FULL_LINE_RGB, FULL_LINE_RGB);
+        let (x_remove_button, y_remove_button) = get_center_of_remove_button(&schedules, current_x);
+
+        // Coordinates are reversed in cairo - height at the top, 0 at the bottom
+        // Countrary to the application: 0 at the top, height at the bottom
+        let y_remove_button = height - y_remove_button;
+        // Move to where the button (circle) will start to be drawn:
+        // not in the middle but at 0 radian
+        c.move_to(x_remove_button + REMOVE_BUTTON_RADIUS, y_remove_button);
+        c.arc(
+            x_remove_button,
+            y_remove_button,
+            REMOVE_BUTTON_RADIUS,
+            0.0,
+            2.0 * PI,
+        );
+
+        // Draw line across the circle
+        c.move_to(
+            x_remove_button - FRAC_PI_4.cos() * REMOVE_BUTTON_RADIUS,
+            y_remove_button - FRAC_PI_4.sin() * REMOVE_BUTTON_RADIUS,
+        );
+        c.line_to(
+            x_remove_button + FRAC_PI_4.cos() * REMOVE_BUTTON_RADIUS,
+            y_remove_button + FRAC_PI_4.sin() * REMOVE_BUTTON_RADIUS,
+        );
+        c.stroke();
+
         current_x += schedules.width_per_schedule;
     }
+}
+
+/// Returns the (x, y) position of the remove button based on the left edge of the schedule.
+pub fn get_center_of_remove_button(schedules: &Schedules, schedule_left_edge_x: f64) -> (f64, f64) {
+    (
+        schedule_left_edge_x + schedules.width_per_schedule - REMOVE_BUTTON_X_OFFSET,
+        REMOVE_BUTTON_Y_OFFSET,
+    )
 }
 
 fn draw_hour_lines(c: &cairo::Context, width: f64, height: f64) {

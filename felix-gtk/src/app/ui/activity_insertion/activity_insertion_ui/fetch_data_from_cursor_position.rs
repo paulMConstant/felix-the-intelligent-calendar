@@ -1,5 +1,6 @@
 use super::Schedules;
 
+use super::drawing::{get_center_of_remove_button, REMOVE_BUTTON_RADIUS};
 use crate::app::ui::ActivityToShow;
 use felix_backend::data::Time;
 
@@ -48,4 +49,29 @@ pub(super) fn get_activity_under_cursor(
     } else {
         None
     }
+}
+
+/// Returns the name of the entity to delete if the cursor is over the button to remove its
+/// schedule.
+#[must_use]
+pub(super) fn get_entity_to_remove_under_cursor(
+    x: f64,
+    y: f64,
+    schedules: &Schedules,
+) -> Option<String> {
+    // Check if the cursor is inside any of the "remove" icons
+    schedules
+        .entities_to_show
+        .iter()
+        .enumerate()
+        .find(|(index, _entity_to_show)| {
+            let (x_button, y_button) = get_center_of_remove_button(
+                &schedules,
+                *index as f64 * schedules.width_per_schedule,
+            );
+            // Use euclidian distance to the center of the remove button which is a circle
+            // No sqrt because it is useless for the sake of comparison
+            (x - x_button).powi(2) + (y - y_button).powi(2) <= REMOVE_BUTTON_RADIUS.powi(2)
+        })
+        .map(|(_index, entity_to_show)| entity_to_show.name().clone())
 }

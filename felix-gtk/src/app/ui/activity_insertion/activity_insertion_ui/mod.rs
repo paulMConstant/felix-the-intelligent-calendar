@@ -9,7 +9,9 @@ mod schedules;
 
 use crate::app::ui::{ActivityToShow, EntitiesAndInsertionTimes, EntityToShow};
 use event_helpers::increase_duration_on_scroll;
-use fetch_data_from_cursor_position::get_activity_under_cursor;
+use fetch_data_from_cursor_position::{
+    get_activity_under_cursor, get_entity_to_remove_under_cursor,
+};
 use schedules::Schedules;
 
 use felix_backend::data::ActivityId;
@@ -51,10 +53,17 @@ impl ActivityInsertionUi {
             })),
         };
 
+        activity_insertion.enable_click_events();
         activity_insertion.connect_draw();
         activity_insertion.connect_schedule_window_scroll();
 
         activity_insertion
+    }
+
+    fn enable_click_events(&self) {
+        fetch_from!(self, header_drawing, schedules_drawing);
+        header_drawing.add_events(gdk::EventMask::BUTTON_PRESS_MASK);
+        schedules_drawing.add_events(gdk::EventMask::BUTTON_PRESS_MASK);
     }
 
     pub fn show_possible_activity_insertions(
@@ -108,7 +117,7 @@ impl ActivityInsertionUi {
         }
 
         // Then sort and draw
-        drop(schedules_to_show); // Unlock
+        drop(schedules_to_show); // Avoid multiple borrow crash
         self.draw_schedules_sorted();
     }
 
@@ -236,5 +245,11 @@ impl ActivityInsertionUi {
         }
 
         *current_activity = new_activity;
+    }
+
+    /// Returns the name of the entity to delete if the cursor is over the button to remove its
+    /// schedule.
+    pub(super) fn get_entity_to_remove_under_cursor(&self, x: f64, y: f64) -> Option<String> {
+        get_entity_to_remove_under_cursor(x, y, &self.schedules_to_show.borrow())
     }
 }

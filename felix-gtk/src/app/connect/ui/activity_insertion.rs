@@ -107,7 +107,8 @@ impl App {
     fn connect_clicks(&self) {
         fetch_from!(
             self.ui.borrow().activity_insertion().borrow(),
-            schedule_scrolled_window
+            schedule_scrolled_window,
+            header_scrolled_window
         );
 
         let data = self.data.clone();
@@ -116,16 +117,30 @@ impl App {
         app_register_signal!(
             self,
             schedule_scrolled_window,
-            schedule_scrolled_window.connect_button_press_event(move |_window, event| {
+            schedule_scrolled_window.connect_button_press_event(clone!(@strong ui => move |_window, event| {
                 let (x, y) = event.get_position();
 
                 const RIGHT_CLICK: u32 = 3;
                 const LEFT_CLICK: u32 = 1;
                 match event.get_button() {
-                    RIGHT_CLICK => ui.borrow_mut().on_right_click(data.clone(), x, y),
-                    LEFT_CLICK => ui.borrow_mut().on_left_click(data.clone(), x, y),
+                    RIGHT_CLICK => ui.borrow_mut().on_right_click_over_schedules(data.clone(), x, y),
+                    LEFT_CLICK => ui.borrow_mut().on_left_click_over_schedules(data.clone(), x, y),
                     _ => { // Do nothing
                     }
+                }
+                glib::signal::Inhibit(false)
+            }))
+        );
+
+        app_register_signal!(
+            self,
+            header_scrolled_window,
+            header_scrolled_window.connect_button_press_event(move |_window, event| {
+                let (x, y) = event.get_position();
+
+                const LEFT_CLICK: u32 = 1;
+                if event.get_button() == LEFT_CLICK {
+                    ui.borrow_mut().on_left_click_over_schedules_header(x, y);
                 }
                 glib::signal::Inhibit(false)
             })

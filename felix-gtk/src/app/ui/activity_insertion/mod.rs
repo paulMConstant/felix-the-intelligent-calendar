@@ -131,32 +131,42 @@ impl Ui {
             .remove_entity_schedule(old_name);
     }
 
-    pub fn on_left_click(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
-        let activity_insertion = self.activity_insertion.borrow();
+    pub fn on_left_click_over_schedules(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
+        self.activity_insertion
+            .borrow()
+            .update_activity_under_cursor(x, y);
 
-        activity_insertion.update_activity_under_cursor(x, y);
-
+        // Avoid multiple borrows => Introduce temp variable
         let maybe_activity = self.activity_insertion.borrow().get_activity_under_cursor();
-
-        drop(activity_insertion);
         if let Some(activity) = maybe_activity {
-            let data = data.borrow();
-            let activity = data.activity(activity.id());
-            self.update_current_activity(&data.groups_sorted(), Some(activity));
+            let activity = data.borrow().activity(activity.id());
+            self.update_current_activity(&data.borrow().groups_sorted(), Some(activity));
         }
+    }
+
+    pub fn on_left_click_over_schedules_header(&mut self, x: f64, y: f64) {
+        let maybe_entity_to_remove = self
+            .activity_insertion
+            .borrow()
+            .get_entity_to_remove_under_cursor(x, y);
+        if let Some(entity_to_remove) = maybe_entity_to_remove {
+            self.activity_insertion
+                .borrow_mut()
+                .remove_entity_schedule(&entity_to_remove);
+        }
+    }
+
+    pub fn on_right_click_over_schedules(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
+        //self.activity_insertion
+        //.lock()
+        //.unwrap()
+        //.get_id_of_activity_under_cursor());
+        // TODO Lock activity in place
     }
 
     pub fn on_autoinsertion_done_update_state(&mut self) {
         fetch_from!(self, autoinsert_button);
         autoinsert_button.set_label(&tr("Auto-insert"));
         *self.autoinsertion_handle.borrow_mut() = None;
-    }
-
-    pub fn on_right_click(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
-        //self.activity_insertion
-        //.lock()
-        //.unwrap()
-        //.get_id_of_activity_under_cursor());
-        // TODO Lock activity in place
     }
 }

@@ -87,7 +87,7 @@ impl Ui {
             let pixbuf = gdk::pixbuf_get_from_surface(&surface, 0, 0, DRAG_WIDTH, DRAG_HEIGHT)
                 .expect("Could not get pixbuf from surface");
 
-            drag_context.set_hotspot(DRAG_WIDTH / 2, 0); // TODO does not work
+            drag_context.set_hotspot(DRAG_WIDTH / 2, 0); // TODO does not work -> Maybe do this in drag_motion ?
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
             // 2. Remove activity from schedule
