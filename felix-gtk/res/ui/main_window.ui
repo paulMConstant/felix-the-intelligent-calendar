@@ -189,6 +189,9 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="model">ActivitiesListStore</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
                             <child>
                               <object class="GtkTreeViewColumn" id="ActivityNameCol">
                                 <property name="title" translatable="yes">Activities</property>
@@ -726,6 +729,9 @@
                                     <property name="model">ActivityGroupsListStore</property>
                                     <property name="headers-clickable">False</property>
                                     <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="ActivityGroupsNameCol">
                                         <property name="title" translatable="yes">Groups in activity</property>
@@ -779,6 +785,9 @@
                                     <property name="headers-clickable">False</property>
                                     <property name="tooltip-column">4</property>
                                     <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
                                     <child>
                                       <object class="GtkTreeViewColumn" id="ActivityEntitiesColumn">
                                         <property name="title" translatable="yes">Entities in activity</property>
