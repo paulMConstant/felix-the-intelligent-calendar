@@ -150,8 +150,7 @@ impl ActivityInsertionUi {
             clear_possible_insertions(&this);
         }));
 
-        schedules_drawing.connect_drag_failed(
-            clone!(@strong self as this =>
+        schedules_drawing.connect_drag_failed(clone!(@strong self as this =>
             move |_drawing_area, _drag_context, _drag_result| {
             clear_possible_insertions(&this);
             gtk::Inhibit(false)

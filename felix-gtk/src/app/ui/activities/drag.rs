@@ -1,14 +1,14 @@
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::ui::{
-    activities_treeview_config::*, drag_config::*, EntitiesAndInsertionTimes, Ui,
-    activity_insertion::activity_insertion_ui::ActivityInsertionUi,
+    activities_treeview_config::*, activity_insertion::activity_insertion_ui::ActivityInsertionUi,
+    drag_config::*, EntitiesAndInsertionTimes, Ui,
 };
 
 use felix_backend::data::ActivityId;
 
 use gdk::prelude::GdkContextExt;
-use gtk::prelude::*;
 use glib::clone;
+use gtk::prelude::*;
 
 use byteorder::ByteOrder;
 use std::rc::Rc;
@@ -150,8 +150,8 @@ impl Ui {
 
         fn clear_possible_insertions(activity_insertion: &ActivityInsertionUi) {
             activity_insertion.show_possible_activity_insertions(EntitiesAndInsertionTimes {
-                    entities: Vec::new(),
-                    insertion_times: None,
+                entities: Vec::new(),
+                insertion_times: None,
             });
         }
 
@@ -167,9 +167,10 @@ impl Ui {
         }));
 
         activities_tree_view.connect_drag_leave(
-            clone!(@strong self.activity_insertion as activity_insertion 
-                   => move |_drawing_area, _drag_context, _time| {
-            clear_possible_insertions(&activity_insertion.borrow());
-        }));
+            clone!(@strong self.activity_insertion as activity_insertion
+                       => move |_drawing_area, _drag_context, _time| {
+                clear_possible_insertions(&activity_insertion.borrow());
+            }),
+        );
     }
 }
