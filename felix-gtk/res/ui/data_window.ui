@@ -58,103 +58,59 @@
   </object>
   <object class="GtkWindow" id="DataWindow">
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Data</property>
     <property name="default-width">800</property>
     <property name="default-height">600</property>
-    <property name="destroy-with-parent">True</property>
-    <property name="skip-taskbar-hint">True</property>
-    <property name="skip-pager-hint">True</property>
+    <property name="type-hint">dialog</property>
     <child>
-      <object class="GtkBox" id="DataBox">
+      <object class="GtkStack" id="DataStack">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
+        <property name="transition-type">None</property>
         <child>
-          <object class="GtkHeaderBar" id="DataHeaderBar">
+          <object class="GtkBox" id="WorkHoursBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="show-close-button">True</property>
-            <child type="title">
-              <object class="GtkStackSwitcher" id="DataStackSwitcher">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="stack">DataStack</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkStack" id="DataStack">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkBox" id="WorkHoursBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkButton" id="AddWorkHourButton">
+                        <property name="label" translatable="yes">Add Work Interval  </property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="AddWorkHourButton">
-                            <property name="label" translatable="yes">Add Work Interval  </property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">AddIcon1</property>
-                            <property name="image-position">right</property>
-                            <property name="always-show-image">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">AddIcon1</property>
+                        <property name="image-position">right</property>
+                        <property name="always-show-image">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -168,9 +124,94 @@
                         <property name="can-focus">False</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="WorkHoursScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hscrollbar-policy">always</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">WorkHoursBox</property>
+            <property name="title" translatable="yes">Work Hours</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkPaned" id="EntitiesPane">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="wide-handle">True</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkEntry" id="AddEntityEntry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="placeholder-text" translatable="yes">Entity Name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="AddEntityButton">
+                        <property name="label" translatable="yes">Add Entity</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
@@ -181,12 +222,28 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="WorkHoursScrolledWindow">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="hscrollbar-policy">always</property>
+                    <property name="shadow-type">in</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkTreeView" id="EntitiesTreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">EntitiesListStore</property>
+                        <property name="activate-on-single-click">True</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="EntityColumn">
+                            <property name="title" translatable="yes">Entities</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="NameCol"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
                     </child>
                   </object>
                   <packing>
@@ -197,42 +254,82 @@
                 </child>
               </object>
               <packing>
-                <property name="name">WorkHoursBox</property>
-                <property name="title" translatable="yes">Work Hours</property>
+                <property name="resize">True</property>
+                <property name="shrink">False</property>
               </packing>
             </child>
             <child>
-              <object class="GtkPaned" id="EntitiesPane">
+              <object class="GtkBox" id="EntitySpecificBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="wide-handle">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">3</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkEntry" id="EntityNameEntry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="max-width-chars">50</property>
+                        <property name="input-purpose">name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="EntityRemoveButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">DeleteIcon1</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="MailBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkBox" id="SendMailBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkEntry" id="AddEntityEntry">
+                          <object class="GtkLabel" id="SendAMailLabel">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="placeholder-text" translatable="yes">Entity Name</property>
+                            <property name="can-focus">False</property>
+                            <property name="xpad">10</property>
+                            <property name="label" translatable="yes">Send a mail</property>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
+                            <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="AddEntityButton">
-                            <property name="label" translatable="yes">Add Entity</property>
+                          <object class="GtkSwitch" id="EntitySendMailSwitch">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
+                            <property name="margin-left">5</property>
+                            <property name="margin-right">6</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">6</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -248,32 +345,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow">
+                      <object class="GtkEntry" id="EntityMailEntry">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="shadow-type">in</property>
-                        <child>
-                          <object class="GtkTreeView" id="EntitiesTreeView">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="model">EntitiesListStore</property>
-                            <property name="activate-on-single-click">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="EntityColumn">
-                                <property name="title" translatable="yes">Entities</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="NameCol"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
+                        <property name="max-width-chars">320</property>
+                        <property name="placeholder-text" translatable="yes">mail@xyz.com</property>
+                        <property name="input-purpose">name</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -283,26 +360,26 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">False</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="EntitySpecificBox">
+                  <object class="GtkBox" id="CustomWorkHoursBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
-                    <property name="spacing">3</property>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkBox" id="AddCustomWorkHoursBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="spacing">7</property>
                         <child>
-                          <object class="GtkEntry" id="EntityNameEntry">
+                          <object class="GtkLabel" id="CustomWorkHoursLabel">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="max-width-chars">50</property>
-                            <property name="input-purpose">name</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Custom Work Hours</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -311,136 +388,20 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="EntityRemoveButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">DeleteIcon1</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="MailBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkBox" id="SendMailBox">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkLabel" id="SendAMailLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="xpad">10</property>
-                                <property name="label" translatable="yes">Send a mail</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
+                              <placeholder/>
                             </child>
                             <child>
-                              <object class="GtkSwitch" id="EntitySendMailSwitch">
+                              <object class="GtkButton" id="CustomWorkHoursAddButton">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
-                                <property name="margin-left">5</property>
-                                <property name="margin-right">6</property>
-                                <property name="margin-start">5</property>
-                                <property name="margin-end">6</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkEntry" id="EntityMailEntry">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="max-width-chars">320</property>
-                            <property name="placeholder-text" translatable="yes">mail@xyz.com</property>
-                            <property name="input-purpose">name</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="CustomWorkHoursBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkBox" id="AddCustomWorkHoursBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="spacing">7</property>
-                            <child>
-                              <object class="GtkLabel" id="CustomWorkHoursLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Custom Work Hours</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="CustomWorkHoursAddButton">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="receives-default">True</property>
-                                    <property name="tooltip-text" translatable="yes">Add Custom Work Interval</property>
-                                    <property name="image">AddIcon2</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
+                                <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Add Custom Work Interval</property>
+                                <property name="image">AddIcon2</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -455,81 +416,11 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkScrolledWindow" id="CustomWorkHoursScrolledWindow">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">False</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="name">EntitiesPane</property>
-                <property name="title" translatable="yes">Entities</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkPaned" id="GroupsPane">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="wide-handle">True</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkEntry" id="AddGroupEntry">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="placeholder-text" translatable="yes">Group Name</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="AddGroupButton">
-                            <property name="label" translatable="yes">Add Group</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
+                          <placeholder/>
                         </child>
                       </object>
                       <packing>
@@ -539,170 +430,11 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="AddEntityToGroupBox">
+                      <object class="GtkScrolledWindow" id="CustomWorkHoursScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkEntry" id="EntityIntoGroupNameEntry">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="placeholder-text" translatable="yes">Entity Name</property>
-                            <property name="completion">EntityIntoGroupCompletion</property>
-                            <property name="input-purpose">name</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="AddToGroupButton">
-                            <property name="label" translatable="yes">Add To Group</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkScrolledWindow">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="shadow-type">in</property>
-                        <child>
-                          <object class="GtkTreeView" id="GroupsTreeView">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="model">GroupsListStore</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="GroupName">
-                                <property name="title" translatable="yes">Groups</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="GroupNameColumn"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox" id="GroupSpecificBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkEntry" id="GroupNameEntry">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="RemoveGroupButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">DeleteIcon2</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkScrolledWindow">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="shadow-type">in</property>
-                        <child>
-                          <object class="GtkTreeView" id="GroupMembersTreeView">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="model">GroupMembersListStore</property>
-                            <property name="headers-clickable">False</property>
-                            <property name="search-column">0</property>
-                            <property name="show-expanders">False</property>
-                            <property name="activate-on-single-click">True</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="GroupMembersColumn">
-                                <property name="resizable">True</property>
-                                <property name="sizing">autosize</property>
-                                <property name="title" translatable="yes">Group Members</property>
-                                <property name="sort-column-id">0</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="GroupMemberName"/>
-                                  <attributes>
-                                    <attribute name="text">0</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="DeleteColumn">
-                                <property name="resizable">True</property>
-                                <property name="sizing">fixed</property>
-                                <property name="fixed-width">25</property>
-                                <property name="min-width">25</property>
-                                <property name="max-width">25</property>
-                                <property name="alignment">1</property>
-                                <child>
-                                  <object class="GtkCellRendererPixbuf" id="DeleteIconRenderer"/>
-                                  <attributes>
-                                    <attribute name="icon-name">1</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
+                          <placeholder/>
                         </child>
                       </object>
                       <packing>
@@ -713,23 +445,263 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">True</property>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="name">GroupsPane</property>
-                <property name="title" translatable="yes">Groups</property>
-                <property name="position">2</property>
+                <property name="resize">True</property>
+                <property name="shrink">False</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
+            <property name="name">EntitiesPane</property>
+            <property name="title" translatable="yes">Entities</property>
             <property name="position">1</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkPaned" id="GroupsPane">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="wide-handle">True</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkEntry" id="AddGroupEntry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="placeholder-text" translatable="yes">Group Name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="AddGroupButton">
+                        <property name="label" translatable="yes">Add Group</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="AddEntityToGroupBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkEntry" id="EntityIntoGroupNameEntry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="placeholder-text" translatable="yes">Entity Name</property>
+                        <property name="completion">EntityIntoGroupCompletion</property>
+                        <property name="input-purpose">name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="AddToGroupButton">
+                        <property name="label" translatable="yes">Add To Group</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="GroupsTreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">GroupsListStore</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="GroupName">
+                            <property name="title" translatable="yes">Groups</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="GroupNameColumn"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="GroupSpecificBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkEntry" id="GroupNameEntry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="RemoveGroupButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">DeleteIcon2</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="GroupMembersTreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">GroupMembersListStore</property>
+                        <property name="headers-clickable">False</property>
+                        <property name="search-column">0</property>
+                        <property name="show-expanders">False</property>
+                        <property name="activate-on-single-click">True</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="GroupMembersColumn">
+                            <property name="resizable">True</property>
+                            <property name="sizing">autosize</property>
+                            <property name="title" translatable="yes">Group Members</property>
+                            <property name="sort-column-id">0</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="GroupMemberName"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="DeleteColumn">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed-width">25</property>
+                            <property name="min-width">25</property>
+                            <property name="max-width">25</property>
+                            <property name="alignment">1</property>
+                            <child>
+                              <object class="GtkCellRendererPixbuf" id="DeleteIconRenderer"/>
+                              <attributes>
+                                <attribute name="icon-name">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">GroupsPane</property>
+            <property name="title" translatable="yes">Groups</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="DataHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkStackSwitcher" id="DataStackSwitcher">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="stack">DataStack</property>
+          </object>
         </child>
       </object>
     </child>
