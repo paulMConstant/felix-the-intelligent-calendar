@@ -118,11 +118,10 @@
     <property name="step-increment">5</property>
     <property name="page-increment">5</property>
   </object>
-  <object class="GtkApplicationWindow" id="MainWindow">
+  <object class="GtkWindow" id="MainWindow">
     <property name="can-focus">False</property>
-    <property name="window-position">center</property>
-    <property name="decorated">False</property>
-    <property name="gravity">center</property>
+    <property name="default-width">1200</property>
+    <property name="default-height">800</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -1042,6 +1041,9 @@
           </packing>
         </child>
       </object>
+    </child>
+    <child type="titlebar">
+      <placeholder/>
     </child>
   </object>
 </interface>
