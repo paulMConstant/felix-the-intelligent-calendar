@@ -1,12 +1,14 @@
 use crate::app::ui::helpers::tree::get_selection_from_treeview;
 use crate::app::ui::{
     activities_treeview_config::*, drag_config::*, EntitiesAndInsertionTimes, Ui,
+    activity_insertion::activity_insertion_ui::ActivityInsertionUi,
 };
 
 use felix_backend::data::ActivityId;
 
 use gdk::prelude::GdkContextExt;
 use gtk::prelude::*;
+use glib::clone;
 
 use byteorder::ByteOrder;
 use std::rc::Rc;
@@ -145,16 +147,29 @@ impl Ui {
 
     fn connect_drag_end(&self) {
         fetch_from!(self, activities_tree_view);
-        let activity_insertion = self.activity_insertion.clone();
 
-        activities_tree_view.connect_drag_end(move |_drawing_area, _drag_context| {
-            // Clear possible insertions
-            activity_insertion
-                .borrow()
-                .show_possible_activity_insertions(EntitiesAndInsertionTimes {
+        fn clear_possible_insertions(activity_insertion: &ActivityInsertionUi) {
+            activity_insertion.show_possible_activity_insertions(EntitiesAndInsertionTimes {
                     entities: Vec::new(),
                     insertion_times: None,
-                });
-        });
+            });
+        }
+
+        activities_tree_view.connect_drag_end(
+            clone!(@strong self.activity_insertion as activity_insertion => move |_drawing_area, _drag_context| {
+            clear_possible_insertions(&activity_insertion.borrow());
+        }));
+
+        activities_tree_view.connect_drag_failed(
+            clone!(@strong self.activity_insertion as activity_insertion => move |_drawing_area, _drag_context, _drag_result| {
+            clear_possible_insertions(&activity_insertion.borrow());
+            gtk::Inhibit(false)
+        }));
+
+        activities_tree_view.connect_drag_leave(
+            clone!(@strong self.activity_insertion as activity_insertion 
+                   => move |_drawing_area, _drag_context, _time| {
+            clear_possible_insertions(&activity_insertion.borrow());
+        }));
     }
 }

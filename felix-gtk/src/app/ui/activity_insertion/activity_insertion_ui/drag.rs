@@ -138,13 +138,23 @@ impl ActivityInsertionUi {
     fn connect_drag_end(&self) {
         fetch_from!(self, schedules_drawing);
 
+        fn clear_possible_insertions(activity_insertion: &ActivityInsertionUi) {
+            activity_insertion.show_possible_activity_insertions(EntitiesAndInsertionTimes {
+                entities: Vec::new(),
+                insertion_times: None,
+            });
+        }
+
         schedules_drawing.connect_drag_end(clone!(@strong self as this =>
                                                   move |_drawing_area, _drag_context| {
-            // Clear possible insertions
-            this.show_possible_activity_insertions(EntitiesAndInsertionTimes {
-                    entities: Vec::new(),
-                    insertion_times: None,
-                });
+            clear_possible_insertions(&this);
+        }));
+
+        schedules_drawing.connect_drag_failed(
+            clone!(@strong self as this =>
+            move |_drawing_area, _drag_context, _drag_result| {
+            clear_possible_insertions(&this);
+            gtk::Inhibit(false)
         }));
     }
 }
