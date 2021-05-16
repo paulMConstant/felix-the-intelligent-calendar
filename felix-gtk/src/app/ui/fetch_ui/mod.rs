@@ -11,7 +11,7 @@ use gtk::prelude::*;
 
 impl Ui {
     #[must_use]
-    pub fn main_window(&self) -> gtk::ApplicationWindow {
+    pub fn main_window(&self) -> gtk::Window {
         fetch_ui_from_builder!(self, "MainWindow")
     }
 
