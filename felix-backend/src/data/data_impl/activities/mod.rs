@@ -159,14 +159,12 @@ impl Data {
         // After adding tests, comment self.queue_entities line and see if tests fail
         self.queue_entities(vec![entity_name]);
 
-        if self.activity(id).entities_sorted().is_empty()
-            || self.activity(id).duration() == Time::new(0, 0)
-        {
-            // Remove activity from schedule because it has no participants anymore
-            self.insert_activity(id, None)?;
-        } else {
+        if self.activity(id).can_be_inserted() {
             // Queue the activity because it has one less participant
             self.queue_activity_participants(self.activity(id));
+        } else {
+            // Remove activity from schedule because it cannot be inserted anymore
+            self.insert_activity(id, None)?;
         }
 
         self.events()
@@ -179,7 +177,7 @@ impl Data {
     ///
     /// Any activity currently in the group will be added to the activity.
     ///
-    /// #Panics
+    /// # Panics
     ///
     /// Panics if the activity with given ID does not exist.
     ///
@@ -211,9 +209,7 @@ impl Data {
         // Add the group to the activity
         self.activities.add_group(id, clean_string(group_name)?)?;
 
-        if !self.activity(id).entities_sorted().is_empty()
-            && self.activity(id).duration() > Time::new(0, 0)
-        {
+        if self.activity(id).can_be_inserted() {
             self.queue_activity_participants(self.activity(id));
         }
 
@@ -256,9 +252,7 @@ impl Data {
             let _ = self.remove_entity_from_activity(id, entity_name);
         }
 
-        if self.activity(id).duration() > Time::new(0, 0)
-            && !self.activity(id).entities_sorted().is_empty()
-        {
+        if self.activity(id).can_be_inserted() {
             self.queue_activity_participants(self.activity(id));
         }
 
@@ -327,7 +321,7 @@ impl Data {
         self.activities.set_duration(id, new_duration);
 
         // Don't queue activity with no duration or participants
-        if new_duration > Time::new(0, 0) && !activity.entities_sorted().is_empty() {
+        if self.activity(id).can_be_inserted() {
             self.queue_activity_participants(self.activity(id));
         }
 
@@ -377,6 +371,7 @@ impl Data {
                     self.queue_activity_participants(self.activity(id));
                     Ok(())
                 } else {
+                    // We cannot insert the activity - find out why
                     let activity = self.activity(id);
                     if let Some(blocking_activity) =
                         self.incompatible_activity_inserted_at_time(&activity, insertion_time)
@@ -412,9 +407,7 @@ impl Data {
             // TODO remove condition and always queue (check done it queue)
             // If the activity has no entities or no duration, it is useless to queue it.
             // This also makes sure that its insertion costs are not invalidated here.
-            if !self.activity(id).entities_sorted().is_empty()
-                && self.activity(id).duration() > Time::new(0, 0)
-            {
+            if self.activity(id).can_be_inserted() {
                 self.queue_activity_participants(self.activity(id));
             }
             Ok(())

@@ -1,4 +1,4 @@
-use crate::data::{Activity, ActivityId, Time};
+use crate::data::{Activity, ActivityId};
 use felix_computation_api::structs::{ActivityBeginningMinutes, ActivityComputationStaticData};
 
 use std::collections::HashMap;
@@ -102,9 +102,7 @@ pub fn activities_sorted_filtered_for_computation(activities: &[Activity]) -> Ve
     let mut non_inserted_activities = activities
         .iter()
         .filter(|activity| {
-            activity.computation_data.insertion_interval().is_none()
-                && activity.duration() > Time::new(0, 0)
-                && !activity.entities_sorted().is_empty()
+            activity.computation_data.insertion_interval().is_none() && activity.can_be_inserted()
         })
         .collect::<Vec<_>>();
 

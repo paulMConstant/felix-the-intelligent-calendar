@@ -3,7 +3,7 @@ mod computation_done_semaphore;
 mod insertion_costs_updater;
 mod thread_pool;
 
-use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity, Time};
+use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity};
 
 use computation_done_semaphore::Semaphore;
 use felix_computation_api::find_possible_beginnings;
@@ -138,7 +138,7 @@ fn invalidate_activities(activities: Arc<Mutex<Vec<Activity>>>) {
         .lock()
         .unwrap()
         .iter()
-        .filter(|a| a.duration() > Time::new(0, 0) && !a.entities_sorted().is_empty())
+        .filter(|activity| activity.can_be_inserted())
     {
         // Invalidate current possible insertions
         *activity.computation_data.insertion_costs().lock().unwrap() = None;

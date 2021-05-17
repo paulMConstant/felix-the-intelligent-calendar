@@ -51,7 +51,12 @@ impl Ui {
                     activities_list_store.insert_with_values(
                         None,
                         &[0, 1, 2, 3],
-                        &[&(activity.id() as u32), &activity.name(), &inserted_icon, &color],
+                        &[
+                            &(activity.id() as u32),
+                            &activity.name(),
+                            &inserted_icon,
+                            &color,
+                        ],
                     );
                 }
             },
