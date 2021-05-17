@@ -45,7 +45,7 @@ impl App {
         events.connect_activity_duration_changed(Box::new(
             clone!(@strong self.ui as ui => move |data, activity| {
                 let mut ui = ui.borrow_mut();
-                ui.on_activity_changed_update_current_activity(data, activity);
+                ui.on_activity_changed(data, activity);
                 ui.update_schedules(data);
                 ui.stop_autoinsertion_if_running();
                 app.on_activity_duration_changed_start_polling_to_insert_it_again(
@@ -56,7 +56,7 @@ impl App {
         events.connect_activity_inserted(Box::new(
             clone!(@strong self.ui as ui => move |data, activity| {
                 let mut ui = ui.borrow_mut();
-                ui.on_activity_changed_update_current_activity(data, activity);
+                ui.on_activity_changed(data, activity);
                 ui.update_schedules(data);
                 ui.stop_autoinsertion_if_running();
             }),
@@ -73,7 +73,7 @@ impl App {
         events.connect_entity_added_to_activity(Box::new(
             clone!(@strong self.ui as ui => move |data, activity| {
                 let mut ui = ui.borrow_mut();
-                ui.on_activity_changed_update_current_activity(data, activity);
+                ui.on_activity_changed(data, activity);
                 ui.update_schedules(data);
                 ui.stop_autoinsertion_if_running();
             }),
@@ -82,7 +82,7 @@ impl App {
         events.connect_entity_removed_from_activity(Box::new(
             clone!(@strong self.ui as ui => move |data, activity| {
                 let mut ui = ui.borrow_mut();
-                ui.on_activity_changed_update_current_activity(data, activity);
+                ui.on_activity_changed(data, activity);
                 ui.update_schedules(data);
                 ui.stop_autoinsertion_if_running();
             }),
@@ -91,7 +91,7 @@ impl App {
         events.connect_group_added_to_activity(Box::new(
             clone!(@strong self.ui as ui => move |data, activity| {
                 let mut ui = ui.borrow_mut();
-                ui.on_activity_changed_update_current_activity(data, activity);
+                ui.on_activity_changed(data, activity);
                 ui.update_schedules(data);
                 ui.stop_autoinsertion_if_running();
             }),
@@ -100,7 +100,7 @@ impl App {
         events.connect_group_removed_from_activity(Box::new(
             clone!(@strong self.ui as ui => move |data, activity| {
                 let mut ui = ui.borrow_mut();
-                ui.on_activity_changed_update_current_activity(data, activity);
+                ui.on_activity_changed(data, activity);
                 ui.update_schedules(data);
                 ui.stop_autoinsertion_if_running();
             }),
@@ -110,6 +110,7 @@ impl App {
             let mut ui = ui.borrow_mut();
             ui.update_schedules(data);
             ui.refresh_current_activity_view(data);
+            ui.update_activities_treeview(data.activities_sorted());
 
             ui.on_autoinsertion_done_update_state();
         })));

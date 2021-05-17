@@ -23,7 +23,7 @@ impl Ui {
 
     /// Updates the treeview of activities and selects the given row if not None.
     /// If the given row is None, keeps the originally selected row.
-    pub(super) fn update_activities_treeview(&mut self, activities: Vec<Activity>) {
+    pub fn update_activities_treeview(&mut self, activities: Vec<Activity>) {
         self.update_activities_list_store(activities);
         self.update_activities_treeview_selection();
     }
@@ -36,10 +36,22 @@ impl Ui {
             {
                 activities_list_store.clear();
                 for activity in activities {
+                    let inserted_icon = if activity.insertion_interval().is_some() {
+                        "object-select-symbolic".to_string()
+                    } else {
+                        String::new()
+                    };
+
+                    let color = if activity.can_be_inserted() {
+                        "black".to_string()
+                    } else {
+                        "grey".to_string()
+                    };
+
                     activities_list_store.insert_with_values(
                         None,
-                        &[0, 1],
-                        &[&(activity.id() as u32), &activity.name()],
+                        &[0, 1, 2, 3],
+                        &[&(activity.id() as u32), &activity.name(), &inserted_icon, &color],
                     );
                 }
             },

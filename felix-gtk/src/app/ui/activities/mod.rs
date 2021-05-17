@@ -77,12 +77,9 @@ impl Ui {
         }
     }
 
-    pub fn on_activity_changed_update_current_activity(
-        &mut self,
-        data: &Data,
-        activity: &Activity,
-    ) {
+    pub fn on_activity_changed(&mut self, data: &Data, activity: &Activity) {
         self.update_current_activity(&data.groups_sorted(), Some(activity.clone()));
+        self.update_activities_treeview(data.activities_sorted());
     }
 
     pub fn on_entities_or_groups_changed(&mut self, data: &Data) {

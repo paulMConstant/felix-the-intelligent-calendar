@@ -4,9 +4,13 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkListStore" id="ActivitiesListStore">
     <columns>
+      <!-- column-name ID1 -->
+      <column type="gchararray"/>
       <!-- column-name Name -->
       <column type="gchararray"/>
-      <!-- column-name ID1 -->
+      <!-- column-name DeleteIcon -->
+      <column type="gchararray"/>
+      <!-- column-name Color -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -193,11 +197,22 @@
                               <object class="GtkTreeSelection"/>
                             </child>
                             <child>
+                              <object class="GtkTreeViewColumn">
+                                <child>
+                                  <object class="GtkCellRendererPixbuf" id="InsertedIcon"/>
+                                  <attributes>
+                                    <attribute name="icon-name">2</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
                               <object class="GtkTreeViewColumn" id="ActivityNameCol">
                                 <property name="title" translatable="yes">Activities</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="ActivityNameRenderer"/>
                                   <attributes>
+                                    <attribute name="foreground">3</attribute>
                                     <attribute name="text">1</attribute>
                                   </attributes>
                                 </child>
