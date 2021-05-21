@@ -6,6 +6,8 @@ use entity_inner::EntityInner;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
+pub type EntityName = String;
+
 /// Represents any entity which can be used by an activity.
 ///
 /// Entities include people, of course, but also rooms, which have a schedule like any human

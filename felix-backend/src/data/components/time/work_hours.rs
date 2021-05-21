@@ -1,7 +1,7 @@
-use crate::data::TimeInterval;
-use crate::errors::Result;
+use crate::{data::{EntityName, TimeInterval}, errors::Result};
 use super::work_intervals::WorkIntervals;
 
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 /// Contains work hours represented as time intervals.
@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct WorkHours {
     global_work_intervals: WorkIntervals,
+    custom_work_intervals: HashMap<EntityName, WorkIntervals>,
 }
 
 impl WorkHours {
@@ -17,6 +18,7 @@ impl WorkHours {
     pub fn new() -> WorkHours {
         WorkHours {
             global_work_intervals: WorkIntervals::new(),
+            custom_work_intervals: HashMap::new(),
         }
     }
 
