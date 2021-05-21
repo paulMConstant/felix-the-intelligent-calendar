@@ -1,5 +1,6 @@
 pub mod time_interval;
 pub mod work_hours;
+mod work_intervals;
 
 use felix_computation_api::MIN_TIME_DISCRETIZATION_MINUTES;
 
