@@ -59,4 +59,17 @@ impl WorkHours {
     ) -> Result<()> {
         self.global_work_intervals.update_work_interval(old_interval, new_interval)
     }
+
+    /// Returns the custom work hours of the entity with the given name.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the custom work hours are not found.
+    #[must_use]
+    pub fn custom_work_intervals_of(&self, entity_name: &str) -> Vec<TimeInterval> {
+        self.custom_work_intervals.get(entity_name)
+            .unwrap_or_else(|| panic!("The custom work hours of {} are not registered", entity_name))
+            .work_intervals()
+            .clone()
+    }
 }

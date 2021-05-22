@@ -88,6 +88,20 @@ impl Data {
         })
     }
 
+    /// Returns the custom work hours of the entity with the formatted given name.
+    /// 
+    /// If the entity does not have custom work hours, the resulting vector will be empty.
+    /// 
+    /// # Errors
+    ///
+    /// Returns Err if the entity with given name is not found.
+    pub fn custom_work_hours_of<S>(&self, entity_name: S) -> Result<Vec<TimeInterval>> where S: Into<String>,
+    {
+        let entity_name = clean_string(entity_name)?;
+
+        Ok(self.work_hours.custom_work_intervals_of(&entity_name))
+    }
+
     /// Returns the work hours of the entity with the formatted given name.
     ///
     /// If the entity has custom work hours, returns them, else returns the global work hours.

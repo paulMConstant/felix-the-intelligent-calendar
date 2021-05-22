@@ -124,6 +124,7 @@ impl Entities {
         Ok(())
     }
 
+    // TODO remove this
     /// Adds a work interval to the entity with the given name.
     ///
     /// # Errors
