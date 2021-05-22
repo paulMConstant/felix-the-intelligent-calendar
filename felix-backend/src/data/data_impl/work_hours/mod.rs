@@ -1,4 +1,4 @@
-mod common;
+mod inner;
 mod error_checks;
 
 use crate::data::{Time, Data, TimeInterval, clean_string};
