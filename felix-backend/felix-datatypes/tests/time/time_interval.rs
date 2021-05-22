@@ -1,4 +1,4 @@
-use felix_backend::{Time, TimeInterval};
+use felix_datatypes::{Time, TimeInterval};
 use std::panic::catch_unwind;
 
 #[test]

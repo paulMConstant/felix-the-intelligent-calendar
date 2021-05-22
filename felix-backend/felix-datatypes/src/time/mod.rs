@@ -1,3 +1,7 @@
+pub mod time_interval;
+
+pub use time_interval::TimeInterval;
+
 pub const MIN_TIME_DISCRETIZATION_MINUTES: u16 = 5;
 
 use serde::{Deserialize, Serialize};

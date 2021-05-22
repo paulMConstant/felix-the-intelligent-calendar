@@ -8,7 +8,7 @@ use std::cmp::Ordering;
 ///
 /// Made to be small and copyable, 4-bytes long :
 /// ```
-/// use felix_backend::TimeInterval;
+/// use felix_datatypes::TimeInterval;
 /// use std::mem::size_of;
 /// assert_eq!(size_of::<TimeInterval>(), 4);
 /// ```
