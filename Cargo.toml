@@ -3,8 +3,10 @@
 members = [
     "felix-backend",
     "felix-backend/felix-datatypes",
-    "felix-gtk",
     "felix-backend/felix-test-utils",
     "felix-backend/felix-computation-api",
     "felix-backend/felix-export-api",
+    "felix-backend/felix-errors",
+
+    "felix-gtk",
 ]
