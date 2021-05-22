@@ -68,7 +68,7 @@ impl App {
                 let selected_entity = get_selection_from_treeview(&tree_view, ENTITY_NAME_COLUMN);
                 if let Some(entity_name) = selected_entity {
                     assign_or_return!(ui, entity, data.borrow().entity(entity_name));
-                    ui.borrow_mut().on_entity_selected(entity);
+                    ui.borrow_mut().on_entity_selected(&data.borrow(), entity);
                 }
             })
         );

@@ -7,22 +7,23 @@ mod update;
 
 impl Ui {
     pub(super) fn on_init_entities(&mut self) {
-        self.update_current_entity(None);
+        self.update_current_entity_without_ui(None);
+        self.hide_current_entity_view();
     }
 
     pub fn on_entity_added(&mut self, data: &Data, entity: &Entity) {
-        self.update_current_entity(Some(entity.clone()));
+        self.update_current_entity(Some(entity.clone()), data);
         self.update_entities_treeview(&data.entities_sorted());
     }
 
-    pub fn on_entity_selected(&mut self, entity: Entity) {
-        self.update_current_entity(Some(entity));
+    pub fn on_entity_selected(&mut self, data: &Data, entity: Entity) {
+        self.update_current_entity(Some(entity), data);
     }
 
     pub fn on_entity_removed(&mut self, data: &Data, position_of_removed_entity: usize) {
         let entities = data.entities_sorted();
         let (new_current_entity, _) = get_next_element(position_of_removed_entity, &entities);
-        self.update_current_entity(new_current_entity.cloned());
+        self.update_current_entity(new_current_entity.cloned(), data);
         self.update_entities_treeview(&entities);
     }
 
@@ -46,10 +47,7 @@ impl Ui {
         let new_current_entity = data
             .entity(current_entity_name)
             .expect("Current entity should exist when custom work hours change");
-        let new_custom_work_hours = new_current_entity.custom_work_hours();
 
-        self.update_current_entity(Some(new_current_entity));
-        self.custom_work_hours_builder
-            .on_work_hours_changed(new_custom_work_hours);
+        self.update_current_entity(Some(new_current_entity), data);
     }
 }

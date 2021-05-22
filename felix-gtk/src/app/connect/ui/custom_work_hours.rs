@@ -41,6 +41,7 @@ impl App {
         fetch_from!(self.ui.borrow(), custom_work_hours_add_button);
 
         let ui = self.ui.clone();
+        let data = self.data.clone();
         app_register_signal!(
             self,
             custom_work_hours_add_button,
@@ -50,7 +51,10 @@ impl App {
                     .current_entity()
                     .expect("Current entity should be set before adding custom work hours");
                 ui.borrow_mut()
-                    .on_add_custom_work_hour(current_entity.custom_work_hours());
+                    .on_add_custom_work_hour(data
+                                             .borrow()
+                                             .custom_work_hours_of(current_entity.name())
+                        .unwrap_or_else(|_| panic!("Could not get custom work hours of {}", current_entity.name())));
             })
         );
     }
@@ -86,7 +90,9 @@ impl App {
                 .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
-            let work_hours = current_entity.custom_work_hours();
+            let work_hours = data
+                .custom_work_hours_of(current_entity.name())
+                .unwrap_or_else(|_| panic!("Could not get the custom work hours of {}", current_entity.name()));
             let interval = TimeInterval::new(beginning, end);
 
             if position < work_hours.len() {
@@ -123,7 +129,9 @@ impl App {
                 .borrow()
                 .current_entity()
                 .expect("Current entity should be set before adding custom work hours");
-            let work_hours = current_entity.custom_work_hours();
+            let work_hours = data
+                .custom_work_hours_of(current_entity.name())
+                .unwrap_or_else(|_| panic!("Could not get the custom work hours of {}", current_entity.name()));
 
             if position < work_hours.len() {
                 reset_custom_work_hours_if_err!(

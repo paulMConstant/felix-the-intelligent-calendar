@@ -3,24 +3,29 @@ use crate::app::ui::Ui;
 
 use gtk::prelude::*;
 
-use felix_backend::data::Entity;
+use felix_backend::data::{Entity, Data};
 
 impl Ui {
     pub(super) fn update_current_entity_without_ui(&mut self, entity: Option<Entity>) {
         self.current_entity = entity;
     }
 
-    pub(super) fn update_current_entity(&mut self, entity: Option<Entity>) {
+    pub(super) fn update_current_entity(&mut self, entity: Option<Entity>, data: &Data) {
         self.update_current_entity_without_ui(entity);
 
         if self.current_entity.is_some() {
-            self.update_current_entity_view();
+            self.update_current_entity_view(data);
         } else {
             self.hide_current_entity_view();
         };
     }
 
-    fn update_current_entity_view(&self) {
+    pub(super) fn hide_current_entity_view(&self) {
+        fetch_from!(self, entity_specific_box);
+        entity_specific_box.hide();
+    }
+
+    fn update_current_entity_view(&self, data: &Data) {
         fetch_from!(
             self,
             entity_specific_box,
@@ -49,12 +54,8 @@ impl Ui {
         );
 
         self.custom_work_hours_builder
-            .on_work_hours_changed(current_entity.custom_work_hours());
-    }
-
-    fn hide_current_entity_view(&self) {
-        fetch_from!(self, entity_specific_box);
-        entity_specific_box.hide();
+            .on_work_hours_changed(data.custom_work_hours_of(current_entity.name())
+                .unwrap_or_else(|_| panic!("Could not fetch custom work hours of {}", current_entity.name())));
     }
 
     /// Updates the treeview of entities and selects the given row if not None.
