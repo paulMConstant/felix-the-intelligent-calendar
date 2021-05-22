@@ -4,19 +4,15 @@ mod queue_for_computation;
 
 use super::helpers::clean_string;
 
-use crate::Time;
 use crate::{
     components::activity::{
         activities_into_computation_data, activities_sorted_filtered_for_computation,
     },
     errors::{invalid_insertion::InvalidInsertion, Result},
-    Activity, ActivityId, Data, Rgba,
+    Activity, ActivityBeginningMinutes, ActivityId, Data, Rgba, Time,
 };
 
-use felix_computation_api::{
-    autoinsert,
-    structs::{ActivityBeginningMinutes, AutoinsertionThreadHandle},
-};
+use felix_computation_api::{autoinsert, structs::AutoinsertionThreadHandle};
 
 /// Operations on activities.
 impl Data {

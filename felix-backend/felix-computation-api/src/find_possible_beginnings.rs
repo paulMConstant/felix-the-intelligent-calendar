@@ -11,6 +11,7 @@
 //!   of duration sums which fit in the remaining slots.
 
 use crate::{structs::*, MIN_TIME_DISCRETIZATION_MINUTES};
+use felix_datatypes::ActivityBeginningsGivenDurationMinutes;
 
 use itertools::Itertools;
 use std::collections::HashSet;

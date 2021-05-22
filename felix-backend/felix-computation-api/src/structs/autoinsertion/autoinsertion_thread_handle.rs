@@ -1,4 +1,4 @@
-use crate::structs::ActivityBeginningMinutes;
+use felix_datatypes::ActivityBeginningMinutes;
 
 use std::sync::{mpsc, Arc, Mutex};
 

@@ -4,8 +4,9 @@ use felix_computation_api::{
     compute_insertion_costs::{
         compute_insertion_costs, get_all_activity_beginnings_with_conflicts,
     },
-    structs::{ActivityBeginningMinutes, ActivityComputationStaticData},
+    structs::ActivityComputationStaticData,
 };
+use felix_datatypes::ActivityBeginningMinutes;
 
 fn create_data() -> (
     Vec<ActivityComputationStaticData>,

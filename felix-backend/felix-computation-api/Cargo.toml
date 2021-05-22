@@ -8,6 +8,7 @@ workspace = "../../"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+felix-datatypes = { path = "../felix-datatypes" }
 itertools = "0.4.2"
 num_cpus = "1.0"
 

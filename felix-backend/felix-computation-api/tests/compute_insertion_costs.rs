@@ -1,8 +1,9 @@
 use felix_computation_api::{
     compute_insertion_costs,
     compute_insertion_costs::get_activity_beginnings_with_conflicts,
-    structs::{ActivityComputationStaticData, InsertionCostsMinutes},
+    structs::ActivityComputationStaticData,
 };
+use felix_datatypes::InsertionCostsMinutes;
 
 use std::collections::BTreeSet;
 

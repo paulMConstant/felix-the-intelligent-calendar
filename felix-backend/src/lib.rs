@@ -24,7 +24,9 @@ use components::{
     time::work_hours::WorkHours,
 };
 
-pub use felix_datatypes::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use felix_datatypes::{ActivityBeginningMinutes, ActivityBeginningsGivenDurationMinutes};
+pub use felix_datatypes::{InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+
 pub use felix_errors as errors;
 
 pub use components::{
@@ -33,8 +35,7 @@ pub use components::{
     group::Group,
 };
 
-pub use computation_structs::InsertionCost;
-pub use felix_computation_api::structs::{ActivityBeginningMinutes, AutoinsertionThreadHandle};
+pub use felix_computation_api::structs::AutoinsertionThreadHandle;
 
 pub use data_impl::helpers::clean_string;
 pub use events::Events;

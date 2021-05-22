@@ -3,9 +3,10 @@ use crate::{
     structs::{
         autoinsertion::NodePool,
         autoinsertion::{Node, NodesSortedByScore},
-        ActivityComputationStaticData, Cost,
+        ActivityComputationStaticData,
     },
 };
+use felix_datatypes::Cost;
 
 use std::collections::btree_map::Entry;
 use std::sync::{mpsc, Arc, Mutex};

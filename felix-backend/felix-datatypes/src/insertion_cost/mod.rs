@@ -1,6 +1,6 @@
-use crate::Time;
+pub mod insertion_cost_minutes;
 
-use felix_computation_api::structs::InsertionCostsMinutes;
+use crate::{Time, InsertionCostsMinutes};
 
 use std::cmp::Ordering;
 

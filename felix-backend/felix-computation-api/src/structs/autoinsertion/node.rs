@@ -1,6 +1,6 @@
 use std::collections::{btree_map::Entry, BTreeMap};
 
-use crate::structs::{ActivityBeginningMinutes, Cost};
+use felix_datatypes::{ActivityBeginningMinutes, Cost};
 
 #[derive(Debug)]
 pub struct Node {

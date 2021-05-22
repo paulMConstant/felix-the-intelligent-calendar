@@ -1,7 +1,7 @@
 use crate::structs::{
     autoinsertion::{Node, NodesSortedByScore},
-    ActivityBeginningMinutes, Cost,
 };
+use felix_datatypes::{ActivityBeginningMinutes, Cost};
 
 use std::sync::{mpsc, Arc, Mutex};
 

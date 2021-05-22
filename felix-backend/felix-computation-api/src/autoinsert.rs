@@ -2,9 +2,10 @@ use crate::{
     compute_insertion_costs,
     structs::{
         autoinsertion::{AutoinsertionThreadHandle, Node, NodePool, Worker},
-        ActivityBeginningMinutes, ActivityComputationStaticData, Cost,
+        ActivityComputationStaticData, 
     },
 };
+use felix_datatypes::{ActivityBeginningMinutes, Cost};
 
 use std::sync::{mpsc, Arc, Mutex};
 

@@ -8,14 +8,11 @@ use super::computation::{
 };
 
 use crate::Time;
-use crate::{
-    computation_structs::{InsertionCost, WorkHoursAndActivityDurationsSorted},
-    Activity, ActivityId, Rgba,
-};
+use crate::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Rgba};
 
 use crate::errors::Result;
 
-use felix_computation_api::structs::ActivityBeginningMinutes;
+use crate::{ActivityBeginningMinutes, InsertionCost};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
