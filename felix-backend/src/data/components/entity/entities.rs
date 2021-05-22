@@ -1,4 +1,4 @@
-use crate::data::{Entity, TimeInterval};
+use crate::data::Entity;
 use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::{Entry, HashMap};
@@ -122,24 +122,6 @@ impl Entities {
             .inner
             .set_send_me_a_mail(send);
         Ok(())
-    }
-
-    // TODO remove this
-    /// Updates the given interval for the given entity.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity does not exist ,if the work interval is not found
-    /// or if the new work interval overlaps with others.
-    pub fn update_custom_work_interval_for(
-        &mut self,
-        entity_name: &str,
-        old_interval: TimeInterval,
-        new_interval: TimeInterval,
-    ) -> Result<()> {
-        self.get_mut_by_name(entity_name)?
-            .inner
-            .update_work_interval(old_interval, new_interval)
     }
 }
 

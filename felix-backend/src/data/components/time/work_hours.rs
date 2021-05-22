@@ -127,6 +127,25 @@ impl WorkHours {
         }
     }
 
+    /// Updates the given interval for the given entity.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity does not exist ,if the work interval is not found
+    /// or if the new work interval overlaps with others.
+    pub fn update_custom_work_interval_for(
+        &mut self,
+        entity_name: &str,
+        old_interval: TimeInterval,
+        new_interval: TimeInterval,
+    ) -> Result<()> {
+        match self.custom_work_intervals.get_mut(entity_name) {
+            None => Err(DoesNotExist::entity_does_not_exist(entity_name)),
+            Some(custom_work_intervals) => 
+                custom_work_intervals.update_work_interval(old_interval, new_interval),
+        }
+    }
+
     /// Returns the custom work hours of the entity with the given name.
     ///
     /// # Errors

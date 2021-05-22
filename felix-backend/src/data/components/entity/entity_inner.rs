@@ -1,6 +1,3 @@
-use super::super::super::WorkHours;
-use crate::data::TimeInterval;
-use crate::errors::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -8,7 +5,6 @@ pub struct EntityInner {
     name: String,
     mail: String,
     send_me_a_mail: bool,
-    custom_work_hours: WorkHours,
 }
 
 impl EntityInner {
@@ -18,7 +14,6 @@ impl EntityInner {
             name,
             mail: String::new(),
             send_me_a_mail: false,
-            custom_work_hours: WorkHours::new(),
         }
     }
 
@@ -55,21 +50,6 @@ impl EntityInner {
     /// Never fails.
     pub fn set_send_me_a_mail(&mut self, send: bool) {
         self.send_me_a_mail = send;
-    }
-
-    /// Removes a work interval to the entity with the given name.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the work interval is not found or if the new interval overlaps
-    /// with existing ones.
-    pub fn update_work_interval(
-        &mut self,
-        old_interval: TimeInterval,
-        new_interval: TimeInterval,
-    ) -> Result<()> {
-        self.custom_work_hours
-            .update_work_interval(old_interval, new_interval)
     }
 }
 

@@ -80,7 +80,7 @@ use std::rc::Rc;
 ///
 /// assert!(entity.send_me_a_mail(), "{}", send_mail);
 /// assert_eq!(entity.mail(), mail);
-/// assert_eq!(data.custom_work_hours_of(entity.name)[0], custom_morning_shift);
+/// assert_eq!(data.custom_work_hours_of(entity.name()).unwrap()[0], custom_morning_shift);
 ///
 /// data.remove_entity(new_name).unwrap();
 /// assert!(data.entities_sorted().is_empty());

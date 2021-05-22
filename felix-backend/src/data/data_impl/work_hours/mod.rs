@@ -204,7 +204,7 @@ impl Data {
             new_interval.duration(),
         )?;
 
-        self.entities
+        self.work_hours
             .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
 
         self.notify_work_hours_changed();
