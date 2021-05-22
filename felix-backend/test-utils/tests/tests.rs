@@ -52,7 +52,8 @@ fn add_custom_interval_for() {
             .with_custom_work_interval_for(entity, interval),
         {
             let entity = data.entities_sorted()[0];
-            let custom_work_hours = entity.custom_work_hours();
+            let custom_work_hours = data.custom_work_hours_of(entity.name())
+                .expect("Could not get custom work hours of entity");
             assert_eq!(custom_work_hours.len(), 1, "Custom work hour was not added");
             assert_eq!(
                 custom_work_hours[0], interval,
@@ -74,7 +75,8 @@ fn add_custom_intervals_for() {
             .with_custom_work_intervals_for(entity, vec![interval1, interval2]),
         {
             let entity = data.entities_sorted()[0];
-            let custom_work_hours = entity.custom_work_hours();
+            let custom_work_hours = data.custom_work_hours_of(entity.name())
+                .expect("Could not get custom work hours of entity");
             assert_eq!(
                 custom_work_hours.len(),
                 2,
