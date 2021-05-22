@@ -171,7 +171,7 @@ impl Data {
             &entity_name,
             interval.duration(),
         )?;
-        self.entities
+        self.work_hours
             .remove_custom_work_interval_for(&entity_name, interval)?;
 
         self.notify_work_hours_changed();

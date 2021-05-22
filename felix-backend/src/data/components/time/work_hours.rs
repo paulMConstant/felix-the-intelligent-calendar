@@ -111,6 +111,21 @@ impl WorkHours {
         }
     }
 
+    /// Removes a work interval from the entity with the given name.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity does not exist or if the work interval is not found.
+    pub fn remove_custom_work_interval_for(
+        &mut self,
+        entity_name: &str,
+        interval: TimeInterval,
+    ) -> Result<()> {
+        match self.custom_work_intervals.get_mut(entity_name) {
+            None => Err(DoesNotExist::entity_does_not_exist(entity_name)),
+            Some(custom_work_intervals) => custom_work_intervals.remove_work_interval(interval),
+        }
+    }
 
     /// Returns the custom work hours of the entity with the given name.
     ///

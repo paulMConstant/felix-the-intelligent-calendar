@@ -57,15 +57,6 @@ impl EntityInner {
         self.send_me_a_mail = send;
     }
 
-    /// Removes the given custom work hour interval from the entity.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the interval is not found.
-    pub fn remove_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
-        self.custom_work_hours.remove_work_interval(interval)
-    }
-
     /// Removes a work interval to the entity with the given name.
     ///
     /// # Errors
