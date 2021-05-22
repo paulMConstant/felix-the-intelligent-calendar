@@ -2,9 +2,8 @@ use crate::app::{
     connect::ui::wrap_duration::wrap_duration, ui::EntitiesAndInsertionTimes, ui::EntityToShow, App,
 };
 
-use felix_backend::data::{clean_string, ActivityId};
 use felix_backend::errors::does_not_exist::DoesNotExist;
-use felix_backend::{Time, MIN_TIME_DISCRETIZATION};
+use felix_backend::{clean_string, ActivityId, Time, MIN_TIME_DISCRETIZATION};
 
 use std::convert::TryFrom;
 use std::rc::Rc;

@@ -5,8 +5,7 @@ use super::{
 };
 
 use crate::app::ui::drag_config::*;
-use felix_backend::data::ActivityId;
-use felix_backend::Time;
+use felix_backend::{ActivityId, Time};
 
 use gtk::prelude::*;
 

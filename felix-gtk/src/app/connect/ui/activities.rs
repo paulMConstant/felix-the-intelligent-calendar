@@ -9,9 +9,8 @@ use crate::app::{
     App,
 };
 
-use felix_backend::data::{clean_string, ActivityId, Rgba};
 use felix_backend::errors::does_not_exist::DoesNotExist;
-use felix_backend::Time;
+use felix_backend::{clean_string, ActivityId, Rgba, Time};
 
 use std::convert::TryFrom;
 

@@ -2,7 +2,7 @@ use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
 
-use crate::data::TimeInterval;
+use crate::TimeInterval;
 
 /// Defines the component type which does not exist.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

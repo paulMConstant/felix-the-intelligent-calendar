@@ -77,7 +77,7 @@ fn test_find_possible_beginnings() {
     // Activity bigger than a work hour
     // Work hours are sorted in ascending order.
     // Note that the sum of activity durations should always be less than that of the work hours.
-    //     This should be tested in felix_backend::data::Data.
+    //     This should be tested in felix_backend::Data.
     let res = find_possible_beginnings(
         &[
             WorkHourInMinutes::new(200, 220),

@@ -1,6 +1,5 @@
 use crate::app::ui::ActivityToShow;
-use felix_backend::data::{Data, TimeInterval};
-use felix_backend::Time;
+use felix_backend::{Data, Time, TimeInterval};
 
 /// Simple struct holding an entity's name, its activities and work hours.
 pub struct EntityToShow {

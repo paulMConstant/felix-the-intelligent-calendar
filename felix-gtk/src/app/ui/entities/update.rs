@@ -3,7 +3,7 @@ use crate::app::ui::Ui;
 
 use gtk::prelude::*;
 
-use felix_backend::data::{Data, Entity};
+use felix_backend::{Data, Entity};
 
 impl Ui {
     pub(super) fn update_current_entity_without_ui(&mut self, entity: Option<Entity>) {

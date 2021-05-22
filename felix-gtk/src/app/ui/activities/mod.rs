@@ -10,7 +10,7 @@ use crate::app::ui::{
     Ui,
 };
 
-use felix_backend::data::{Activity, Data};
+use felix_backend::{Activity, Data};
 
 use gtk::prelude::*;
 

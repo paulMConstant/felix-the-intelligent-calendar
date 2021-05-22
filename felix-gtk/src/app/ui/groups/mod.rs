@@ -3,7 +3,7 @@ mod update;
 
 use crate::app::ui::{groups_treeview_config::*, helpers::collections::get_next_element, Ui};
 
-use felix_backend::data::{Data, Group};
+use felix_backend::{Data, Group};
 
 use gtk::prelude::*;
 

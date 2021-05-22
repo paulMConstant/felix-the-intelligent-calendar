@@ -1,6 +1,6 @@
 use crate::app::ui::helpers::format::format_time_spin_button;
 
-use felix_backend::data::TimeInterval;
+use felix_backend::TimeInterval;
 
 use glib::clone;
 use gtk::prelude::*;

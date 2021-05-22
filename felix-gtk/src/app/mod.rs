@@ -7,7 +7,7 @@ pub mod save_state;
 pub mod ui;
 
 use crate::config::{APP_NAME, DATA_CONF_FILE};
-use felix_backend::data::Data;
+use felix_backend::Data;
 use ui::Ui;
 
 use gio::ApplicationExt;

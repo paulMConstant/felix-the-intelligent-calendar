@@ -3,7 +3,7 @@ mod work_hours_builder;
 use crate::app::ui::Ui;
 pub use work_hours_builder::WorkHoursBuilder;
 
-use felix_backend::data::{Data, TimeInterval};
+use felix_backend::{Data, TimeInterval};
 
 impl Ui {
     pub fn on_add_work_hour(&self, current_work_hours: Vec<TimeInterval>) {

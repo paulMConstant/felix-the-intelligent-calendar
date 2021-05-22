@@ -1,7 +1,7 @@
 use crate::app::ui::helpers::collections::get_next_element;
 use crate::app::ui::Ui;
 
-use felix_backend::data::{Data, Entity, TimeInterval};
+use felix_backend::{Data, Entity, TimeInterval};
 
 mod update;
 
