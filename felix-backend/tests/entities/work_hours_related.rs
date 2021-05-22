@@ -28,3 +28,22 @@ fn rename_entity_keeps_custom_work_hours() {
         assert_eq!(custom_work_hours[0], custom_time_interval);
     });
 }
+ #[test]
+fn remove_entity_resets_custom_work_hours_for_future_entities() {
+    let name = "Paul";
+    let custom_time_interval = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
+    test_ok!(
+        data,
+        DataBuilder::new()
+        .with_entity(name)
+        .with_custom_work_interval_for(name, custom_time_interval),
+    {
+        data.remove_entity(name).expect("Could not remove entity");
+        // Check that the custom work hours for this name have been erased
+        // Create a new entity with the same name and check that they don't have any
+        data.add_entity(name).expect("Could not add entity");
+        assert!(data.custom_work_hours_of(name)
+                .expect("Could not get custom work hours of entity")
+                .is_empty());
+    });
+}
