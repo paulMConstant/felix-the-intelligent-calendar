@@ -99,7 +99,7 @@ impl Data {
     {
         let entity_name = clean_string(entity_name)?;
 
-        Ok(self.work_hours.custom_work_intervals_of(&entity_name))
+        self.work_hours.custom_work_intervals_of(&entity_name)
     }
 
     /// Returns the work hours of the entity with the formatted given name.

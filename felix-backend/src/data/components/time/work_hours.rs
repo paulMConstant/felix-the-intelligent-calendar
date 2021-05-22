@@ -1,4 +1,5 @@
 use crate::{data::{EntityName, TimeInterval}, errors::Result};
+use crate::errors::does_not_exist::DoesNotExist;
 use super::work_intervals::WorkIntervals;
 
 use std::collections::HashMap;
@@ -60,16 +61,25 @@ impl WorkHours {
         self.global_work_intervals.update_work_interval(old_interval, new_interval)
     }
 
-    /// Returns the custom work hours of the entity with the given name.
-    ///
+    /// Add empty custom work hours for the given entity.
+    /// 
     /// # Panics
     ///
-    /// Panics if the custom work hours are not found.
-    #[must_use]
-    pub fn custom_work_intervals_of(&self, entity_name: &str) -> Vec<TimeInterval> {
-        self.custom_work_intervals.get(entity_name)
-            .unwrap_or_else(|| panic!("The custom work hours of {} are not registered", entity_name))
-            .work_intervals()
-            .clone()
+    /// Panics if the entity name already exists as a key.
+    pub fn add_empty_custom_work_intervals_for(&mut self, entity_name: String) {
+        assert!(self.custom_work_intervals.get(&entity_name).is_none(), "The custom work hours of {} are already registered", &entity_name);
+        self.custom_work_intervals.insert(entity_name, WorkIntervals::new());
+    }
+
+    /// Returns the custom work hours of the entity with the given name.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity is not registered (we assume it does not exist).
+    pub fn custom_work_intervals_of(&self, entity_name: &str) -> Result<Vec<TimeInterval>> {
+        match self.custom_work_intervals.get(entity_name) {
+            None => Err(DoesNotExist::entity_does_not_exist(entity_name)),
+            Some(custom_work_intervals) => Ok(custom_work_intervals.work_intervals().clone()),
+        }
     }
 }
