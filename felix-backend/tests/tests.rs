@@ -28,6 +28,7 @@ mod time {
     mod time;
     mod time_interval;
     mod work_hours;
+    mod custom_work_hours;
 }
 
 mod errors {
