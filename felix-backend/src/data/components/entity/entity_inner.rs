@@ -57,15 +57,6 @@ impl EntityInner {
         self.send_me_a_mail = send;
     }
 
-    /// Adds a custom work hour interval to the entity.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the interval is overlapping with an existing one.
-    pub fn add_work_interval(&mut self, interval: TimeInterval) -> Result<()> {
-        self.custom_work_hours.add_work_interval(interval)
-    }
-
     /// Removes the given custom work hour interval from the entity.
     ///
     /// # Errors

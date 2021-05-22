@@ -125,21 +125,6 @@ impl Entities {
     }
 
     // TODO remove this
-    /// Adds a work interval to the entity with the given name.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity does not exist or if the work interval overlaps with another.
-    pub fn add_custom_work_interval_for(
-        &mut self,
-        entity_name: &str,
-        interval: TimeInterval,
-    ) -> Result<()> {
-        self.get_mut_by_name(entity_name)?
-            .inner
-            .add_work_interval(interval)
-    }
-
     /// Removes a work interval from the entity with the given name.
     ///
     /// # Errors

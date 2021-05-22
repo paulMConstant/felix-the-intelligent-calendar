@@ -71,6 +71,47 @@ impl WorkHours {
         self.custom_work_intervals.insert(entity_name, WorkIntervals::new());
     }
 
+    /// Updates the key for the custom work hours of an entity whose name changed.
+    /// 
+    /// # Panics
+    ///
+    /// Panics if the entity whose name changed is not found.
+    pub fn rename_entity_for_custom_work_hours(&mut self, old_name: &str, new_name: String) {
+        let custom_work_intervals = self
+            .custom_work_intervals
+            .remove(old_name)
+            .unwrap_or_else(|| panic!("The custom work hours of {} are not registered", old_name));
+        self.custom_work_intervals.insert(new_name, custom_work_intervals);
+    }
+
+    /// Unregisters the custom work hours of an entity. This should be done when an entity is
+    /// removed.
+    /// 
+    /// # Panics
+    ///
+    /// Panics if the entity has no custom work hours (not even empty ones).
+    pub fn remove_custom_work_hours_of(&mut self, entity_name: &str) {
+        self.custom_work_intervals.remove(entity_name)
+            .unwrap_or_else(|| panic!("The custom work hours of {} are not registered", entity_name));
+    }
+
+    /// Adds a work interval to the entity with the given name.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity does not exist or if the work interval overlaps with another.
+    pub fn add_custom_work_interval_for(
+        &mut self,
+        entity_name: &str,
+        interval: TimeInterval,
+    ) -> Result<()> {
+        match self.custom_work_intervals.get_mut(entity_name) {
+            None => Err(DoesNotExist::entity_does_not_exist(entity_name)),
+            Some(custom_work_intervals) => custom_work_intervals.add_work_interval(interval),
+        }
+    }
+
+
     /// Returns the custom work hours of the entity with the given name.
     ///
     /// # Errors

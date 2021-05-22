@@ -69,6 +69,7 @@ impl Data {
         // in all activities and groups
         self.activities.remove_entity_from_all(&name);
         self.groups.remove_entity_from_all(&name);
+        self.work_hours.remove_custom_work_hours_of(&name);
         let position_of_removed_entity = position_of_removed_entity.expect(
             "If the entity was removed then it existed, therefore position should be valid",
         );
@@ -104,6 +105,9 @@ impl Data {
         // Then, rename in activities
         self.activities
             .rename_entity_in_all(&old_name, new_name.clone());
+        // Then, rename for custom work hours
+        self.work_hours
+            .rename_entity_for_custom_work_hours(&old_name, new_name.clone());
 
         let entity = self
             .entity(&new_name)
