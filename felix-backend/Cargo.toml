@@ -8,6 +8,7 @@ workspace = "../"
 [dependencies]
 felix-computation-api = { path = "felix-computation-api" }
 felix-datatypes = { path = "felix-datatypes" }
+felix-errors = { path = "felix-errors" }
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 paste = "1.0.4"
 num_cpus = "1.0"

@@ -1,4 +1,4 @@
-use felix_backend::errors::name_taken::{GroupOrEntity, NameTaken};
+use felix_errors::name_taken::{GroupOrEntity, NameTaken};
 
 #[test]
 fn en_display_name_taken_by_entity() {

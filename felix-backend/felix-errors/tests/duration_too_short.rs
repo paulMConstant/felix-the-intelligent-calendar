@@ -1,4 +1,4 @@
-use felix_backend::errors::duration_too_short::DurationTooShort;
+use felix_errors::duration_too_short::DurationTooShort;
 
 #[test]
 fn en_display_duration_too_short() {

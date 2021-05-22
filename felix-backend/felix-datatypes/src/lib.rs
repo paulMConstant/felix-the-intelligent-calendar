@@ -1,2 +1,2 @@
 mod time;
-pub use time::{TimeInterval, Time, MIN_TIME_DISCRETIZATION};
+pub use time::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};

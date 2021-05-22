@@ -28,18 +28,3 @@ mod time {
     mod custom_work_hours;
     mod work_hours;
 }
-
-mod errors {
-    mod add_entity_to_inserted_activity_invalid_spot;
-    mod already_in;
-    mod change_work_hours_while_activity_inserted;
-    mod does_not_exist;
-    mod duration_too_short;
-    mod empty_name;
-    mod interval_overlaps;
-    mod invalid_insertion;
-    mod invalid_interval;
-    mod name_taken;
-    mod not_enough_time;
-    mod not_in;
-}

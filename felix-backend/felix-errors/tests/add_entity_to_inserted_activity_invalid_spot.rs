@@ -1,4 +1,4 @@
-use felix_backend::errors::add_entity_to_inserted_activity_invalid_spot::{
+use felix_errors::add_entity_to_inserted_activity_invalid_spot::{
     AddEntityToInsertedActivityInvalidSpot, WhySpotIsInvalid,
 };
 

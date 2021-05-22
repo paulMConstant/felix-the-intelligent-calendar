@@ -1,4 +1,4 @@
-use felix_backend::errors::already_in::{ActivityOrGroup, AlreadyIn, EntityOrGroup};
+use felix_errors::already_in::{ActivityOrGroup, AlreadyIn, EntityOrGroup};
 
 #[test]
 fn en_display_entity_already_in_group() {

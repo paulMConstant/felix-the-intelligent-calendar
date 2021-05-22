@@ -1,5 +1,5 @@
-use felix_backend::{Time, TimeInterval};
-use felix_backend::errors::does_not_exist::{ComponentType, DoesNotExist};
+use felix_datatypes::{Time, TimeInterval};
+use felix_errors::does_not_exist::{ComponentType, DoesNotExist};
 
 #[test]
 fn en_display_interval_does_not_exist() {

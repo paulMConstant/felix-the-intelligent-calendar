@@ -1,4 +1,4 @@
-use felix_backend::errors::invalid_interval::InvalidInterval;
+use felix_errors::invalid_interval::InvalidInterval;
 
 #[test]
 fn en_display_invalid_interval() {

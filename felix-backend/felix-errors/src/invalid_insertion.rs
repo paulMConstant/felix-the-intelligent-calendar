@@ -2,7 +2,7 @@ use gettextrs::gettext as tr;
 use std::error::Error;
 use std::fmt;
 
-use crate::{Time, MIN_TIME_DISCRETIZATION};
+use felix_datatypes::{Time, MIN_TIME_DISCRETIZATION};
 
 type ActivityName = String;
 

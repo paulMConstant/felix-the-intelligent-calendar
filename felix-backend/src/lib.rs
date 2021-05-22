@@ -12,9 +12,6 @@
 
 extern crate num_cpus;
 
-/// Errors used in data.
-pub mod errors;
-
 mod components;
 pub(crate) mod computation_structs;
 mod data_impl;
@@ -27,7 +24,8 @@ use components::{
     time::work_hours::WorkHours,
 };
 
-pub use felix_datatypes::{TimeInterval, Time, MIN_TIME_DISCRETIZATION};
+pub use felix_datatypes::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+pub use felix_errors as errors;
 
 pub use components::{
     activity::{Activity, ActivityId, ActivityInsertionCosts, Rgba},

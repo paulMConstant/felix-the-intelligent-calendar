@@ -1,4 +1,4 @@
-use felix_backend::errors::empty_name::EmptyName;
+use felix_errors::empty_name::EmptyName;
 
 #[test]
 fn en_display_empty_name() {

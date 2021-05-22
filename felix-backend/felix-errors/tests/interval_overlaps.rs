@@ -1,4 +1,4 @@
-use felix_backend::errors::interval_overlaps::IntervalOverlaps;
+use felix_errors::interval_overlaps::IntervalOverlaps;
 
 #[test]
 fn en_display_interval_overlaps() {

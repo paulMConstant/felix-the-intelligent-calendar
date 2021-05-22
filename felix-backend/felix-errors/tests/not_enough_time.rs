@@ -1,4 +1,4 @@
-use felix_backend::errors::not_enough_time::{NotEnoughTime, WhyNotEnoughTime};
+use felix_errors::not_enough_time::{NotEnoughTime, WhyNotEnoughTime};
 
 #[test]
 fn en_display_activity_added() {

@@ -1,4 +1,4 @@
-use felix_backend::errors::not_in::{ActivityOrGroup, EntityOrGroup, NotIn};
+use felix_errors::not_in::{ActivityOrGroup, EntityOrGroup, NotIn};
 
 #[test]
 fn en_display_entity_not_in_group() {

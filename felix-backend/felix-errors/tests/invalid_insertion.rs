@@ -1,7 +1,5 @@
-use felix_backend::Time;
-use felix_backend::errors::invalid_insertion::{
-    InvalidInsertion, InvalidOrNotComputed, WhyInvalid,
-};
+use felix_datatypes::Time;
+use felix_errors::invalid_insertion::{InvalidInsertion, InvalidOrNotComputed, WhyInvalid};
 
 #[test]
 fn en_display_cannot_fit_or_would_block_other_activities() {
