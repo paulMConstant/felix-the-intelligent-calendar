@@ -9,7 +9,7 @@
 
 use felix_backend::data::TimeInterval;
 use felix_backend::Time;
-use test_utils::{Activity, DataBuilder};
+use felix_test_utils::{Activity, DataBuilder};
 
 // *** Add entities ***
 #[test]

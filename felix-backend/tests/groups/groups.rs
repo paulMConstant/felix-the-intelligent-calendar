@@ -7,7 +7,7 @@
 //! - Getter
 //! - Edition (name)
 
-use test_utils::{DataBuilder, Group};
+use felix_test_utils::{DataBuilder, Group};
 
 // Test organization
 // - Add group

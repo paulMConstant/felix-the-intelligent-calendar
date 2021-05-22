@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate test_utils;
+extern crate felix_test_utils;
 
 #[macro_use]
 extern crate assert_not_modified;

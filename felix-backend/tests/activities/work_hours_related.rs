@@ -1,7 +1,7 @@
 use felix_backend::data::TimeInterval;
 use felix_backend::Time;
 
-use test_utils::{DataBuilder, Activity, test_ok};
+use felix_test_utils::{DataBuilder, Activity, test_ok};
 
 #[test]
 fn on_work_hours_changed_update_insertion_costs() {

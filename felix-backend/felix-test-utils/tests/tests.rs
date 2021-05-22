@@ -1,9 +1,9 @@
 #[macro_use]
-extern crate test_utils;
+extern crate felix_test_utils;
 
 use felix_backend::data::TimeInterval;
 use felix_backend::{Time, MIN_TIME_DISCRETIZATION};
-use test_utils::{Activity, DataBuilder, Group};
+use felix_test_utils::{Activity, DataBuilder, Group};
 
 #[test]
 fn add_entity() {

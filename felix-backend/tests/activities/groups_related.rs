@@ -4,7 +4,7 @@
 //! - Addition of groups to the activity
 //! - Deletion of groups from the activity
 
-use test_utils::{Activity, DataBuilder, Group};
+use felix_test_utils::{Activity, DataBuilder, Group};
 
 // *** Add groups ***
 #[test]

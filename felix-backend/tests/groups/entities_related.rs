@@ -6,7 +6,7 @@
 //! - Renaming groups
 
 use felix_backend::Time;
-use test_utils::{Activity, DataBuilder, Group};
+use felix_test_utils::{Activity, DataBuilder, Group};
 
 // *** Add entity to group ***
 #[test]

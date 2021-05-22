@@ -1,6 +1,6 @@
 use felix_backend::data::TimeInterval;
 use felix_backend::Time;
-use test_utils::DataBuilder;
+use felix_test_utils::DataBuilder;
 
 #[test]
 fn rename_entity_keeps_custom_work_hours() { 

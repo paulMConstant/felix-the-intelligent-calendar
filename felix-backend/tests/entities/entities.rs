@@ -7,7 +7,7 @@
 //! - Edition (name, mail, send_me_a_mail)
 //! - Getter
 
-use test_utils::DataBuilder;
+use felix_test_utils::DataBuilder;
 
 // *** Add ***
 #[test]

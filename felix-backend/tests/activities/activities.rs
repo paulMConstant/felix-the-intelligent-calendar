@@ -11,7 +11,7 @@
 
 use felix_backend::data::{Rgba, TimeInterval};
 use felix_backend::Time;
-use test_utils::{Activity, DataBuilder};
+use felix_test_utils::{Activity, DataBuilder};
 
 use std::collections::BTreeSet;
 
