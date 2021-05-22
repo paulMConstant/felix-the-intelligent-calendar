@@ -30,7 +30,12 @@ impl Data {
             .iter()
             .filter(|entity| {
                 self.custom_work_hours_of(entity.name())
-                    .unwrap_or_else(|_| panic!("The custom work hours of {} are not registered", entity.name()))
+                    .unwrap_or_else(|_| {
+                        panic!(
+                            "The custom work hours of {} are not registered",
+                            entity.name()
+                        )
+                    })
                     .is_empty()
             })
             .map(|entity| entity.name())

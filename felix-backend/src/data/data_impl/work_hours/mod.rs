@@ -1,7 +1,7 @@
-mod inner;
 mod error_checks;
+mod inner;
 
-use crate::data::{Time, Data, TimeInterval, clean_string};
+use crate::data::{clean_string, Data, Time, TimeInterval};
 use crate::errors::Result;
 
 /// Operations on work hours
@@ -89,13 +89,15 @@ impl Data {
     }
 
     /// Returns the custom work hours of the entity with the formatted given name.
-    /// 
+    ///
     /// If the entity does not have custom work hours, the resulting vector will be empty.
-    /// 
+    ///
     /// # Errors
     ///
     /// Returns Err if the entity with given name is not found.
-    pub fn custom_work_hours_of<S>(&self, entity_name: S) -> Result<Vec<TimeInterval>> where S: Into<String>,
+    pub fn custom_work_hours_of<S>(&self, entity_name: S) -> Result<Vec<TimeInterval>>
+    where
+        S: Into<String>,
     {
         let entity_name = clean_string(entity_name)?;
 
@@ -204,8 +206,11 @@ impl Data {
             new_interval.duration(),
         )?;
 
-        self.work_hours
-            .update_custom_work_interval_for(&entity_name, old_interval, new_interval)?;
+        self.work_hours.update_custom_work_interval_for(
+            &entity_name,
+            old_interval,
+            new_interval,
+        )?;
 
         self.notify_work_hours_changed();
         Ok(())

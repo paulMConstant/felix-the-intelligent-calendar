@@ -50,11 +50,16 @@ impl App {
                     .borrow()
                     .current_entity()
                     .expect("Current entity should be set before adding custom work hours");
-                ui.borrow_mut()
-                    .on_add_custom_work_hour(data
-                                             .borrow()
-                                             .custom_work_hours_of(current_entity.name())
-                        .unwrap_or_else(|_| panic!("Could not get custom work hours of {}", current_entity.name())));
+                ui.borrow_mut().on_add_custom_work_hour(
+                    data.borrow()
+                        .custom_work_hours_of(current_entity.name())
+                        .unwrap_or_else(|_| {
+                            panic!(
+                                "Could not get custom work hours of {}",
+                                current_entity.name()
+                            )
+                        }),
+                );
             })
         );
     }
@@ -92,7 +97,12 @@ impl App {
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = data
                 .custom_work_hours_of(current_entity.name())
-                .unwrap_or_else(|_| panic!("Could not get the custom work hours of {}", current_entity.name()));
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "Could not get the custom work hours of {}",
+                        current_entity.name()
+                    )
+                });
             let interval = TimeInterval::new(beginning, end);
 
             if position < work_hours.len() {
@@ -131,7 +141,12 @@ impl App {
                 .expect("Current entity should be set before adding custom work hours");
             let work_hours = data
                 .custom_work_hours_of(current_entity.name())
-                .unwrap_or_else(|_| panic!("Could not get the custom work hours of {}", current_entity.name()));
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "Could not get the custom work hours of {}",
+                        current_entity.name()
+                    )
+                });
 
             if position < work_hours.len() {
                 reset_custom_work_hours_if_err!(

@@ -25,10 +25,10 @@ mod groups {
 }
 
 mod time {
+    mod custom_work_hours;
     mod time;
     mod time_interval;
     mod work_hours;
-    mod custom_work_hours;
 }
 
 mod errors {

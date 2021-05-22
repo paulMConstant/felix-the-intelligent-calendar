@@ -3,7 +3,7 @@ use crate::app::ui::Ui;
 
 use gtk::prelude::*;
 
-use felix_backend::data::{Entity, Data};
+use felix_backend::data::{Data, Entity};
 
 impl Ui {
     pub(super) fn update_current_entity_without_ui(&mut self, entity: Option<Entity>) {
@@ -53,9 +53,15 @@ impl Ui {
             entity_send_mail_switch
         );
 
-        self.custom_work_hours_builder
-            .on_work_hours_changed(data.custom_work_hours_of(current_entity.name())
-                .unwrap_or_else(|_| panic!("Could not fetch custom work hours of {}", current_entity.name())));
+        self.custom_work_hours_builder.on_work_hours_changed(
+            data.custom_work_hours_of(current_entity.name())
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "Could not fetch custom work hours of {}",
+                        current_entity.name()
+                    )
+                }),
+        );
     }
 
     /// Updates the treeview of entities and selects the given row if not None.

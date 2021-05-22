@@ -39,7 +39,8 @@ impl Data {
         // Check if a group has the same name
         self.check_name_taken_by_group(&name)?;
         self.entities.add(name.clone())?;
-        self.work_hours.add_empty_custom_work_intervals_for(name.clone());
+        self.work_hours
+            .add_empty_custom_work_intervals_for(name.clone());
         let entity = self
             .entity(&name)
             .expect("Entity was just added so it exists");

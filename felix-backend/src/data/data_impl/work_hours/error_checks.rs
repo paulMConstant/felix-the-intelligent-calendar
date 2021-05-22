@@ -91,10 +91,7 @@ impl Data {
         interval: &TimeInterval,
     ) -> Result<()> {
         // First, check if the entity has a corresponding custom work interval
-        if self
-            .custom_work_hours_of(entity_name)?
-            .contains(interval)
-        {
+        if self.custom_work_hours_of(entity_name)?.contains(interval) {
             Ok(())
         } else {
             Err(DoesNotExist::interval_does_not_exist(*interval))

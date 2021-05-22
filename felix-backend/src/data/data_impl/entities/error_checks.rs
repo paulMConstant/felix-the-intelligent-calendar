@@ -1,5 +1,5 @@
 use crate::data::Data;
-use crate::errors::{name_taken::NameTaken, Result, };
+use crate::errors::{name_taken::NameTaken, Result};
 
 impl Data {
     /// Checks if the given name is taken by a group.

@@ -4,7 +4,9 @@ mod data_impl;
 mod events;
 
 use components::{
-    activity::activities::Activities, entity::{EntityName, entities::Entities}, group::groups::Groups,
+    activity::activities::Activities,
+    entity::{entities::Entities, EntityName},
+    group::groups::Groups,
     time::work_hours::WorkHours,
 };
 

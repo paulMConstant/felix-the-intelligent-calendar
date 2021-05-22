@@ -1,4 +1,4 @@
-use crate::data::{Time, Data};
+use crate::data::{Data, Time};
 use crate::errors::{
     change_work_hours_while_activity_inserted::ChangeWorkHoursWhileActivityInserted, Result,
 };
