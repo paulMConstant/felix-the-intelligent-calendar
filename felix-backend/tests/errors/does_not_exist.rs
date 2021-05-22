@@ -25,16 +25,6 @@ fn en_display_group_does_not_exist() {
     assert_eq!(error.to_string(), "The group 'Group Name' does not exist.");
 }
 
-#[test]
-fn en_display_activity_does_not_exist() {
-    let id = 3;
-    let error = DoesNotExist::activity_does_not_exist(id);
-    assert_eq!(
-        error.to_string(),
-        "The activity with id '3' does not exist."
-    );
-}
-
 // TODO translate
 #[test]
 fn fr_display_interval_does_not_exist() {}
@@ -44,9 +34,6 @@ fn fr_display_entity_does_not_exist() {}
 
 #[test]
 fn fr_display_group_does_not_exist() {}
-
-#[test]
-fn fr_display_activity_does_not_exist() {}
 
 #[test]
 fn interval_does_not_exist_getters() {
@@ -70,11 +57,4 @@ fn group_does_not_exist_getters() {
     let error = DoesNotExist::group_does_not_exist(name);
     assert_eq!(error.what(), ComponentType::Group);
     assert_eq!(error.who(), "Group Name");
-}
-#[test]
-fn activity_does_not_exist_getters() {
-    let id = 3;
-    let error = DoesNotExist::activity_does_not_exist(id);
-    assert_eq!(error.what(), ComponentType::Activity);
-    assert_eq!(error.who(), "3");
 }
