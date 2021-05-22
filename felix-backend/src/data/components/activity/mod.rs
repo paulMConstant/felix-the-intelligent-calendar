@@ -84,7 +84,7 @@ impl Activity {
     /// Returns true if the activity has a non-null duration and at least one participant.
     #[must_use]
     pub fn can_be_inserted(&self) -> bool {
-        return self.duration() > Time::new(0, 0) && !self.entities_sorted().is_empty();
+        self.duration() > Time::new(0, 0) && !self.entities_sorted().is_empty()
     }
 
     /// Simple getter for the color.
