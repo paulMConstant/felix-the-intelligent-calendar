@@ -1,7 +1,6 @@
 pub mod entities;
 mod entity_inner;
 
-use crate::data::TimeInterval;
 use entity_inner::EntityInner;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -49,13 +48,6 @@ impl Entity {
     #[must_use]
     pub fn send_me_a_mail(&self) -> bool {
         self.inner.send_me_a_mail()
-    }
-
-    /// Simple getter for the custom work hours of the entity.
-    /// If you wish to fetch the work hours of the entity, use Data::work_hours_of().
-    #[must_use]
-    pub fn custom_work_hours(&self) -> Vec<TimeInterval> {
-        self.inner.custom_work_hours().clone()
     }
 }
 

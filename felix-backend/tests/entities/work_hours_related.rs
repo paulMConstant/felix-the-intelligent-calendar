@@ -10,9 +10,8 @@ fn simple_add_custom_work_interval() {
             .expect("Could not add custom work interval");
 
         let custom_work_hours = data
-            .entity(entity)
-            .expect("Could not get entity by name")
-            .custom_work_hours();
+            .custom_work_hours_of(entity)
+            .expect("Could not get entity by name");
 
         assert_eq!(
             custom_work_hours.len(),
@@ -107,13 +106,12 @@ fn check_custom_work_intervals_sorted() {
             .with_entity(entity)
             .with_custom_work_intervals_for(entity, vec![interval1, interval2, interval3]),
         {
-            let work_hours = data
-                .entity(entity)
-                .expect("Could not get entity by name")
-                .custom_work_hours();
-            assert_eq!(work_hours[0], interval1, "Intervals are not sorted");
-            assert_eq!(work_hours[1], interval2, "Intervals are not sorted");
-            assert_eq!(work_hours[2], interval3, "Intervals are not sorted");
+            let custom_work_hours = data
+                .custom_work_hours_of(entity)
+                .expect("Could not get entity by name");
+            assert_eq!(custom_work_hours[0], interval1, "Intervals are not sorted");
+            assert_eq!(custom_work_hours[1], interval2, "Intervals are not sorted");
+            assert_eq!(custom_work_hours[2], interval3, "Intervals are not sorted");
         }
     );
 }
@@ -131,13 +129,12 @@ fn simple_remove_custom_work_interval() {
         {
             data.remove_custom_work_interval_for(entity, interval1)
                 .expect("Could not remove custom work interval");
-            let work_hours = data
-                .entity(entity)
-                .expect("Could not get entity by name")
-                .custom_work_hours();
-            assert_eq!(work_hours.len(), 1, "Custom work interval was not removed");
+            let custom_work_hours = data
+                .custom_work_hours_of(entity)
+                .expect("Could not get entity by name");
+            assert_eq!(custom_work_hours.len(), 1, "Custom work interval was not removed");
             assert_eq!(
-                work_hours[0], interval2,
+                custom_work_hours[0], interval2,
                 "The wrong time interval was removed"
             );
         }
@@ -391,9 +388,8 @@ fn work_hours_of_with_custom_work_hours() {
                 .work_hours_of(entity)
                 .expect("Could not fetch work hours of entity");
             let custom_work_hours = data
-                .entity(entity)
-                .expect("Could not get entity by name")
-                .custom_work_hours();
+                .custom_work_hours_of(entity)
+                .expect("Could not get entity by name");
 
             assert_eq!(
                 entity_work_hours, custom_work_hours,

@@ -28,7 +28,11 @@ impl Data {
         let entities_to_queue = self
             .entities_sorted()
             .iter()
-            .filter(|entity| entity.custom_work_hours().is_empty())
+            .filter(|entity| {
+                self.custom_work_hours_of(entity.name())
+                    .unwrap_or_else(|_| panic!("The custom work hours of {} are not registered", entity.name()))
+                    .is_empty()
+            })
             .map(|entity| entity.name())
             .collect::<Vec<_>>();
         self.queue_entities(entities_to_queue);

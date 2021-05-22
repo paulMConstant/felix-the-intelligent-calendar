@@ -68,8 +68,7 @@ impl Data {
         interval_duration: Time,
     ) -> Result<()> {
         if self
-            .entity(entity_name)? // Check if entity exists here
-            .custom_work_hours()
+            .custom_work_hours_of(entity_name)? // Check if entity exists here
             .is_empty()
         {
             let activity_duration = self.time_taken_by_activities(&entity_name);
@@ -93,8 +92,7 @@ impl Data {
     ) -> Result<()> {
         // First, check if the entity has a corresponding custom work interval
         if self
-            .entity(entity_name)?
-            .custom_work_hours()
+            .custom_work_hours_of(entity_name)?
             .contains(interval)
         {
             Ok(())
@@ -120,7 +118,7 @@ impl Data {
         interval_duration: Time,
     ) -> Result<()> {
         // Check if the entity has enough free time
-        let custom_work_hours = self.entity(entity_name)?.custom_work_hours();
+        let custom_work_hours = self.custom_work_hours_of(entity_name)?;
         let entity_time = if custom_work_hours.len() == 1 {
             // This is the last custom work hours.
             // We should check that the global work hours will suffice.

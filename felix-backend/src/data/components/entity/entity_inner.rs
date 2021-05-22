@@ -39,11 +39,6 @@ impl EntityInner {
         self.send_me_a_mail
     }
 
-    #[must_use]
-    pub fn custom_work_hours(&self) -> &Vec<TimeInterval> {
-        self.custom_work_hours.work_intervals()
-    }
-
     // *** Setters ***
 
     /// Sets the name of the entity.

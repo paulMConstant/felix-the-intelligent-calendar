@@ -113,7 +113,7 @@ impl Data {
     where
         S: Into<String>,
     {
-        let custom_work_hours = self.entity(entity_name)?.custom_work_hours();
+        let custom_work_hours = self.custom_work_hours_of(entity_name)?;
         Ok(if custom_work_hours.is_empty() {
             self.work_hours()
         } else {
