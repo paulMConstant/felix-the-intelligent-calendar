@@ -7,7 +7,8 @@
 //! - Changing the duration of the activity (makes sure all entities have enough time)
 //! - Making sure insertion costs change when entities are added / removed
 
-use felix_backend::data::{Time, TimeInterval};
+use felix_backend::data::TimeInterval;
+use felix_backend::Time;
 use test_utils::{Activity, DataBuilder};
 
 // *** Add entities ***

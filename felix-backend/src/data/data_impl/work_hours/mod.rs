@@ -1,8 +1,9 @@
 mod error_checks;
 mod inner;
 
-use crate::data::{clean_string, Data, Time, TimeInterval};
+use crate::data::{clean_string, Data, TimeInterval};
 use crate::errors::Result;
+use crate::Time;
 
 /// Operations on work hours
 impl Data {

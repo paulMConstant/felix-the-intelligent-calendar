@@ -1,7 +1,8 @@
 use super::drawing::get_height_for_one_hour;
 use crate::app::ui::EntityToShow;
 
-use felix_backend::data::{ActivityInsertionCosts, Time, MIN_TIME_DISCRETIZATION};
+use felix_backend::data::ActivityInsertionCosts;
+use felix_backend::{Time, MIN_TIME_DISCRETIZATION};
 
 const MIN_SCHEDULE_WIDTH: f64 = 350.0;
 const MAX_SCHEDULE_WIDTH: f64 = 550.0;

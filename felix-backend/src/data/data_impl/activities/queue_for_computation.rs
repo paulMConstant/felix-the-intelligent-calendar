@@ -1,4 +1,5 @@
-use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity, Data, Time};
+use crate::data::{computation_structs::WorkHoursAndActivityDurationsSorted, Activity, Data};
+use crate::Time;
 
 use std::collections::{HashMap, HashSet};
 

@@ -1,7 +1,8 @@
 #[macro_use]
 extern crate test_utils;
 
-use felix_backend::data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use felix_backend::data::TimeInterval;
+use felix_backend::{Time, MIN_TIME_DISCRETIZATION};
 use test_utils::{Activity, DataBuilder, Group};
 
 #[test]

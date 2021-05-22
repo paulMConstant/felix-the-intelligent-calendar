@@ -5,7 +5,8 @@
 //! - Custom work hours on inserted activities
 
 use test_utils::{Activity, DataBuilder};
-use felix_backend::data::{Time, TimeInterval};
+use felix_backend::data::TimeInterval;
+use felix_backend::Time;
 
 #[test]
 fn rename_entity_check_renamed_in_activity() {

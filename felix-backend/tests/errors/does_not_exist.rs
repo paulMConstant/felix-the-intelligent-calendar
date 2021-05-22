@@ -1,4 +1,5 @@
-use felix_backend::data::{Time, TimeInterval};
+use felix_backend::data::TimeInterval;
+use felix_backend::Time;
 use felix_backend::errors::does_not_exist::{ComponentType, DoesNotExist};
 
 #[test]

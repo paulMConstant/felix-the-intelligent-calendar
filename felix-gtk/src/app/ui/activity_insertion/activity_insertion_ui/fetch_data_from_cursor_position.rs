@@ -2,7 +2,7 @@ use super::Schedules;
 
 use super::drawing::{get_center_of_remove_button, REMOVE_BUTTON_RADIUS};
 use crate::app::ui::ActivityToShow;
-use felix_backend::data::Time;
+use felix_backend::Time;
 
 #[must_use]
 pub(super) fn get_name_of_entity_from_x(x: i32, schedules: &Schedules) -> Option<String> {

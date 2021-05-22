@@ -1,4 +1,5 @@
-use crate::data::{Time, TimeInterval};
+use crate::data::TimeInterval;
+use crate::Time;
 
 use felix_computation_api::structs::WorkHourInMinutes;
 

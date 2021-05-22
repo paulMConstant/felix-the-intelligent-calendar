@@ -5,7 +5,8 @@ pub mod entity_to_show;
 use crate::app::ui::{EntitiesAndInsertionTimes, Ui};
 use entity_to_show::EntityToShow;
 
-use felix_backend::data::{ActivityId, Data, Entity, Time};
+use felix_backend::data::{ActivityId, Data, Entity};
+use felix_backend::Time;
 
 use glib::clone;
 use gtk::prelude::*;

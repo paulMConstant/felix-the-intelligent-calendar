@@ -1,7 +1,8 @@
-use crate::data::{Data, Time};
+use crate::data::Data;
 use crate::errors::{
     change_work_hours_while_activity_inserted::ChangeWorkHoursWhileActivityInserted, Result,
 };
+use crate::Time;
 
 impl Data {
     pub(super) fn notify_work_hours_changed(&mut self) {

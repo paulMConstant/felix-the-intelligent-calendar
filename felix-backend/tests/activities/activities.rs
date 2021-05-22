@@ -9,7 +9,8 @@
 //! - Set color
 //! - Activity insertion
 
-use felix_backend::data::{Rgba, Time, TimeInterval};
+use felix_backend::data::{Rgba, TimeInterval};
+use felix_backend::Time;
 use test_utils::{Activity, DataBuilder};
 
 use std::collections::BTreeSet;

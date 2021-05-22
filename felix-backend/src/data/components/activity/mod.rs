@@ -3,7 +3,8 @@ mod activity_computation_data;
 mod activity_metadata;
 mod computation;
 
-use crate::data::{Time, TimeInterval};
+use crate::data::TimeInterval;
+use crate::Time;
 
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;

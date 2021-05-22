@@ -1,4 +1,4 @@
-use felix_backend::data::Time;
+use felix_backend::Time;
 use felix_backend::errors::invalid_insertion::{
     InvalidInsertion, InvalidOrNotComputed, WhyInvalid,
 };

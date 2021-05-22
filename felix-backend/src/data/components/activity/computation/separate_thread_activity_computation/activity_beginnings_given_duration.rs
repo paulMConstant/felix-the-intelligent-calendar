@@ -1,4 +1,4 @@
-use crate::data::Time;
+use crate::Time;
 
 use felix_computation_api::structs::ActivityBeginningsGivenDurationMinutes;
 

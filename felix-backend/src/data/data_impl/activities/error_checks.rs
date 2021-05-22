@@ -1,10 +1,11 @@
 //! Helper functions for activity implementation of data.
 
-use crate::data::{ActivityId, Data, Time};
+use crate::data::{ActivityId, Data};
 use crate::errors::{
     add_entity_to_inserted_activity_invalid_spot::AddEntityToInsertedActivityInvalidSpot,
     not_enough_time::NotEnoughTime, Result,
 };
+use crate::Time;
 
 impl Data {
     /// Returns the first entity which does not have enough time to change the duration of the

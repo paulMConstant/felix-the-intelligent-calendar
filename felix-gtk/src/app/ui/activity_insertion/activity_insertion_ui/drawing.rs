@@ -1,6 +1,7 @@
 use super::{costs_to_rgb::costs_to_rgb, ActivityInsertionUi, Schedules, NUM_HOURS_IN_DAY};
 
-use felix_backend::data::{Rgba, Time};
+use felix_backend::data::Rgba;
+use felix_backend::Time;
 
 use gtk::prelude::*;
 

@@ -9,8 +9,9 @@ use super::computation::{
 
 use crate::data::{
     computation_structs::{InsertionCost, WorkHoursAndActivityDurationsSorted},
-    Activity, ActivityId, Rgba, Time,
+    Activity, ActivityId, Rgba,
 };
+use crate::Time;
 
 use crate::errors::Result;
 

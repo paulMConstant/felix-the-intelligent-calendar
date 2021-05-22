@@ -1,4 +1,4 @@
-use crate::data::{Time, MIN_TIME_DISCRETIZATION};
+use crate::{Time, MIN_TIME_DISCRETIZATION};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 

@@ -1,7 +1,8 @@
 //! Helper functions for groups implementation of data.
 
-use crate::data::{Activity, Data, Time};
+use crate::data::{Activity, Data};
 use crate::errors::{name_taken::NameTaken, not_enough_time::NotEnoughTime, Result};
+use crate::Time;
 
 impl Data {
     /// Checks that the given entity has enough time to be added to the group.

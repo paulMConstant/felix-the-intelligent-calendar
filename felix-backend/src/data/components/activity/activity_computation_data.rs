@@ -1,7 +1,8 @@
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost, Time,
+    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost,
     TimeInterval,
 };
+use crate::Time;
 
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};

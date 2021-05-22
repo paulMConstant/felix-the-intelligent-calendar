@@ -17,3 +17,5 @@ pub mod data;
 
 /// Errors used in data.
 pub mod errors;
+
+pub use felix_datatypes::{Time, MIN_TIME_DISCRETIZATION};

@@ -14,7 +14,7 @@ pub use components::{
     activity::{Activity, ActivityId, ActivityInsertionCosts, Rgba},
     entity::Entity,
     group::Group,
-    time::{time_interval::TimeInterval, Time, MIN_TIME_DISCRETIZATION},
+    time::time_interval::TimeInterval,
 };
 
 pub use computation_structs::InsertionCost;
@@ -36,7 +36,8 @@ use std::rc::Rc;
 /// Add, remove and modify work intervals :
 ///
 /// ```
-/// use felix_backend::data::{Data, Time, TimeInterval};
+/// use felix_backend::data::{Data, TimeInterval};
+/// use felix_backend::Time;
 /// let mut data = Data::new();
 ///
 /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
@@ -61,7 +62,8 @@ use std::rc::Rc;
 /// Add, remove and modify entities :
 ///
 /// ```
-/// use felix_backend::data::{Data, Time, TimeInterval};
+/// use felix_backend::data::{Data, TimeInterval};
+/// use felix_backend::Time;
 /// let mut data = Data::new();
 ///
 /// let entity_name = data.add_entity("Bernard").unwrap();
@@ -91,7 +93,8 @@ use std::rc::Rc;
 /// Add, remove and modify activities :
 ///
 /// ```
-/// use felix_backend::data::{Data, Time, TimeInterval};
+/// use felix_backend::data::{Data, TimeInterval};
+/// use felix_backend::Time;
 /// let mut data = Data::new();
 ///
 /// let activity_id = data.add_activity("My Activity").unwrap().id();

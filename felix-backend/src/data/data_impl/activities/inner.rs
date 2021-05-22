@@ -1,10 +1,11 @@
 //! Helper functions for activity implementation of data.
 
 use crate::data::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data, Time,
+    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data,
     TimeInterval,
 };
 use crate::errors::Result;
+use crate::Time;
 
 use std::collections::HashSet;
 

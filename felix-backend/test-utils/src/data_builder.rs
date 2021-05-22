@@ -1,4 +1,5 @@
-use felix_backend::data::{Data, Time, TimeInterval};
+use felix_backend::data::{Data, TimeInterval};
+use felix_backend::Time;
 
 use crate::{Activity, Group};
 
