@@ -3,7 +3,7 @@ mod activity_computation_data;
 mod activity_metadata;
 mod computation;
 
-use crate::{Time, TimeInterval, Rgba};
+use crate::{Time, TimeInterval, Rgba, ActivityId};
 
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
@@ -14,8 +14,6 @@ pub(crate) use computation::activities_into_computation_data::{
 };
 
 use serde::{Deserialize, Serialize};
-
-pub type ActivityId = usize;
 
 /// An activity represents a group of entities which must meet during a defined period of time.
 ///

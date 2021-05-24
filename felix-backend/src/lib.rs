@@ -33,12 +33,19 @@ use felix_datatypes::{
     WorkHoursAndActivityDurationsSorted,
 };
 
-pub use felix_datatypes::{InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION, Rgba};
+pub use felix_datatypes::{
+    InsertionCost,
+    Time,
+    TimeInterval,
+    MIN_TIME_DISCRETIZATION,
+    Rgba,
+    ActivityId, 
+};
 
 pub use felix_errors as errors;
 
 pub use components::{
-    activity::{Activity, ActivityId, ActivityInsertionCosts},
+    activity::{Activity, ActivityInsertionCosts},
     entity::Entity,
     group::Group,
 };
