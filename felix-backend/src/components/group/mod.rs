@@ -1,7 +1,6 @@
-mod group_inner;
 pub mod groups;
 
-use group_inner::GroupInner;
+use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -12,14 +11,16 @@ use std::cmp::Ordering;
 /// This structure is read-only. If you wish to create or modify a group, use the Data object.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Group {
-    inner: GroupInner,
+    name: String,
+    entities: Vec<String>,
 }
 
 impl Group {
     /// Creates a new group with the given name.
     fn new(name: String) -> Group {
         Group {
-            inner: GroupInner::new(name),
+            name,
+            entities: Vec::new(),
         }
     }
 
@@ -28,13 +29,67 @@ impl Group {
     /// Simple getter for the name.
     #[must_use]
     pub fn name(&self) -> String {
-        self.inner.name().clone()
+        self.name.clone()
     }
 
-    /// Simple getter for the entities, sorted by name.
+    /// Getter for the entities, sorted by name.
     #[must_use]
     pub fn entities_sorted(&self) -> Vec<String> {
-        self.inner.entities_sorted().into_iter().cloned().collect()
+        self.entities.clone()
+    }
+
+    // *** Private Setters ***
+    /// Adds an entity to the group.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity is already in the group.
+    fn add_entity(&mut self, entity_name: String) -> Result<()> {
+        if self.entities.contains(&entity_name) {
+            Err(AlreadyIn::entity_already_in_group(entity_name, self.name()))
+        } else {
+            self.entities.push(entity_name);
+            self.entities.sort();
+            Ok(())
+        }
+    }
+
+    /// Removes an entity from the group.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity is not in the group.
+    fn remove_entity(&mut self, entity_name: &str) -> Result<()> {
+        if let Some(position) = self.entities.iter().position(|name| name == entity_name) {
+            self.entities.remove(position);
+            self.entities.sort();
+            Ok(())
+        } else {
+            Err(NotIn::entity_not_in_group(entity_name, self.name()))
+        }
+    }
+
+    /// Sets the name of the group.
+    fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+
+    /// Renames an entity in the group.
+    ///
+    /// # Errors
+    ///
+    /// Returns Err if the entity is not part of the group or if
+    /// an entity with the new name is already in the group.
+    fn rename_entity(&mut self, old_name: &str, new_name: String) -> Result<()> {
+        if self.entities.contains(&new_name) {
+            return Err(NameTaken::name_taken_by_entity(new_name));
+        };
+
+        self.remove_entity(old_name)?;
+
+        self.entities.push(new_name);
+        self.entities.sort();
+        Ok(())
     }
 }
 

@@ -77,7 +77,7 @@ impl Groups {
     pub fn add_entity_to_group(&mut self, group_name: &str, entity_name: String) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
-                group.inner.add_entity(entity_name)?;
+                group.add_entity(entity_name)?;
                 Ok(())
             }
             None => Err(DoesNotExist::group_does_not_exist(group_name)),
@@ -92,7 +92,7 @@ impl Groups {
     pub fn remove_entity_from_group(&mut self, group_name: &str, entity_name: &str) -> Result<()> {
         match self.groups.get_mut(group_name) {
             Some(group) => {
-                group.inner.remove_entity(entity_name)?;
+                group.remove_entity(entity_name)?;
                 Ok(())
             }
             None => Err(DoesNotExist::group_does_not_exist(group_name)),
@@ -102,7 +102,7 @@ impl Groups {
     /// Removes the entity with given name from all groups.
     pub fn remove_entity_from_all(&mut self, entity: &str) {
         for group in self.groups.values_mut() {
-            let _ = group.inner.remove_entity(entity);
+            let _ = group.remove_entity(entity);
         }
     }
 
@@ -118,7 +118,7 @@ impl Groups {
                 // We have to change the key and the value
                 match self.groups.remove(old_name) {
                     Some(mut group) => {
-                        group.inner.set_name(new_name.clone());
+                        group.set_name(new_name.clone());
                         self.groups.insert(new_name, group);
                         Ok(())
                     }
@@ -133,7 +133,7 @@ impl Groups {
         for group in self.groups.values_mut() {
             // We don't care about the result : it is fine if the entity is not
             // taking part in the activity, this will yield no conflict when it is renamed
-            let _ = group.inner.rename_entity(old_name, new_name.clone());
+            let _ = group.rename_entity(old_name, new_name.clone());
         }
     }
 }
