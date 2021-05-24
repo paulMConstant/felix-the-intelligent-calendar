@@ -1,6 +1,6 @@
 use crate::app::ui::helpers::tree::tree_path_from_selection_index;
 use crate::app::ui::Ui;
-use felix_backend::{Activity, Group};
+use felix_data::{Activity, Group};
 
 use gtk::prelude::*;
 

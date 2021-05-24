@@ -1,5 +1,5 @@
 [package]
-name = "felix-backend"
+name = "felix-data"
 version = "0.1.0"
 authors = ["Paul Constant <constantpaul@hotmail.fr>"]
 edition = "2018"

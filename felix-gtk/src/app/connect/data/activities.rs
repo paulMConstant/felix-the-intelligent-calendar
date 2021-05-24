@@ -1,6 +1,6 @@
 use crate::app::App;
 
-use felix_backend::Data;
+use felix_data::Data;
 
 use glib::clone;
 

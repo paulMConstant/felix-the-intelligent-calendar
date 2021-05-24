@@ -1,4 +1,4 @@
-use felix_backend::{Activity, ActivityId, Rgba, TimeInterval};
+use felix_data::{Activity, ActivityId, Rgba, TimeInterval};
 
 /// Simple struct holding an activity's name and insertion interval.
 #[derive(Clone, Debug)]

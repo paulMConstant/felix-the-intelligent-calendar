@@ -14,7 +14,7 @@ use fetch_data_from_cursor_position::{
 };
 use schedules::Schedules;
 
-use felix_backend::ActivityId;
+use felix_data::ActivityId;
 
 use glib::clone;
 use gtk::prelude::*;

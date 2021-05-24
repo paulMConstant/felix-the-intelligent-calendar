@@ -1,5 +1,5 @@
 use crate::app::ui::Ui;
-use felix_backend::Data;
+use felix_data::Data;
 
 use gtk::prelude::*;
 

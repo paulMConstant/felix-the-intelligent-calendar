@@ -8,7 +8,7 @@ workspace = "../"
 build = "build.rs"
 
 [dependencies]
-felix-backend = { path = "../felix-backend" }
+felix-data = { path = "../felix-data" }
 glib = "0.10.3"
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 cairo-rs = "0.9"

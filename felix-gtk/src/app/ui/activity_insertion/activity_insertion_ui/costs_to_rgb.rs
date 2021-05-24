@@ -1,4 +1,4 @@
-use felix_backend::{InsertionCost, Rgba, Time};
+use felix_data::{InsertionCost, Rgba, Time};
 
 use std::collections::HashMap;
 

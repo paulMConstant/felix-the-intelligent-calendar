@@ -44,7 +44,7 @@ pub use events::Events;
 /// Add, remove and modify work intervals :
 ///
 /// ```
-/// use felix_backend::{Data, Time, TimeInterval};
+/// use felix_data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
 /// let morning_shift = TimeInterval::new(Time::new(8, 0), Time::new(12, 0));
@@ -69,7 +69,7 @@ pub use events::Events;
 /// Add, remove and modify entities :
 ///
 /// ```
-/// use felix_backend::{Data, Time, TimeInterval};
+/// use felix_data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
 /// let entity_name = data.add_entity("Bernard").unwrap();
@@ -99,7 +99,7 @@ pub use events::Events;
 /// Add, remove and modify activities :
 ///
 /// ```
-/// use felix_backend::{Data, Time, TimeInterval};
+/// use felix_data::{Data, Time, TimeInterval};
 /// let mut data = Data::new();
 ///
 /// let activity_id = data.add_activity("My Activity").unwrap().id();

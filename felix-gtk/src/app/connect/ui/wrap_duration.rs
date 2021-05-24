@@ -1,4 +1,4 @@
-use felix_backend::Time;
+use felix_data::Time;
 
 /// When the minutes skip from 0 to 55 or the inverse, removes or adds an hour
 /// and returns the new result.

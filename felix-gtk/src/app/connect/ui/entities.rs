@@ -4,7 +4,7 @@ use gtk::prelude::*;
 use crate::app::ui::helpers::{format::cleaned_input, tree::get_selection_from_treeview};
 use crate::app::App;
 
-use felix_backend::clean_string;
+use felix_data::clean_string;
 
 const ENTITY_NAME_COLUMN: i32 = 0;
 

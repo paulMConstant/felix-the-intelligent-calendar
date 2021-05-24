@@ -1,4 +1,4 @@
-use felix_backend::clean_string;
+use felix_data::clean_string;
 
 use gtk::prelude::*;
 

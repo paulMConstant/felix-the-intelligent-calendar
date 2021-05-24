@@ -1,4 +1,4 @@
-extern crate felix_backend;
+extern crate felix_data;
 
 mod data_builder;
 mod data_builder_components;

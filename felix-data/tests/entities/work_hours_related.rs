@@ -1,4 +1,4 @@
-use felix_backend::{Time, TimeInterval};
+use felix_data::{Time, TimeInterval};
 use felix_test_utils::DataBuilder;
 
 #[test]

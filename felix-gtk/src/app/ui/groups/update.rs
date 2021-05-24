@@ -1,5 +1,5 @@
 use crate::app::ui::helpers::tree::tree_path_from_selection_index;
-use felix_backend::Group;
+use felix_data::Group;
 
 use crate::app::ui::Ui;
 use gtk::prelude::*;

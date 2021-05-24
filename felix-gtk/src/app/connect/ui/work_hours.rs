@@ -5,9 +5,9 @@ use gtk::prelude::*;
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use felix_backend::errors::invalid_interval::InvalidInterval;
-use felix_backend::errors::Result;
-use felix_backend::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use felix_data::errors::invalid_interval::InvalidInterval;
+use felix_data::errors::Result;
+use felix_data::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 
 macro_rules! reset_work_hours_if_err {
     ($ui:ident, $data:ident, $operation:expr) => {

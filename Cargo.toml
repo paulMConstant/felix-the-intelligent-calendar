@@ -1,13 +1,13 @@
 [workspace]
 
 members = [
-    "felix-backend",
-    "felix-backend/felix-collections",
-    "felix-backend/felix-datatypes",
-    "felix-backend/felix-test-utils",
-    "felix-backend/felix-computation-api",
-    "felix-backend/felix-export-api",
-    "felix-backend/felix-errors",
+    "felix-data",
+    "felix-data/felix-collections",
+    "felix-data/felix-datatypes",
+    "felix-data/felix-test-utils",
+    "felix-data/felix-computation-api",
+    "felix-data/felix-export-api",
+    "felix-data/felix-errors",
 
     "felix-gtk",
 ]

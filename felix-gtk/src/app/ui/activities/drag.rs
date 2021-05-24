@@ -4,7 +4,7 @@ use crate::app::ui::{
     drag_config::*, EntitiesAndInsertionTimes, Ui,
 };
 
-use felix_backend::ActivityId;
+use felix_data::ActivityId;
 
 use gdk::prelude::GdkContextExt;
 use glib::clone;

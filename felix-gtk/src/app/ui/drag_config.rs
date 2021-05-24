@@ -1,4 +1,4 @@
-use felix_backend::ActivityId;
+use felix_data::ActivityId;
 
 pub const DRAG_WIDTH: i32 = 300;
 pub const DRAG_HEIGHT: i32 = 30;

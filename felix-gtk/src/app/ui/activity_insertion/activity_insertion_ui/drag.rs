@@ -1,4 +1,4 @@
-use felix_backend::ActivityId;
+use felix_data::ActivityId;
 
 use super::ActivityInsertionUi;
 use crate::app::ui::{drag_config::*, EntitiesAndInsertionTimes};

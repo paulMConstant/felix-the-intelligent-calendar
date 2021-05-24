@@ -5,7 +5,7 @@ use crate::app::ui::{
     helpers::{format::cleaned_input, tree::get_selection_from_treeview},
 };
 
-use felix_backend::clean_string;
+use felix_data::clean_string;
 
 use glib::clone;
 use gtk::prelude::*;

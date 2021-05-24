@@ -5,7 +5,7 @@
 //! - Deletion of entities
 //! - Renaming groups
 
-use felix_backend::Time;
+use felix_data::Time;
 use felix_test_utils::{Activity, DataBuilder, Group};
 
 // *** Add entity to group ***

@@ -1,4 +1,4 @@
-use felix_backend::{Time, MIN_TIME_DISCRETIZATION};
+use felix_data::{Time, MIN_TIME_DISCRETIZATION};
 
 #[derive(Default)]
 pub struct Group {
