@@ -1,15 +1,15 @@
-pub mod activities;
+mod activities;
 mod activity_computation_data;
 mod activity_metadata;
 mod computation;
 
-use crate::{Time, TimeInterval, Rgba, ActivityId};
+use felix_datatypes::{Time, TimeInterval, Rgba, ActivityId, ActivityInsertionCosts};
 
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
 
-pub use activity_computation_data::ActivityInsertionCosts;
-pub(crate) use computation::activities_into_computation_data::{
+pub use activities::Activities;
+pub use computation::activities_into_computation_data::{
     activities_into_computation_data, activities_sorted_filtered_for_computation,
 };
 
@@ -92,7 +92,7 @@ impl Activity {
 
     /// Simple getter for incompatible activities.
     #[must_use]
-    pub(crate) fn incompatible_activity_ids(&self) -> Vec<ActivityId> {
+    pub fn incompatible_activity_ids(&self) -> Vec<ActivityId> {
         self.computation_data.incompatible_activity_ids()
     }
 

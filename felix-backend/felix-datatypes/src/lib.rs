@@ -1,12 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
-mod activity;
 mod computation_structs;
 mod insertion_cost;
 mod time;
 mod rgba;
 
-pub use activity::ActivityId;
 pub use rgba::Rgba;
 pub use computation_structs::WorkHoursAndActivityDurationsSorted;
 pub use insertion_cost::{insertion_cost_minutes::InsertionCostsMinutes, InsertionCost};
@@ -19,6 +17,8 @@ pub use time::{
 pub type ActivityBeginningsGivenDurationMinutes =
     HashMap<ActivityDurationMinutes, HashSet<ActivityBeginningMinutes>>;
 
+pub type ActivityInsertionCosts = Option<Vec<InsertionCost>>;
+pub type ActivityId = usize;
 pub type ActivityDurationMinutes = u16;
 pub type ActivityBeginningMinutes = u16;
 pub type Cost = usize;

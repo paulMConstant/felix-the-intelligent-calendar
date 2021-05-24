@@ -1,5 +1,5 @@
-use crate::errors::{does_not_exist::DoesNotExist, interval_overlaps::IntervalOverlaps, Result};
-use crate::TimeInterval;
+use felix_errors::{does_not_exist::DoesNotExist, interval_overlaps::IntervalOverlaps, Result};
+use felix_datatypes::TimeInterval;
 
 use serde::{Deserialize, Serialize};
 

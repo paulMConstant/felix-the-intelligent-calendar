@@ -1,6 +1,4 @@
-use crate::Time;
-
-use crate::ActivityBeginningsGivenDurationMinutes;
+use felix_datatypes::{Time, ActivityBeginningsGivenDurationMinutes};
 
 use std::collections::{HashMap, HashSet};
 

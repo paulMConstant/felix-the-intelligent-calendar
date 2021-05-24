@@ -1,5 +1,5 @@
 use super::Group;
-use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
+use felix_errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -138,4 +138,10 @@ impl Groups {
     }
 }
 
-// No tests, functions are tested in tests directory
+impl Default for Groups {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// No tests, functions are tested in felix_data

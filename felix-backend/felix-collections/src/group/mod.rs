@@ -1,8 +1,10 @@
-pub mod groups;
+mod groups;
+pub use groups::Groups;
 
-use crate::errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
+
+use felix_errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 
 /// A group is an aggregation of entities.
 ///

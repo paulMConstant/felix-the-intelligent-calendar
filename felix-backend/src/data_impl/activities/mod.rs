@@ -5,11 +5,11 @@ mod queue_for_computation;
 use super::helpers::clean_string;
 
 use crate::{
-    components::activity::{
-        activities_into_computation_data, activities_sorted_filtered_for_computation,
-    },
     errors::{invalid_insertion::InvalidInsertion, Result},
     Activity, ActivityBeginningMinutes, ActivityId, Data, Rgba, Time,
+};
+use felix_collections::activity::{
+    activities_into_computation_data, activities_sorted_filtered_for_computation,
 };
 
 use felix_computation_api::{autoinsert, structs::AutoinsertionThreadHandle};

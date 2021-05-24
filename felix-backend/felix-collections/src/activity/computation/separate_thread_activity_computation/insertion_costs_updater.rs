@@ -1,5 +1,5 @@
-use crate::Time;
-use crate::{Activity, InsertionCost};
+use felix_datatypes::{Time, InsertionCost};
+use crate::Activity;
 
 use felix_computation_api::compute_insertion_costs;
 

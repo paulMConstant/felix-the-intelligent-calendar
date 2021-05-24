@@ -1,4 +1,4 @@
-use crate::errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
+use felix_errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use crate::Entity;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::{Entry, HashMap};
@@ -124,4 +124,10 @@ impl Entities {
     }
 }
 
-// No tests, functions are tested in tests directory
+impl Default for Entities {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// No tests, functions are tested in felix_data

@@ -1,11 +1,10 @@
-use crate::Time;
-use crate::{ActivityId, InsertionCost, TimeInterval, WorkHoursAndActivityDurationsSorted};
+use felix_datatypes::{
+    ActivityId, TimeInterval, WorkHoursAndActivityDurationsSorted, Time, ActivityInsertionCosts,
+};
 
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
-
-pub type ActivityInsertionCosts = Option<Vec<InsertionCost>>;
 
 /// Holds computation-related data : duration, insertion interval if inserted,
 /// incompatible activities, possible insertion times.

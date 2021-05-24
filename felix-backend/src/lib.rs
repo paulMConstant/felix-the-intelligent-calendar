@@ -10,9 +10,6 @@
 //! * Summer camps
 //! * Any organization with resources to manage (rooms, meetings...)
 
-extern crate num_cpus;
-
-mod components;
 mod data_impl;
 mod events;
 
@@ -20,20 +17,20 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use components::{
-    activity::activities::Activities,
-    entity::{entities::Entities, EntityName},
-    group::groups::Groups,
-    work_hours::WorkHours,
+use felix_collections::{
+    Activities,
+    Entities,
+    Groups,
+    WorkHours,
 };
 
 use felix_datatypes::{
     ActivityBeginningMinutes, 
-    ActivityBeginningsGivenDurationMinutes,
     WorkHoursAndActivityDurationsSorted,
 };
 
 pub use felix_datatypes::{
+    ActivityInsertionCosts,
     InsertionCost,
     Time,
     TimeInterval,
@@ -44,10 +41,8 @@ pub use felix_datatypes::{
 
 pub use felix_errors as errors;
 
-pub use components::{
-    activity::{Activity, ActivityInsertionCosts},
-    entity::Entity,
-    group::Group,
+pub use felix_collections::{
+    Activity, Entity, Group,
 };
 
 pub use felix_computation_api::structs::AutoinsertionThreadHandle;

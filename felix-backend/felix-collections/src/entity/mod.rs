@@ -1,9 +1,11 @@
-pub mod entities;
+mod entities;
 
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
 pub type EntityName = String;
+
+pub use entities::Entities;
 
 /// Represents any entity which can be used by an activity.
 ///

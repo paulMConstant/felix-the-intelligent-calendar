@@ -4,7 +4,7 @@
 mod tests;
 
 use super::super::activity_metadata::ActivityMetadata;
-use crate::ActivityId;
+use felix_datatypes::ActivityId;
 
 /// Generates the smallest unused id.
 pub fn generate_next_id(mut used_ids: Vec<ActivityId>) -> ActivityId {

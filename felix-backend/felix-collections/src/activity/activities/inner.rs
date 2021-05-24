@@ -4,7 +4,9 @@ use super::{
     super::{computation::id_computation::compute_incompatible_ids, ActivityMetadata},
     Activities,
 };
-use crate::{Activity, ActivityId};
+use crate::Activity;
+
+use felix_datatypes::{ActivityId};
 
 impl Activities {
     /// Performs the given operation on the activity with given id.

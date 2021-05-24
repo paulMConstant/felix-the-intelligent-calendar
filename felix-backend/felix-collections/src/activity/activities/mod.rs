@@ -2,17 +2,23 @@ mod inner;
 #[cfg(test)]
 mod tests;
 
+use crate::Activity;
+
 use super::computation::{
     activities_into_computation_data::index_to_id_map, id_computation::generate_next_id,
     separate_thread_activity_computation::SeparateThreadActivityComputation,
 };
 
-use crate::Time;
-use crate::{Activity, ActivityId, Rgba, WorkHoursAndActivityDurationsSorted};
+use felix_datatypes::{
+    Time,
+    ActivityId,
+    Rgba,
+    WorkHoursAndActivityDurationsSorted,
+    ActivityBeginningMinutes,
+    InsertionCost,
+};
 
-use crate::errors::Result;
-
-use crate::{ActivityBeginningMinutes, InsertionCost};
+use felix_errors::Result;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -316,7 +322,7 @@ impl Activities {
     /// # Panics
     ///
     /// Panics if the activity does not exist.
-    pub(crate) fn update_schedules_of_participants_of_activity(
+    pub fn update_schedules_of_participants_of_activity(
         &mut self,
         id: ActivityId,
         schedules: Vec<WorkHoursAndActivityDurationsSorted>,
@@ -335,7 +341,7 @@ impl Activities {
     ///
     /// Panics if the activity is not inserted anywhere or the activity with given ID does not
     /// exist.
-    pub(crate) fn store_activity_was_inserted(&mut self, id: ActivityId) {
+    pub fn store_activity_was_inserted(&mut self, id: ActivityId) {
         let activity = self.get_by_id(id);
         let insertion_beginning = activity
             .insertion_interval()
@@ -414,5 +420,11 @@ impl PartialEq for Activities {
         // Clone to make sure that both are not locked at the same time if under the same mutex
         let activities = self.activities.lock().unwrap().clone();
         activities == *other.activities.lock().unwrap()
+    }
+}
+
+impl Default for Activities {
+    fn default() -> Self {
+        Self::new()
     }
 }

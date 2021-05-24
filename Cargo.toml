@@ -2,6 +2,7 @@
 
 members = [
     "felix-backend",
+    "felix-backend/felix-collections",
     "felix-backend/felix-datatypes",
     "felix-backend/felix-test-utils",
     "felix-backend/felix-computation-api",

@@ -1,5 +1,6 @@
-use crate::errors::does_not_exist::DoesNotExist;
-use crate::{errors::Result, EntityName, TimeInterval};
+use felix_errors::{does_not_exist::DoesNotExist, Result};
+use felix_datatypes::TimeInterval;
+use crate::EntityName;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -172,5 +173,11 @@ impl WorkHours {
             None => Err(DoesNotExist::entity_does_not_exist(entity_name)),
             Some(custom_work_intervals) => Ok(custom_work_intervals.work_intervals().clone()),
         }
+    }
+}
+
+impl Default for WorkHours {
+    fn default() -> Self {
+        Self::new()
     }
 }
