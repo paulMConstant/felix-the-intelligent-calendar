@@ -1,5 +1,5 @@
 use felix_datatypes::{
-    ActivityId, TimeInterval, WorkHoursAndActivityDurationsSorted, Time, ActivityInsertionCosts,
+    ActivityId, ActivityInsertionCosts, Time, TimeInterval, WorkHoursAndActivityDurationsSorted,
 };
 
 use serde::{Deserialize, Serialize};

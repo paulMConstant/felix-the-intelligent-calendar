@@ -6,7 +6,7 @@ use super::{
 };
 use crate::Activity;
 
-use felix_datatypes::{ActivityId};
+use felix_datatypes::ActivityId;
 
 impl Activities {
     /// Performs the given operation on the activity with given id.

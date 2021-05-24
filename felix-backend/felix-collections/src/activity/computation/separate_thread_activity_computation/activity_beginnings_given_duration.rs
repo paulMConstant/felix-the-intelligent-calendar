@@ -1,4 +1,4 @@
-use felix_datatypes::{Time, ActivityBeginningsGivenDurationMinutes};
+use felix_datatypes::{ActivityBeginningsGivenDurationMinutes, Time};
 
 use std::collections::{HashMap, HashSet};
 

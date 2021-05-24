@@ -1,5 +1,5 @@
-use felix_errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use crate::Entity;
+use felix_errors::{does_not_exist::DoesNotExist, name_taken::NameTaken, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::{Entry, HashMap};
 
@@ -118,8 +118,7 @@ impl Entities {
     ///
     /// Returns Err if the entity is not found.
     pub fn set_send_mail_to(&mut self, entity_name: &str, send: bool) -> Result<()> {
-        self.get_mut_by_name(entity_name)?
-            .set_send_me_a_mail(send);
+        self.get_mut_by_name(entity_name)?.set_send_me_a_mail(send);
         Ok(())
     }
 }

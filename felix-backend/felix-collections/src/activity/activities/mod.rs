@@ -10,12 +10,8 @@ use super::computation::{
 };
 
 use felix_datatypes::{
-    Time,
-    ActivityId,
-    Rgba,
+    ActivityBeginningMinutes, ActivityId, InsertionCost, Rgba, Time,
     WorkHoursAndActivityDurationsSorted,
-    ActivityBeginningMinutes,
-    InsertionCost,
 };
 
 use felix_errors::Result;

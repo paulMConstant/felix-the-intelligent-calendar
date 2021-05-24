@@ -3,7 +3,7 @@ mod entity;
 mod group;
 mod work_hours;
 
-pub use activity::{Activity, Activities};
-pub use entity::{Entity, EntityName, Entities};
+pub use activity::{Activities, Activity};
+pub use entity::{Entities, Entity, EntityName};
 pub use group::{Group, Groups};
 pub use work_hours::WorkHours;

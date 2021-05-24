@@ -2,12 +2,12 @@ use std::collections::{HashMap, HashSet};
 
 mod computation_structs;
 mod insertion_cost;
-mod time;
 mod rgba;
+mod time;
 
-pub use rgba::Rgba;
 pub use computation_structs::WorkHoursAndActivityDurationsSorted;
 pub use insertion_cost::{insertion_cost_minutes::InsertionCostsMinutes, InsertionCost};
+pub use rgba::Rgba;
 pub use time::{
     Time, TimeInterval, WorkHourInMinutes, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
 };

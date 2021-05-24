@@ -30,4 +30,3 @@ impl Hash for Rgba {
         }
     }
 }
-

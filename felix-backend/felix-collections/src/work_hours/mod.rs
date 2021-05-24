@@ -1,6 +1,6 @@
-use felix_errors::{does_not_exist::DoesNotExist, Result};
-use felix_datatypes::TimeInterval;
 use crate::EntityName;
+use felix_datatypes::TimeInterval;
+use felix_errors::{does_not_exist::DoesNotExist, Result};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

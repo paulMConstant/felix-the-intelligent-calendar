@@ -1,5 +1,5 @@
-use felix_errors::{does_not_exist::DoesNotExist, interval_overlaps::IntervalOverlaps, Result};
 use felix_datatypes::TimeInterval;
+use felix_errors::{does_not_exist::DoesNotExist, interval_overlaps::IntervalOverlaps, Result};
 
 use serde::{Deserialize, Serialize};
 

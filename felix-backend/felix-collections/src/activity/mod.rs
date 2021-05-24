@@ -3,7 +3,7 @@ mod activity_computation_data;
 mod activity_metadata;
 mod computation;
 
-use felix_datatypes::{Time, TimeInterval, Rgba, ActivityId, ActivityInsertionCosts};
+use felix_datatypes::{ActivityId, ActivityInsertionCosts, Rgba, Time, TimeInterval};
 
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;

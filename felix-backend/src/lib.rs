@@ -17,33 +17,18 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use felix_collections::{
-    Activities,
-    Entities,
-    Groups,
-    WorkHours,
-};
+use felix_collections::{Activities, Entities, Groups, WorkHours};
 
-use felix_datatypes::{
-    ActivityBeginningMinutes, 
-    WorkHoursAndActivityDurationsSorted,
-};
+use felix_datatypes::{ActivityBeginningMinutes, WorkHoursAndActivityDurationsSorted};
 
 pub use felix_datatypes::{
-    ActivityInsertionCosts,
-    InsertionCost,
-    Time,
-    TimeInterval,
+    ActivityId, ActivityInsertionCosts, InsertionCost, Rgba, Time, TimeInterval,
     MIN_TIME_DISCRETIZATION,
-    Rgba,
-    ActivityId, 
 };
 
 pub use felix_errors as errors;
 
-pub use felix_collections::{
-    Activity, Entity, Group,
-};
+pub use felix_collections::{Activity, Entity, Group};
 
 pub use felix_computation_api::structs::AutoinsertionThreadHandle;
 

@@ -1,6 +1,6 @@
 use crate::Activity;
-use felix_datatypes::{ActivityBeginningMinutes, ActivityId};
 use felix_computation_api::structs::ActivityComputationStaticData;
+use felix_datatypes::{ActivityBeginningMinutes, ActivityId};
 
 use std::collections::HashMap;
 

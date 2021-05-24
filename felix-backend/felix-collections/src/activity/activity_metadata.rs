@@ -1,5 +1,5 @@
-use felix_errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 use felix_datatypes::{ActivityId, Rgba};
+use felix_errors::{already_in::AlreadyIn, name_taken::NameTaken, not_in::NotIn, Result};
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
