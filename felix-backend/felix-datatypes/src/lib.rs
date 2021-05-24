@@ -1,12 +1,14 @@
 use std::collections::{HashMap, HashSet};
 
-mod time;
-mod insertion_cost;
 mod computation_structs;
+mod insertion_cost;
+mod time;
 
-pub use time::{Time, TimeInterval, WorkHourInMinutes, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES};
-pub use insertion_cost::{insertion_cost_minutes::InsertionCostsMinutes, InsertionCost};
 pub use computation_structs::WorkHoursAndActivityDurationsSorted;
+pub use insertion_cost::{insertion_cost_minutes::InsertionCostsMinutes, InsertionCost};
+pub use time::{
+    Time, TimeInterval, WorkHourInMinutes, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES,
+};
 
 /// Each entity has a set of possible insertion times for every activity duration it has.
 /// Times are represented in total minutes.

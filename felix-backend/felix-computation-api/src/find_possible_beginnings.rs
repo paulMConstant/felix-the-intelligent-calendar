@@ -12,9 +12,7 @@
 
 use crate::structs::SumAndDurationIndexes;
 use felix_datatypes::{
-    ActivityBeginningsGivenDurationMinutes, 
-    WorkHourInMinutes,
-    MIN_TIME_DISCRETIZATION_MINUTES,
+    ActivityBeginningsGivenDurationMinutes, WorkHourInMinutes, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
 use itertools::Itertools;

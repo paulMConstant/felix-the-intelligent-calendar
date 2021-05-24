@@ -3,7 +3,7 @@ mod computation_done_semaphore;
 mod insertion_costs_updater;
 mod thread_pool;
 
-use crate::{WorkHoursAndActivityDurationsSorted, Activity};
+use crate::{Activity, WorkHoursAndActivityDurationsSorted};
 
 use computation_done_semaphore::Semaphore;
 use felix_computation_api::find_possible_beginnings;

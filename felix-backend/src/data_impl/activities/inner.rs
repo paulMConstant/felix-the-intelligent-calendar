@@ -2,10 +2,7 @@
 
 use crate::errors::Result;
 use crate::Time;
-use crate::{
-    WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data,
-    TimeInterval,
-};
+use crate::{Activity, ActivityId, Data, TimeInterval, WorkHoursAndActivityDurationsSorted};
 
 use std::collections::HashSet;
 

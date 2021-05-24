@@ -1,6 +1,6 @@
 pub mod insertion_cost_minutes;
 
-use crate::{Time, InsertionCostsMinutes};
+use crate::{InsertionCostsMinutes, Time};
 
 use std::cmp::Ordering;
 

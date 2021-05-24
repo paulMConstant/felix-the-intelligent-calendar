@@ -1,10 +1,6 @@
-use crate::{
-    structs::ActivityComputationStaticData,
-};
+use crate::structs::ActivityComputationStaticData;
 use felix_datatypes::{
-    ActivityBeginningMinutes,
-    InsertionCostsMinutes,
-    MIN_TIME_DISCRETIZATION_MINUTES,
+    ActivityBeginningMinutes, InsertionCostsMinutes, MIN_TIME_DISCRETIZATION_MINUTES,
 };
 
 use std::collections::BTreeSet;

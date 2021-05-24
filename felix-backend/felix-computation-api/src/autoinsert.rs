@@ -2,7 +2,7 @@ use crate::{
     compute_insertion_costs,
     structs::{
         autoinsertion::{AutoinsertionThreadHandle, Node, NodePool, Worker},
-        ActivityComputationStaticData, 
+        ActivityComputationStaticData,
     },
 };
 use felix_datatypes::{ActivityBeginningMinutes, Cost};

@@ -24,16 +24,10 @@ use components::{
 };
 
 use felix_datatypes::{
-    ActivityBeginningMinutes, 
-    ActivityBeginningsGivenDurationMinutes,
+    ActivityBeginningMinutes, ActivityBeginningsGivenDurationMinutes,
     WorkHoursAndActivityDurationsSorted,
 };
-pub use felix_datatypes::{
-    InsertionCost, 
-    Time, 
-    TimeInterval, 
-    MIN_TIME_DISCRETIZATION,
-};
+pub use felix_datatypes::{InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 
 pub use felix_errors as errors;
 

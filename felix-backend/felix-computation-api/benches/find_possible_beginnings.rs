@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use felix_computation_api::{
-    find_possible_beginnings::{can_fit_in_schedule, compute_all_sums, find_possible_beginnings},
+use felix_computation_api::find_possible_beginnings::{
+    can_fit_in_schedule, compute_all_sums, find_possible_beginnings,
 };
 use felix_datatypes::WorkHourInMinutes;
 

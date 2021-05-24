@@ -1,8 +1,8 @@
 mod time_interval;
 mod work_hour_in_minutes;
 
-pub use work_hour_in_minutes::WorkHourInMinutes;
 pub use time_interval::TimeInterval;
+pub use work_hour_in_minutes::WorkHourInMinutes;
 
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;

@@ -1,8 +1,5 @@
 use crate::Time;
-use crate::{
-    WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost,
-    TimeInterval,
-};
+use crate::{ActivityId, InsertionCost, TimeInterval, WorkHoursAndActivityDurationsSorted};
 
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};

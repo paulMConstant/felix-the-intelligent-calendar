@@ -8,7 +8,7 @@ use super::computation::{
 };
 
 use crate::Time;
-use crate::{WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Rgba};
+use crate::{Activity, ActivityId, Rgba, WorkHoursAndActivityDurationsSorted};
 
 use crate::errors::Result;
 
