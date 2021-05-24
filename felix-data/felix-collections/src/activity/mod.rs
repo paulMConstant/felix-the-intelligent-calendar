@@ -6,8 +6,8 @@ mod computation;
 use felix_datatypes::{ActivityId, ActivityInsertionCosts, Rgba, Time, TimeInterval};
 
 use activity_computation_data::ActivityComputationData;
-use activity_metadata::ActivityMetadata;
 
+pub use activity_metadata::ActivityMetadata;
 pub use activities::Activities;
 pub use computation::activities_into_computation_data::{
     activities_into_computation_data, activities_sorted_filtered_for_computation,

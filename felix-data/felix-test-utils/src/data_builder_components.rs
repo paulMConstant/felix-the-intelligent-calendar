@@ -1,6 +1,6 @@
 use felix_data::{Time, MIN_TIME_DISCRETIZATION};
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Group {
     pub name: &'static str,
     pub entities: Vec<&'static str>,
@@ -16,6 +16,7 @@ impl Group {
     }
 }
 
+#[derive(Clone)]
 pub struct Activity {
     pub name: &'static str,
     pub duration: Time,

@@ -10,6 +10,7 @@ felix-computation-api = { path = "felix-computation-api" }
 felix-collections = { path = "felix-collections" }
 felix-datatypes = { path = "felix-datatypes" }
 felix-errors = { path = "felix-errors" }
+felix-export-api = { path = "felix-export-api" }
 
 gettext-rs = { git = "https://github.com/Koka/gettext-rs", features = ["gettext-system"] }
 paste = "1.0.4"

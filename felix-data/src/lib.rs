@@ -13,6 +13,7 @@
 mod activities;
 mod entities;
 mod events;
+mod export;
 mod groups;
 mod helpers;
 mod work_hours;

@@ -7,3 +7,7 @@ pub use activity::{Activities, Activity};
 pub use entity::{Entities, Entity, EntityName};
 pub use group::{Group, Groups};
 pub use work_hours::WorkHours;
+
+use std::collections::HashMap;
+
+pub type PrintableActivities = HashMap<EntityName, Vec<Activity>>;
