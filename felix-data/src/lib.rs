@@ -10,8 +10,12 @@
 //! * Summer camps
 //! * Any organization with resources to manage (rooms, meetings...)
 
-mod data_impl;
+mod activities;
+mod entities;
 mod events;
+mod groups;
+mod helpers;
+mod work_hours;
 
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -32,8 +36,8 @@ pub use felix_collections::{Activity, Entity, Group};
 
 pub use felix_computation_api::structs::AutoinsertionThreadHandle;
 
-pub use data_impl::helpers::clean_string;
 pub use events::Events;
+pub use helpers::clean_string;
 
 /// Stores, calculates and maintains coherency between entities, work hours and activities.
 ///
