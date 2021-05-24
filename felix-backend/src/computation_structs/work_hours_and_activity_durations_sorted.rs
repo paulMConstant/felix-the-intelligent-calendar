@@ -1,7 +1,4 @@
-use crate::Time;
-use crate::TimeInterval;
-
-use felix_computation_api::structs::WorkHourInMinutes;
+use crate::{Time, TimeInterval, WorkHourInMinutes};
 
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]

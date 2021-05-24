@@ -10,8 +10,12 @@
 //! 5 - The rest of the activities can be inserted in the remaining slots if their is a combination
 //!   of duration sums which fit in the remaining slots.
 
-use crate::{structs::*, MIN_TIME_DISCRETIZATION_MINUTES};
-use felix_datatypes::ActivityBeginningsGivenDurationMinutes;
+use crate::structs::SumAndDurationIndexes;
+use felix_datatypes::{
+    ActivityBeginningsGivenDurationMinutes, 
+    WorkHourInMinutes,
+    MIN_TIME_DISCRETIZATION_MINUTES,
+};
 
 use itertools::Itertools;
 use std::collections::HashSet;

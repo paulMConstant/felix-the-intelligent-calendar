@@ -21,11 +21,20 @@ use components::{
     activity::activities::Activities,
     entity::{entities::Entities, EntityName},
     group::groups::Groups,
-    time::work_hours::WorkHours,
+    work_hours::WorkHours,
 };
 
-use felix_datatypes::{ActivityBeginningMinutes, ActivityBeginningsGivenDurationMinutes};
-pub use felix_datatypes::{InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+use felix_datatypes::{
+    ActivityBeginningMinutes, 
+    ActivityBeginningsGivenDurationMinutes,
+    WorkHourInMinutes,
+};
+pub use felix_datatypes::{
+    InsertionCost, 
+    Time, 
+    TimeInterval, 
+    MIN_TIME_DISCRETIZATION,
+};
 
 pub use felix_errors as errors;
 

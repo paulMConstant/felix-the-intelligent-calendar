@@ -1,9 +1,11 @@
-use super::work_intervals::WorkIntervals;
 use crate::errors::does_not_exist::DoesNotExist;
 use crate::{errors::Result, EntityName, TimeInterval};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+mod work_intervals;
+use work_intervals::WorkIntervals;
 
 /// Contains work hours represented as time intervals.
 /// Stays sorted by ascending order and prevents work intervals from overlapping.

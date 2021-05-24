@@ -1,8 +1,8 @@
 use felix_computation_api::{
     find_possible_beginnings::{can_fit_in_schedule, compute_all_sums, find_possible_beginnings},
-    structs::{SumAndDurationIndexes, WorkHourInMinutes},
+    structs::SumAndDurationIndexes,
 };
-use felix_datatypes::ActivityBeginningsGivenDurationMinutes;
+use felix_datatypes::{ActivityBeginningsGivenDurationMinutes, WorkHourInMinutes};
 
 use std::collections::HashSet;
 

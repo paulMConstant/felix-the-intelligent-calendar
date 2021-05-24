@@ -1,14 +1,16 @@
-pub mod time_interval;
+mod time_interval;
+mod work_hour_in_minutes;
 
+pub use work_hour_in_minutes::WorkHourInMinutes;
 pub use time_interval::TimeInterval;
-
-pub const MIN_TIME_DISCRETIZATION_MINUTES: u16 = 5;
 
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::convert::TryInto;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
+
+pub const MIN_TIME_DISCRETIZATION_MINUTES: u16 = 5;
 
 pub const MIN_TIME_DISCRETIZATION: Time = Time {
     hours: 0,

@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 mod time;
 mod insertion_cost;
 
-pub use time::{Time, TimeInterval, MIN_TIME_DISCRETIZATION};
+pub use time::{Time, TimeInterval, WorkHourInMinutes, MIN_TIME_DISCRETIZATION, MIN_TIME_DISCRETIZATION_MINUTES};
 pub use insertion_cost::{insertion_cost_minutes::InsertionCostsMinutes, InsertionCost};
 
 /// Each entity has a set of possible insertion times for every activity duration it has.
