@@ -1,7 +1,5 @@
 pub mod entities;
-mod entity_inner;
 
-use entity_inner::EntityInner;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -18,7 +16,9 @@ pub type EntityName = String;
 /// This structure is read-only. If you wish to create or modify an entity, use the Data object.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Entity {
-    inner: EntityInner,
+    name: EntityName,
+    mail: String,
+    send_me_a_mail: bool,
 }
 
 impl Entity {
@@ -26,28 +26,48 @@ impl Entity {
     #[must_use]
     fn new(name: String) -> Entity {
         Entity {
-            inner: EntityInner::new(name),
+            name,
+            mail: String::new(),
+            send_me_a_mail: false,
         }
     }
 
     // *** Getters ***
-    // This is the only public API. To modify an entity, use the inner field.
+    // This is the only public API. To modify an entity, users must use the Data API.
     /// Simple getter for the name.
     #[must_use]
     pub fn name(&self) -> String {
-        self.inner.name().clone()
+        self.name.clone()
     }
 
     /// Simple getter for the mail.
     #[must_use]
     pub fn mail(&self) -> String {
-        self.inner.mail().clone()
+        self.mail.clone()
     }
 
     /// Simple getter to check if a mail should be sent to the entity.
     #[must_use]
     pub fn send_me_a_mail(&self) -> bool {
-        self.inner.send_me_a_mail()
+        self.send_me_a_mail
+    }
+
+    // *** Private Setters ***
+
+    /// Sets the name of the entity.
+    fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+
+    /// Sets the mail of the entity. The given mail is always accepted.
+    fn set_mail(&mut self, mail: String) {
+        self.mail = mail;
+    }
+
+    /// Call with true if a mail should be sent to the entity, else with false.
+    /// Never fails.
+    fn set_send_me_a_mail(&mut self, send: bool) {
+        self.send_me_a_mail = send;
     }
 }
 

@@ -92,7 +92,7 @@ impl Entities {
                 // We have to change the key and the value
                 match self.entities.remove(old_name) {
                     Some(mut entity) => {
-                        entity.inner.set_name(new_name.clone());
+                        entity.set_name(new_name.clone());
                         self.entities.insert(new_name, entity);
                         Ok(())
                     }
@@ -108,7 +108,7 @@ impl Entities {
     ///
     /// Returns Err if the entity is not found.
     pub fn set_mail_of(&mut self, entity_name: &str, mail: String) -> Result<()> {
-        self.get_mut_by_name(entity_name)?.inner.set_mail(mail);
+        self.get_mut_by_name(entity_name)?.set_mail(mail);
         Ok(())
     }
 
@@ -119,7 +119,6 @@ impl Entities {
     /// Returns Err if the entity is not found.
     pub fn set_send_mail_to(&mut self, entity_name: &str, send: bool) -> Result<()> {
         self.get_mut_by_name(entity_name)?
-            .inner
             .set_send_me_a_mail(send);
         Ok(())
     }

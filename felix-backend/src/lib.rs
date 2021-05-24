@@ -16,6 +16,10 @@ mod components;
 mod data_impl;
 mod events;
 
+use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use components::{
     activity::activities::Activities,
     entity::{entities::Entities, EntityName},
@@ -27,6 +31,7 @@ use felix_datatypes::{
     ActivityBeginningMinutes, ActivityBeginningsGivenDurationMinutes,
     WorkHoursAndActivityDurationsSorted,
 };
+
 pub use felix_datatypes::{InsertionCost, Time, TimeInterval, MIN_TIME_DISCRETIZATION};
 
 pub use felix_errors as errors;
@@ -41,10 +46,6 @@ pub use felix_computation_api::structs::AutoinsertionThreadHandle;
 
 pub use data_impl::helpers::clean_string;
 pub use events::Events;
-
-use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
-use std::rc::Rc;
 
 /// Stores, calculates and maintains coherency between entities, work hours and activities.
 ///
