@@ -3,14 +3,12 @@ mod activity_computation_data;
 mod activity_metadata;
 mod computation;
 
-use crate::Time;
-use crate::TimeInterval;
+use crate::{Time, TimeInterval, Rgba};
 
 use activity_computation_data::ActivityComputationData;
 use activity_metadata::ActivityMetadata;
 
 pub use activity_computation_data::ActivityInsertionCosts;
-pub use activity_metadata::Rgba;
 pub(crate) use computation::activities_into_computation_data::{
     activities_into_computation_data, activities_sorted_filtered_for_computation,
 };
@@ -43,7 +41,7 @@ impl Activity {
         }
     }
 
-    // *** Getters *** - only public API. All operations go through the Activities collection.
+    // *** Getters *** - only public API. All modifications go through the Data interface.
 
     /// Simple getter for the unique id.
     #[must_use]

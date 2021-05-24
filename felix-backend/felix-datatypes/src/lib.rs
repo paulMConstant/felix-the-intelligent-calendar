@@ -3,7 +3,9 @@ use std::collections::{HashMap, HashSet};
 mod computation_structs;
 mod insertion_cost;
 mod time;
+mod rgba;
 
+pub use rgba::Rgba;
 pub use computation_structs::WorkHoursAndActivityDurationsSorted;
 pub use insertion_cost::{insertion_cost_minutes::InsertionCostsMinutes, InsertionCost};
 pub use time::{
