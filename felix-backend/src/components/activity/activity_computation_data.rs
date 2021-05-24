@@ -1,6 +1,6 @@
 use crate::Time;
 use crate::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost,
+    WorkHoursAndActivityDurationsSorted, ActivityId, InsertionCost,
     TimeInterval,
 };
 

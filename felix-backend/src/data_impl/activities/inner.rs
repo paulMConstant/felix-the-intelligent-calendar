@@ -3,7 +3,7 @@
 use crate::errors::Result;
 use crate::Time;
 use crate::{
-    computation_structs::WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data,
+    WorkHoursAndActivityDurationsSorted, Activity, ActivityId, Data,
     TimeInterval,
 };
 

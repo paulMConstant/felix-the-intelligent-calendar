@@ -13,7 +13,6 @@
 extern crate num_cpus;
 
 mod components;
-pub(crate) mod computation_structs;
 mod data_impl;
 mod events;
 
@@ -27,7 +26,7 @@ use components::{
 use felix_datatypes::{
     ActivityBeginningMinutes, 
     ActivityBeginningsGivenDurationMinutes,
-    WorkHourInMinutes,
+    WorkHoursAndActivityDurationsSorted,
 };
 pub use felix_datatypes::{
     InsertionCost, 

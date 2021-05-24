@@ -1,0 +1,3 @@
+mod work_hours_and_activity_durations_sorted;
+
+pub use work_hours_and_activity_durations_sorted::WorkHoursAndActivityDurationsSorted;
