@@ -157,6 +157,9 @@ impl Ui {
     }
 
     pub fn on_right_click_over_schedules(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
+        self.activity_insertion
+            .borrow()
+            .update_activity_under_cursor(x, y);
         //self.activity_insertion
         //.lock()
         //.unwrap()
