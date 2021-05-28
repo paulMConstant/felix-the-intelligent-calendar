@@ -1,5 +1,6 @@
 use felix_datatypes::{Time, TimeInterval};
 use felix_test_utils::{Activity, Group, DataBuilder, test_ok};
+use felix_export_api::generate_pdf;
 
 #[test]
 fn test_printable_data_conversion() {
@@ -58,7 +59,9 @@ fn test_printable_data_conversion() {
         assert_eq!(activities_of_entity3, activities_of_entity1);
     });
 }
- #[test]
+
+#[test]
 fn pdfs_are_generated() {
-// TODO create data with two entities then for each entity check that one pdf has been generated
+    // TODO create data with two entities then for each entity check that one pdf has been generated
+    generate_pdf("Marie-Claudine".to_string(), &[], "/home/paul/");
 }

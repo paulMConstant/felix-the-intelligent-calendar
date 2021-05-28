@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 felix-collections = { path = "../felix-collections" }
+cairo-rs = { version = "0.9", features = ["pdf", "embed-lgpl-docs"] }
