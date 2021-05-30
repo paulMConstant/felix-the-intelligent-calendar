@@ -29,7 +29,7 @@ impl TimeInterval {
     pub fn new(beginning: Time, end: Time) -> TimeInterval {
         assert!(
             end - beginning >= MIN_TIME_DISCRETIZATION,
-            "Either beginning > end or the interval is too short"
+            "A time interval cannot have beginning >= end"
         );
         TimeInterval { beginning, end }
     }

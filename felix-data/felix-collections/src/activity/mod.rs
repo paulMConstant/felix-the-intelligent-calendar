@@ -7,8 +7,8 @@ use felix_datatypes::{ActivityId, ActivityInsertionCosts, Rgba, Time, TimeInterv
 
 use activity_computation_data::ActivityComputationData;
 
-pub use activity_metadata::ActivityMetadata;
 pub use activities::Activities;
+pub use activity_metadata::ActivityMetadata;
 pub use computation::activities_into_computation_data::{
     activities_into_computation_data, activities_sorted_filtered_for_computation,
 };

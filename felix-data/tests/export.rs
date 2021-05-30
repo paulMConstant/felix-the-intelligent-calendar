@@ -1,6 +1,6 @@
 use felix_datatypes::{Time, TimeInterval};
-use felix_test_utils::{Activity, Group, DataBuilder, test_ok};
 use felix_export_api::generate_pdf;
+use felix_test_utils::{test_ok, Activity, DataBuilder, Group};
 
 #[test]
 fn test_printable_data_conversion() {
@@ -30,38 +30,57 @@ fn test_printable_data_conversion() {
             .with_group(group1)
             .with_entities(entities.clone())
             .with_activities(activities),
-    {
-        let printable_data = data.as_printable();
-        
-        for entity in entities {
-            assert!(printable_data.contains_key(entity),
-            "At least one entity was not taken into account");
+        {
+            let printable_data = data.as_printable();
+
+            for entity in entities {
+                assert!(
+                    printable_data.contains_key(entity),
+                    "At least one entity was not taken into account"
+                );
+            }
+
+            let activities_of_entity1 = &printable_data[entity1];
+
+            assert_eq!(
+                activities_of_entity1.len(),
+                1,
+                "Invalid number of activities"
+            );
+            let real_activity1 = &activities_of_entity1[0];
+
+            assert_eq!(
+                real_activity1.name(),
+                activity1.name,
+                "Invalid activity name"
+            );
+            assert_eq!(
+                real_activity1.duration(),
+                activity1.duration,
+                "Invalid activity duration"
+            );
+            assert_eq!(
+                real_activity1.entities_sorted(),
+                activity1.entities,
+                "Invalid activity participants"
+            );
+            assert_eq!(
+                real_activity1.groups_sorted(),
+                activity1.groups,
+                "Invalid activity groups"
+            );
+
+            let activities_of_entity2 = &printable_data[entity2];
+            assert!(activities_of_entity2.is_empty());
+
+            let activities_of_entity3 = &printable_data[entity3];
+            assert_eq!(activities_of_entity3, activities_of_entity1);
         }
-        
-        let activities_of_entity1 = &printable_data[entity1];
-
-        assert_eq!(activities_of_entity1.len(), 1, "Invalid number of activities");
-        let real_activity1 = &activities_of_entity1[0];
-
-        assert_eq!(real_activity1.name(), activity1.name, 
-                   "Invalid activity name");
-        assert_eq!(real_activity1.duration(), activity1.duration, 
-                   "Invalid activity duration");
-        assert_eq!(real_activity1.entities_sorted(), activity1.entities,
-                   "Invalid activity participants");
-        assert_eq!(real_activity1.groups_sorted(), activity1.groups,
-                   "Invalid activity groups");
-
-        let activities_of_entity2 = &printable_data[entity2];
-        assert!(activities_of_entity2.is_empty());
-
-        let activities_of_entity3 = &printable_data[entity3];
-        assert_eq!(activities_of_entity3, activities_of_entity1);
-    });
+    );
 }
 
 #[test]
 fn pdfs_are_generated() {
     // TODO create data with two entities then for each entity check that one pdf has been generated
-    generate_pdf("Marie-Claudine".to_string(), &[], "/home/paul/");
+    generate_pdf("Marie-Claudine".to_string(), Vec::new(), "/home/paul/");
 }
