@@ -44,4 +44,9 @@ impl Ui {
     pub fn clear_notification_button(&self) -> gtk::Button {
         fetch_ui_from_builder!(self, "ClearNotificationButton")
     }
+
+    #[must_use]
+    pub fn pdf_export_button(&self) -> gtk::Button {
+        fetch_ui_from_builder!(self, "PdfExportButton")
+    }
 }

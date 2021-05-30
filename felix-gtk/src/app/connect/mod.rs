@@ -13,6 +13,7 @@ impl App {
         self.connect_work_hours_tab();
         self.connect_activity_insertion();
         self.connect_clear_notification();
+        self.connect_export();
     }
 
     pub fn connect_data(&mut self) {

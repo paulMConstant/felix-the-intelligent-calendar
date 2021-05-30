@@ -97,6 +97,31 @@
       </attributes>
     </child>
   </object>
+  <object class="GtkPopover" id="ExportPopover">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkButton" id="PdfExportButton">
+            <property name="label" translatable="yes">Schedules as PDFs</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">For each entity, generates a PDF containing its activities.</property>
+            <property name="relief">none</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkImage" id="SettingsIcon">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -903,19 +928,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="ExportSchedulesButton">
-                        <property name="label" translatable="yes">Export Schedules...</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="AutoInsertButton">
                         <property name="label" translatable="yes">Auto-insert</property>
                         <property name="visible">True</property>
@@ -925,7 +937,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="position">4</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
@@ -938,7 +950,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="position">5</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                   </object>
@@ -1035,6 +1047,23 @@
           </object>
         </child>
         <child>
+          <object class="GtkMenuButton" id="ExportSchedulesButton">
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="popover">ExportPopover</property>
+            <child>
+              <object class="GtkLabel" id="ExportSchedulesLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Export</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButton" id="SettingsButton">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -1043,7 +1072,7 @@
             <property name="image">SettingsIcon</property>
           </object>
           <packing>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
