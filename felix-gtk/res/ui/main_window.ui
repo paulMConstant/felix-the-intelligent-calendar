@@ -106,11 +106,11 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkButton" id="PdfExportButton">
-            <property name="label" translatable="yes">Schedules as PDFs</property>
+            <property name="label" translatable="yes">Schedules - PDF</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">For each entity, generates a PDF containing its activities.</property>
+            <property name="tooltip-text" translatable="yes">For each entity, generates a PDF listing its activities.</property>
             <property name="relief">none</property>
           </object>
           <packing>

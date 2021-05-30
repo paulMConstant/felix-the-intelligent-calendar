@@ -9,7 +9,7 @@ impl App {
     }
 
     fn connect_export_pdf(&self) {
-        fetch_from!(self.ui.borrow(), pdf_export_button, main_window);
+        fetch_from!(self.ui.borrow(), pdf_export_button, main_window, export_popover);
 
         let ui = self.ui.clone();
         let data = self.data.clone();
@@ -17,6 +17,8 @@ impl App {
             self,
             pdf_export_button,
             pdf_export_button.connect_clicked(move |_| {
+                export_popover.hide();
+
                 let dialog = gtk::FileChooserDialog::new(
                     Some(&tr("Select directory to store the pdfs")),
                     Some(&main_window),
@@ -34,6 +36,7 @@ impl App {
                                                            folder.to_string_lossy())));
                     }
                 }
+
                 dialog.close();
             })
         );
