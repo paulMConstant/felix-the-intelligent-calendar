@@ -1,4 +1,13 @@
+mod lines_from_activities;
+mod line;
+mod pdf_sizes;
+
+use line::{Line, LineSplits};
+use lines_from_activities::extract_lines_from_activities;
+use pdf_sizes::{PdfSize, PdfSizes};
+
 use felix_collections::Activity;
+use std::path::PathBuf;
 
 const FONT_RGB: f64 = 0.0;
 const LINE_WIDTH: f64 = 2.0;
@@ -7,136 +16,15 @@ const INCH_TO_POINT_MULTIPLIER: f64 = 72.0;
 const A4_HEIGHT_IN_POINTS: f64 = 11.693 * INCH_TO_POINT_MULTIPLIER;
 const A4_WIDTH_IN_POINTS: f64 = 8.268 * INCH_TO_POINT_MULTIPLIER;
 
-type LineIndex = usize;
-type LineSplits = Vec<LineIndex>;
+pub fn generate_pdf(entity: String, activities: Vec<Activity>, output_dir: PathBuf) {
+    // 1. Format data
+    let pdf = Pdf::new(entity, activities);
 
-pub struct Line {
-    pub timestamp: String,
-    pub activity_name_and_participants: String,
+    // 2. Print data
+    pdf.render(output_dir);
 }
 
-impl Line {
-    pub fn print(&self) -> String {
-        self.timestamp.clone() + &self.activity_name_and_participants
-    }
-}
-
-struct PdfSize {
-    pub title_font_size: f64,
-    pub inter_line_break_spacing: f64,
-    pub line_spacing: f64,
-    pub line_font_size: f64,
-    pub left_right_margin: f64,
-    pub top_bottom_margin: f64,
-}
-
-enum PdfSizes {
-    Uninitialized,
-    Large,
-    Big,
-    Medium,
-    Small,
-    Tiny,
-}
-
-impl PdfSizes {
-    const fn new() -> PdfSizes {
-        PdfSizes::Uninitialized
-    }
-
-    fn value(&self) -> PdfSize {
-        match *self {
-            Self::Uninitialized => panic!("Pdf size is uninitialized"),
-            Self::Large => PdfSize {
-                title_font_size: 32.0,
-                inter_line_break_spacing: 25.0,
-                line_spacing: 35.0,
-                line_font_size: 20.0,
-                left_right_margin: 50.0,
-                top_bottom_margin: 60.0,
-            },
-            Self::Big => PdfSize {
-                title_font_size: 30.0,
-                inter_line_break_spacing: 25.0,
-                line_spacing: 30.0,
-                line_font_size: 18.0,
-                left_right_margin: 40.0,
-                top_bottom_margin: 55.0,
-            },
-            Self::Medium => PdfSize {
-                title_font_size: 28.0,
-                inter_line_break_spacing: 23.0,
-                line_spacing: 30.0,
-                line_font_size: 17.0,
-                left_right_margin: 40.0,
-                top_bottom_margin: 50.0,
-            },
-            Self::Small => PdfSize {
-                title_font_size: 26.0,
-                inter_line_break_spacing: 20.0,
-                line_spacing: 25.0,
-                line_font_size: 16.0,
-                left_right_margin: 35.0,
-                top_bottom_margin: 45.0,
-            },
-            Self::Tiny => PdfSize {
-                title_font_size: 24.0,
-                inter_line_break_spacing: 18.0,
-                line_spacing: 25.0,
-                line_font_size: 14.0,
-                left_right_margin: 30.0,
-                top_bottom_margin: 40.0,
-            },
-        }
-    }
-
-    /// Returns the next smaller size or none if there is no smaller size.
-    const fn next(&self) -> Option<Self> {
-        match *self {
-            Self::Uninitialized => Some(Self::Large),
-            Self::Large => Some(Self::Big),
-            Self::Big => Some(Self::Medium),
-            Self::Medium => Some(Self::Small),
-            Self::Small => Some(Self::Tiny),
-            Self::Tiny => None,
-        }
-    }
-}
-
-fn extract_lines_from_activities(mut activities: Vec<Activity>) -> Vec<Line> {
-    // Do not mention not inserted activities
-    activities = activities
-        .into_iter()
-        .filter(|activity| activity.insertion_interval().is_some())
-        .collect();
-
-    // Earlier activities go first
-    activities.sort_by(|a, b| {
-        a.insertion_interval()
-            .expect("Exporting uninserted activities")
-            .cmp(
-                &b.insertion_interval()
-                    .expect("Exporting uninserted activities"),
-            )
-    });
-
-    activities
-        .iter()
-        .map(|activity| Line {
-            timestamp: activity
-                .insertion_interval()
-                .expect("Exporting uninserted activity")
-                .to_string()
-                + " : ",
-            activity_name_and_participants: activity.name()
-                + " ("
-                + &activity.entities_sorted().join(", ")
-                + ")",
-        })
-        .collect()
-}
-
-pub struct Pdf {
+struct Pdf {
     title: String,
     title_x_offset: f64,
     title_height: f64,
@@ -182,7 +70,9 @@ impl Pdf {
     }
 
     fn compute_total_height(&self) -> f64 {
-        self.render("") + self.size.top_bottom_margin
+        let tmp_dir = tempfile::tempdir().expect("Could not create tempdir");
+
+        self.render(tmp_dir.path().to_path_buf()) + self.size.top_bottom_margin
     }
 
     /// Computes data such as title height, line height, line breaks before rendering.
@@ -196,10 +86,13 @@ impl Pdf {
     fn compute_line_breaks(&mut self) {
         self.line_breaks = vec![Vec::new(); self.lines.len()];
 
+        let tmp_dir = tempfile::tempdir().expect("Could not create tempdir");
+        let tmp_file = tmp_dir.path().join("tmp.pdf");
+
         let surface = cairo::PdfSurface::new(
             A4_WIDTH_IN_POINTS,
             A4_HEIGHT_IN_POINTS,
-            "/home/paul/test.pdf",
+            tmp_file
         )
         .expect("Could not create pdf surface");
         let c = cairo::Context::new(&surface);
@@ -241,10 +134,13 @@ impl Pdf {
     /// * title x offset
     /// * title height
     fn compute_title_position(&mut self) {
+        let tmp_dir = tempfile::tempdir().expect("Could not create tempdir");
+        let tmp_file = tmp_dir.path().join("tmp.pdf");
+
         let surface = cairo::PdfSurface::new(
             A4_WIDTH_IN_POINTS,
             A4_HEIGHT_IN_POINTS,
-            "/home/paul/test.pdf",
+            tmp_file
         )
         .expect("Could not create pdf surface");
         let c = cairo::Context::new(&surface);
@@ -262,11 +158,14 @@ impl Pdf {
     /// # Returns
     ///
     /// The total height of the surface.
-    pub fn render(&self, output_dir: &str) -> f64 {
+    pub fn render(&self, mut output_dir: PathBuf) -> f64 {
+        let filename = self.title.replace(' ', "_");
+        output_dir.push(filename + ".pdf");
+
         let surface = cairo::PdfSurface::new(
             A4_WIDTH_IN_POINTS,
             A4_HEIGHT_IN_POINTS,
-            "/home/paul/test.pdf",
+            output_dir
         )
         .expect("Could not create pdf surface");
 
@@ -303,14 +202,6 @@ impl Pdf {
         }
         current_y
     }
-}
-
-pub fn generate_pdf(entity: String, activities: Vec<Activity>, output_dir: &str) {
-    // 1. Format data
-    let pdf = Pdf::new(entity, activities);
-
-    // 2. Print data
-    pdf.render(output_dir);
 }
 
 #[cfg(test)]

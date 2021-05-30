@@ -9,3 +9,4 @@ edition = "2018"
 felix-datatypes = { path = "../felix-datatypes" }
 felix-collections = { path = "../felix-collections" }
 cairo-rs = { version = "0.9", features = ["pdf", "embed-lgpl-docs"] }
+tempfile = "3"

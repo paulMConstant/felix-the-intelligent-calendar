@@ -1,14 +1,17 @@
 use crate::Data;
+
 use felix_collections::PrintableActivities;
 use felix_export_api::generate_pdf;
 
+use std::path::PathBuf;
+
 /// Functions related to exporting current data.
 impl Data {
-    pub fn export_as_pdf(&self, output_dir: &str) {
+    pub fn export_as_pdf(&self, output_dir: PathBuf) {
         let printable_data = self.as_printable();
 
         for (entity, activities) in printable_data {
-            generate_pdf(entity, activities, output_dir);
+            generate_pdf(entity, activities, output_dir.clone());
         }
     }
 

@@ -82,5 +82,9 @@ fn test_printable_data_conversion() {
 #[test]
 fn pdfs_are_generated() {
     // TODO create data with two entities then for each entity check that one pdf has been generated
-    generate_pdf("Marie-Claudine".to_string(), Vec::new(), "/home/paul/");
+    generate_pdf(
+        "Marie-Claudine".to_string(),
+        Vec::new(),
+        std::path::PathBuf::from("/tmp/"),
+    );
 }

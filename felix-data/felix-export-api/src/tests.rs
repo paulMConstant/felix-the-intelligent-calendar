@@ -48,11 +48,9 @@ fn test_pdf_size_always_coherent() {
     // Check that line is generated
 
     // TODO remove this later
-    res.render("");
-    // Check line length
-    // Check height
-    // Check title
+    res.render(PathBuf::from("/tmp/"));
 }
+
 #[test]
 fn generate_pdf_of_every_size_for_manual_checks() {
     // TODO generate various pdfs and manually check for out of line proportions
@@ -82,6 +80,8 @@ fn test_lines_split_if_too_long() {
     let activities = make_activities();
     let entity = "Paul".to_string();
     let mut res = Pdf::new(entity, activities);
+
     res.compute_line_breaks();
+
     assert!(!res.line_breaks.is_empty());
 }
