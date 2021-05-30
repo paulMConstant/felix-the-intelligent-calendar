@@ -156,7 +156,7 @@ impl Ui {
         }
     }
 
-    pub fn on_right_click_over_schedules(&mut self, data: Rc<RefCell<Data>>, x: f64, y: f64) {
+    pub fn on_right_click_over_schedules(&mut self, _data: Rc<RefCell<Data>>, x: f64, y: f64) {
         self.activity_insertion
             .borrow()
             .update_activity_under_cursor(x, y);
@@ -164,7 +164,7 @@ impl Ui {
         //.lock()
         //.unwrap()
         //.get_id_of_activity_under_cursor());
-        // TODO Lock activity in place
+        // TODO pin activity
     }
 
     pub fn on_autoinsertion_done_update_state(&mut self) {

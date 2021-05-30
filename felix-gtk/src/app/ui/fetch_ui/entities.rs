@@ -34,16 +34,6 @@ impl Ui {
     }
 
     #[must_use]
-    pub fn entity_send_mail_switch(&self) -> gtk::Switch {
-        fetch_ui_from_builder!(self, "EntitySendMailSwitch")
-    }
-
-    #[must_use]
-    pub fn entity_mail_entry(&self) -> gtk::Entry {
-        fetch_ui_from_builder!(self, "EntityMailEntry")
-    }
-
-    #[must_use]
     pub fn entity_specific_box(&self) -> gtk::Box {
         fetch_ui_from_builder!(self, "EntitySpecificBox")
     }

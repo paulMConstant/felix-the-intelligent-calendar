@@ -4,7 +4,7 @@
 //! Includes
 //! - Addition
 //! - Deletion
-//! - Edition (name, mail, send_me_a_mail)
+//! - Edition (name)
 //! - Getter
 
 use felix_test_utils::DataBuilder;
@@ -151,56 +151,6 @@ fn get_invalid_entity() {
         "Does Not Exist does not exist.",
         "Could remove invalid entity"
     );
-}
-
-// *** Modify mail, send_me_a_mail ***
-#[test]
-fn set_entity_mail() {
-    let name = "Name";
-    test_ok!(data, DataBuilder::new().with_entity(name), {
-        let mail = "name@xyz.com";
-        data.set_entity_mail(name, mail.clone())
-            .expect("Could not set entity mail");
-
-        let entity_mail = data
-            .entity(name)
-            .expect("Could not get entity by name")
-            .mail();
-        assert_eq!(entity_mail, mail, "Mail was not set");
-    });
-}
-
-#[test]
-fn set_send_me_a_mail() {
-    let name = "Name";
-    test_ok!(data, DataBuilder::new().with_entity(name), {
-        let send_me_a_mail = true;
-        data.set_send_mail_to(name.clone(), send_me_a_mail)
-            .expect("Could not set send_me_a_mail");
-
-        let entity_send_me_a_mail = data
-            .entity(name.clone())
-            .expect("Could not get entity by name")
-            .send_me_a_mail();
-        assert_eq!(
-            entity_send_me_a_mail, send_me_a_mail,
-            "Send_me_a_mail was not set"
-        );
-
-        // Check again with false value
-        let send_me_a_mail = false;
-        data.set_send_mail_to(name.clone(), send_me_a_mail)
-            .expect("Could not set send_me_a_mail");
-
-        let entity_send_me_a_mail = data
-            .entity(name.clone())
-            .expect("Could not get entity by name")
-            .send_me_a_mail();
-        assert_eq!(
-            entity_send_me_a_mail, send_me_a_mail,
-            "Send_me_a_mail was not set"
-        );
-    });
 }
 
 // *** Rename ***

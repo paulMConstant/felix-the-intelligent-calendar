@@ -119,31 +119,4 @@ impl Data {
             .emit_entity_renamed(self, &entity, &old_name);
         Ok(new_name)
     }
-
-    /// Sets the mail of the entity with the formatted given name.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity is not found.
-    pub fn set_entity_mail<S1, S2>(&mut self, entity_name: S1, mail: S2) -> Result<()>
-    where
-        S1: Into<String>,
-        S2: Into<String>,
-    {
-        self.entities
-            .set_mail_of(&clean_string(entity_name)?, mail.into())
-    }
-
-    /// Set to true to send mails to the entity with formatted given name.
-    ///
-    /// # Errors
-    ///
-    /// Returs Err if the entity is not found.
-    pub fn set_send_mail_to<S>(&mut self, entity_name: S, send: bool) -> Result<()>
-    where
-        S: Into<String>,
-    {
-        self.entities
-            .set_send_mail_to(&clean_string(entity_name)?, send)
-    }
 }

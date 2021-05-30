@@ -29,9 +29,7 @@ impl Ui {
         fetch_from!(
             self,
             entity_specific_box,
-            entity_name_entry,
-            entity_send_mail_switch,
-            entity_mail_entry
+            entity_name_entry
         );
 
         let current_entity = self
@@ -45,12 +43,8 @@ impl Ui {
             self,
             {
                 entity_name_entry.set_text(&current_entity.name());
-                entity_mail_entry.set_text(&current_entity.mail());
-                entity_send_mail_switch.set_active(current_entity.send_me_a_mail());
             },
-            entity_name_entry,
-            entity_mail_entry,
-            entity_send_mail_switch
+            entity_name_entry
         );
 
         self.custom_work_hours_builder.on_work_hours_changed(

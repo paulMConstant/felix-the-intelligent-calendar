@@ -79,22 +79,14 @@ pub use helpers::clean_string;
 ///
 /// let entity_name = data.add_entity("Bernard").unwrap();
 ///
-/// let mail = "bernard@xyz.com";
-/// data.set_entity_mail(entity_name.clone(), mail.clone()).unwrap();
-///
 /// let custom_morning_shift = TimeInterval::new(Time::new(10, 0), Time::new(12, 0));
 /// data.add_custom_work_interval_for(entity_name.clone(), custom_morning_shift);
 ///
 /// // new_name = "Jean" because set_entity_name formats it.
 /// let new_name = data.set_entity_name(entity_name, "jean").unwrap();
 ///
-/// let send_mail = true;
-/// data.set_send_mail_to(new_name.clone(), send_mail).unwrap();
-///
 /// let entity = data.entity(new_name.clone()).unwrap();
 ///
-/// assert!(entity.send_me_a_mail(), "{}", send_mail);
-/// assert_eq!(entity.mail(), mail);
 /// assert_eq!(data.custom_work_hours_of(entity.name()).unwrap()[0], custom_morning_shift);
 ///
 /// data.remove_entity(new_name).unwrap();

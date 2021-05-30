@@ -19,8 +19,6 @@ pub use entities::Entities;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Entity {
     name: EntityName,
-    mail: String,
-    send_me_a_mail: bool,
 }
 
 impl Entity {
@@ -29,8 +27,6 @@ impl Entity {
     fn new(name: String) -> Entity {
         Entity {
             name,
-            mail: String::new(),
-            send_me_a_mail: false,
         }
     }
 
@@ -42,34 +38,11 @@ impl Entity {
         self.name.clone()
     }
 
-    /// Simple getter for the mail.
-    #[must_use]
-    pub fn mail(&self) -> String {
-        self.mail.clone()
-    }
-
-    /// Simple getter to check if a mail should be sent to the entity.
-    #[must_use]
-    pub fn send_me_a_mail(&self) -> bool {
-        self.send_me_a_mail
-    }
-
     // *** Private Setters ***
 
     /// Sets the name of the entity.
     fn set_name(&mut self, name: String) {
         self.name = name;
-    }
-
-    /// Sets the mail of the entity. The given mail is always accepted.
-    fn set_mail(&mut self, mail: String) {
-        self.mail = mail;
-    }
-
-    /// Call with true if a mail should be sent to the entity, else with false.
-    /// Never fails.
-    fn set_send_me_a_mail(&mut self, send: bool) {
-        self.send_me_a_mail = send;
     }
 }
 

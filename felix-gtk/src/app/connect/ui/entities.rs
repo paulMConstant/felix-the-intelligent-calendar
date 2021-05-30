@@ -14,8 +14,6 @@ impl App {
         self.connect_entity_selected();
         self.connect_remove_entity();
         self.connect_rename_entity();
-        self.connect_set_entity_mail();
-        self.connect_set_send_mail_to();
 
         self.connect_clean_entity_entries();
     }
@@ -112,43 +110,6 @@ impl App {
                     data.borrow_mut().set_entity_name(entity_to_rename, new_name)
                     );
             })
-        );
-    }
-
-    fn connect_set_entity_mail(&self) {
-        fetch_from!(self.ui.borrow(), entity_mail_entry);
-
-        let data = self.data.clone();
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            entity_mail_entry,
-            entity_mail_entry.connect_changed(move |entry| {
-                let mail = entry.get_text();
-                let entity = ui.borrow().current_entity().as_ref().expect(
-                    "Current entity should be selected before accessing any entity-related field",
-            ).name();
-                return_if_err!(ui, data.borrow_mut().set_entity_mail(entity, mail));
-            })
-        );
-    }
-
-    fn connect_set_send_mail_to(&self) {
-        fetch_from!(self.ui.borrow(), entity_send_mail_switch);
-
-        let data = self.data.clone();
-        let ui = self.ui.clone();
-        app_register_signal!(
-            self,
-            entity_send_mail_switch,
-            entity_send_mail_switch.connect_property_active_notify(
-                move |switch| {
-                    let send = switch.get_active();
-                    let entity = ui.borrow().current_entity().as_ref().expect(
-                            "Current entity should be selected before accessing any entity-related field",
-                            ).name();
-        return_if_err!(ui, data.borrow_mut().set_send_mail_to(entity, send));
-                })
         );
     }
 

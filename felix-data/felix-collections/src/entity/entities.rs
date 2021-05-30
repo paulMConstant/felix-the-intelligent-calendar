@@ -38,20 +38,22 @@ impl Entities {
         }
     }
 
-    /// Returns a mutable reference to the entity with the given name.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity does not exist.
-    ///
-    /// Keep this function private !
-    /// No mutable access to elements of the collection should be granted.
-    fn get_mut_by_name(&mut self, name: &str) -> Result<&mut Entity> {
-        match self.entities.get_mut(name) {
-            Some(entity) => Ok(entity),
-            None => Err(DoesNotExist::entity_does_not_exist(name)),
-        }
-    }
+    // This function may be useful when entities hold more data than their name (e.g. a count)
+
+    // Returns a mutable reference to the entity with the given name.
+    //
+    // # Errors
+    //
+    // Returns Err if the entity does not exist.
+    //
+    // Keep this function private !
+    // No mutable access to elements of the collection should be granted.
+    //fn get_mut_by_name(&mut self, name: &str) -> Result<&mut Entity> {
+    //    match self.entities.get_mut(name) {
+    //        Some(entity) => Ok(entity),
+    //        None => Err(DoesNotExist::entity_does_not_exist(name)),
+    //    }
+    //}
 
     /// Adds an entity with the given name.
     ///
@@ -100,26 +102,6 @@ impl Entities {
                 }
             }
         }
-    }
-
-    /// Sets the mail of the entity with the given name.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity is not found.
-    pub fn set_mail_of(&mut self, entity_name: &str, mail: String) -> Result<()> {
-        self.get_mut_by_name(entity_name)?.set_mail(mail);
-        Ok(())
-    }
-
-    /// Sets 'send_me_a_mail' for the entity with the given name.
-    ///
-    /// # Errors
-    ///
-    /// Returns Err if the entity is not found.
-    pub fn set_send_mail_to(&mut self, entity_name: &str, send: bool) -> Result<()> {
-        self.get_mut_by_name(entity_name)?.set_send_me_a_mail(send);
-        Ok(())
     }
 }
 
