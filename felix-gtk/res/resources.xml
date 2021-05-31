@@ -3,6 +3,7 @@
     <gresource prefix="/com/github/paulmconstant/felix/">
       <file preprocess="xml-stripblanks">ui/main_window.ui</file>
       <file preprocess="xml-stripblanks">ui/data_window.ui</file>
+      <file preprocess="xml-stripblanks">ui/settings_window.ui</file>
       <file preprocess="xml-stripblanks">ui/time_interval.ui</file>
       <file preprocess="xml-stripblanks">ui/activity_insertion.ui</file>
   </gresource>

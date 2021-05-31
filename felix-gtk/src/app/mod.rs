@@ -6,7 +6,7 @@ pub mod connect;
 pub mod save_state;
 pub mod ui;
 
-use crate::config::{APP_NAME, DATA_CONF_FILE};
+use crate::config;
 use felix_data::Data;
 use ui::Ui;
 
@@ -36,7 +36,7 @@ impl App {
 }
 
 fn init_data() -> Rc<RefCell<Data>> {
-    let config_file_contents = fs::read_to_string(DATA_CONF_FILE);
+    let config_file_contents = fs::read_to_string(config::DATA_CONF_FILE);
 
     let data = if let Ok(contents) = config_file_contents {
         let data_value: serde_json::Result<Data> = serde_json::from_str(&contents);
@@ -65,11 +65,18 @@ fn init_ui(application: &gtk::Application) -> Rc<RefCell<Ui>> {
         .add_from_resource("/com/github/paulmconstant/felix/ui/data_window.ui")
         .expect("Could not load ui file: data_window.ui");
 
+    builder
+        .add_from_resource("/com/github/paulmconstant/felix/ui/settings_window.ui")
+        .expect("Could not load ui file: settings_window.ui");
+
     let ui = Rc::new(RefCell::new(Ui::new(builder)));
 
-    fetch_from!(ui.borrow(), main_window);
+    fetch_from!(ui.borrow(), main_window, version_label);
     main_window.set_application(Some(application));
-    main_window.set_title(APP_NAME);
+    main_window.set_title(config::APP_NAME);
+
+    version_label.set_text(config::VERSION);
+
     ui
 }
 
