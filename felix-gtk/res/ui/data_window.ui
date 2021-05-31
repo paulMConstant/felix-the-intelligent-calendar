@@ -209,6 +209,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Add the given entity to the list of entities</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -291,6 +292,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Delete this entity</property>
                         <property name="image">DeleteIcon1</property>
                       </object>
                       <packing>
@@ -315,7 +317,19 @@
                       <object class="GtkBox" id="AddCustomWorkHoursBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="margin-top">10</property>
                         <property name="spacing">7</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
                         <child>
                           <object class="GtkLabel" id="CustomWorkHoursLabel">
                             <property name="visible">True</property>
@@ -325,7 +339,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">0</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -341,7 +355,8 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
-                                <property name="tooltip-text" translatable="yes">Add Custom Work Interval</property>
+                                <property name="tooltip-text" translatable="yes">Add entity-specific work hours.
+This entity will use these work hours instead of the general work hours.</property>
                                 <property name="image">AddIcon2</property>
                               </object>
                               <packing>
@@ -357,11 +372,19 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                         <child>
-                          <placeholder/>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
@@ -436,6 +459,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Adds the given group to the list of groups</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -474,6 +498,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Add the given entity to the group</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -552,6 +577,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Delete this group</property>
                         <property name="image">DeleteIcon2</property>
                       </object>
                       <packing>

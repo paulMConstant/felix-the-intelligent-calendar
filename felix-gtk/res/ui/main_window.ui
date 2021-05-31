@@ -290,6 +290,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Delete this activity</property>
                                 <property name="image">DeleteIcon</property>
                               </object>
                               <packing>
@@ -329,6 +330,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Add the given group or entity to this activity</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -904,6 +906,7 @@
                       <object class="GtkEntry" id="ShowScheduleEntry">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Enter the name of an entity or group, thren press Enter or click 'Show Schedule'.</property>
                         <property name="placeholder-text" translatable="yes">Entity Or Group</property>
                         <property name="completion">EntityAndGroupsEntryCompletionSchedules</property>
                         <property name="input-purpose">name</property>
@@ -920,6 +923,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Show the schedule of the given entity or group</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -933,6 +937,8 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Automatically inserts all activities which are not inserted yet. 
+Does not move already inserted activities.</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -946,6 +952,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Remove all inserted activities from the schedules</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -1043,7 +1050,14 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Work hours, entities, groups go here</property>
+            <property name="tooltip-text" translatable="yes">Work hours, entities, groups go 
+here.
+
+Entities take part in activities. They can be anything: students, teachers, employees, rooms, furniture...
+
+Groups are entities which take part in similar activities: classes, teams...
+ 
+Activities are actual scheduled meetings of people.</property>
           </object>
         </child>
         <child>
@@ -1068,7 +1082,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Settings - Language, user info, contact</property>
+            <property name="tooltip-text" translatable="yes">Settings - Language, user info, contact, version</property>
             <property name="image">SettingsIcon</property>
           </object>
           <packing>
