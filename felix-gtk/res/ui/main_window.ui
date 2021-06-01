@@ -982,7 +982,7 @@ Does not move already inserted activities.</property>
           </packing>
         </child>
         <child type="overlay">
-          <object class="GtkRevealer" id="NotificationRevealer">
+          <object class="GtkRevealer" id="MainNotificationRevealer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">center</property>
@@ -994,7 +994,7 @@ Does not move already inserted activities.</property>
                 <property name="valign">start</property>
                 <property name="spacing">20</property>
                 <child>
-                  <object class="GtkLabel" id="NotificationLabel">
+                  <object class="GtkLabel" id="MainNotificationLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">This is an app-notification. Click the button to dismiss</property>
@@ -1006,7 +1006,7 @@ Does not move already inserted activities.</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="ClearNotificationButton">
+                  <object class="GtkButton" id="ClearMainNotificationButton">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>

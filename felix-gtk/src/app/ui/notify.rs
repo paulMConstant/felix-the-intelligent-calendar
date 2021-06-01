@@ -3,9 +3,9 @@ use gtk::prelude::*;
 
 impl Ui {
     pub fn notify_str(&self, s: &str) {
-        fetch_from!(self, notification_revealer, notification_label);
-        notification_label.set_text(s);
-        notification_revealer.set_reveal_child(true);
+        fetch_from!(self, main_notification_revealer, main_notification_label);
+        main_notification_label.set_text(s);
+        main_notification_revealer.set_reveal_child(true);
     }
 
     pub fn notify_err(&self, error: Box<dyn std::error::Error>) {

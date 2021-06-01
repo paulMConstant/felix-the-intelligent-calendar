@@ -12,7 +12,7 @@ impl App {
         self.connect_groups_tab();
         self.connect_work_hours_tab();
         self.connect_activity_insertion();
-        self.connect_clear_notification();
+        self.connect_notifications();
         self.connect_export();
     }
 

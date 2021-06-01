@@ -2,17 +2,21 @@ use crate::app::App;
 use gtk::prelude::*;
 
 impl App {
-    pub fn connect_clear_notification(&self) {
+    pub fn connect_notifications(&self) {
+        self.connect_clear_mainwindow_notification();
+    }
+
+    fn connect_clear_mainwindow_notification(&self) {
         fetch_from!(
             self.ui.borrow(),
-            notification_revealer,
-            clear_notification_button
+            main_notification_revealer,
+            clear_main_notification_button
         );
         app_register_signal!(
             self,
-            clear_notification_button,
-            clear_notification_button.connect_clicked(move |_| {
-                notification_revealer.set_reveal_child(false);
+            clear_main_notification_button,
+            clear_main_notification_button.connect_clicked(move |_| {
+                main_notification_revealer.set_reveal_child(false);
             })
         );
     }
