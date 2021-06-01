@@ -23,6 +23,14 @@
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">20</property>
+        <property name="margin-end">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
+        <property name="row-spacing">20</property>
+        <property name="column-spacing">20</property>
+        <property name="row-homogeneous">True</property>
+        <property name="column-homogeneous">True</property>
         <child>
           <object class="GtkLabel" id="VersionLabel">
             <property name="visible">True</property>
@@ -76,7 +84,17 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkButton" id="ReportBugButton">
+            <property name="label" translatable="yes">Report a bug</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Click on this button to report a bug or give general feedback.</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
