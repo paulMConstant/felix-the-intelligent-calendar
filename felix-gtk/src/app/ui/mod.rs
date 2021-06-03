@@ -38,11 +38,14 @@ pub struct EntitiesAndInsertionTimes {
 pub struct Ui {
     builder: gtk::Builder,
     signals: HashMap<String, Vec<SignalHandlerId>>,
+
     current_entity: Option<Entity>,
     current_group: Option<Group>,
     current_activity: Option<Activity>,
+
     work_hours_builder: WorkHoursBuilder,
     custom_work_hours_builder: WorkHoursBuilder,
+
     activity_insertion: Rc<RefCell<ActivityInsertionUi>>,
     autoinsertion_handle: Rc<RefCell<Option<AutoinsertionThreadHandle>>>,
 }
@@ -52,11 +55,14 @@ impl Ui {
         Ui {
             builder,
             signals: HashMap::new(),
+            
             current_entity: None,
             current_group: None,
             current_activity: None,
+
             work_hours_builder: WorkHoursBuilder::new(),
             custom_work_hours_builder: WorkHoursBuilder::new(),
+
             activity_insertion: Rc::new(RefCell::new(ActivityInsertionUi::new())),
             autoinsertion_handle: Rc::new(RefCell::new(None)),
         }

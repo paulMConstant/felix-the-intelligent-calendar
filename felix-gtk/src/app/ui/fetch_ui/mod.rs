@@ -6,6 +6,7 @@ mod entities;
 mod groups;
 mod work_hours;
 mod notification;
+mod settings;
 mod export;
 
 use crate::app::ui::Ui;
