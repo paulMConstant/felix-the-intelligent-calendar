@@ -34,4 +34,3 @@ pub(crate) fn extract_lines_from_activities(mut activities: Vec<Activity>) -> Ve
         })
         .collect()
 }
-

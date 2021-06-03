@@ -11,4 +11,3 @@ impl Line {
         self.timestamp.clone() + &self.activity_name_and_participants
     }
 }
-

@@ -21,7 +21,7 @@ impl App {
             })
         );
     }
-    
+
     fn connect_clear_datawindow_notification(&self) {
         fetch_from!(
             self.ui.borrow(),

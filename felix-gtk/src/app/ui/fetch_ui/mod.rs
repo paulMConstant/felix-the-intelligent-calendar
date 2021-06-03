@@ -3,11 +3,11 @@ pub mod macros;
 mod activities;
 mod activity_insertion;
 mod entities;
+mod export;
 mod groups;
-mod work_hours;
 mod notification;
 mod settings;
-mod export;
+mod work_hours;
 
 use crate::app::ui::Ui;
 use gtk::prelude::*;

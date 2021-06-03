@@ -25,9 +25,7 @@ impl Entity {
     /// Creates a new entity with the given name.
     #[must_use]
     fn new(name: String) -> Entity {
-        Entity {
-            name,
-        }
+        Entity { name }
     }
 
     // *** Getters ***

@@ -26,11 +26,7 @@ impl Ui {
     }
 
     fn update_current_entity_view(&self, data: &Data) {
-        fetch_from!(
-            self,
-            entity_specific_box,
-            entity_name_entry
-        );
+        fetch_from!(self, entity_specific_box, entity_name_entry);
 
         let current_entity = self
             .current_entity

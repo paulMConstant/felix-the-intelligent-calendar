@@ -1,5 +1,5 @@
-mod lines_from_activities;
 mod line;
+mod lines_from_activities;
 mod pdf_sizes;
 
 use line::{Line, LineSplits};
@@ -89,12 +89,8 @@ impl Pdf {
         let tmp_dir = tempfile::tempdir().expect("Could not create tempdir");
         let tmp_file = tmp_dir.path().join("tmp.pdf");
 
-        let surface = cairo::PdfSurface::new(
-            A4_WIDTH_IN_POINTS,
-            A4_HEIGHT_IN_POINTS,
-            tmp_file
-        )
-        .expect("Could not create pdf surface");
+        let surface = cairo::PdfSurface::new(A4_WIDTH_IN_POINTS, A4_HEIGHT_IN_POINTS, tmp_file)
+            .expect("Could not create pdf surface");
         let c = cairo::Context::new(&surface);
         c.set_font_size(self.size.line_font_size);
         c.set_line_width(LINE_WIDTH);
@@ -137,12 +133,8 @@ impl Pdf {
         let tmp_dir = tempfile::tempdir().expect("Could not create tempdir");
         let tmp_file = tmp_dir.path().join("tmp.pdf");
 
-        let surface = cairo::PdfSurface::new(
-            A4_WIDTH_IN_POINTS,
-            A4_HEIGHT_IN_POINTS,
-            tmp_file
-        )
-        .expect("Could not create pdf surface");
+        let surface = cairo::PdfSurface::new(A4_WIDTH_IN_POINTS, A4_HEIGHT_IN_POINTS, tmp_file)
+            .expect("Could not create pdf surface");
         let c = cairo::Context::new(&surface);
         c.set_font_size(self.size.title_font_size);
         c.set_line_width(LINE_WIDTH);
@@ -162,12 +154,8 @@ impl Pdf {
         let filename = self.title.replace(' ', "_");
         output_dir.push(filename + ".pdf");
 
-        let surface = cairo::PdfSurface::new(
-            A4_WIDTH_IN_POINTS,
-            A4_HEIGHT_IN_POINTS,
-            output_dir
-        )
-        .expect("Could not create pdf surface");
+        let surface = cairo::PdfSurface::new(A4_WIDTH_IN_POINTS, A4_HEIGHT_IN_POINTS, output_dir)
+            .expect("Could not create pdf surface");
 
         let c = cairo::Context::new(&surface);
 

@@ -21,9 +21,9 @@ impl Ui {
 }
 
 fn display_str_notification(
-    s: &str, 
-    notification_label: &gtk::Label, 
-    notification_revealer: &gtk::Revealer
+    s: &str,
+    notification_label: &gtk::Label,
+    notification_revealer: &gtk::Revealer,
 ) {
     notification_label.set_text(s);
     notification_revealer.set_reveal_child(true);

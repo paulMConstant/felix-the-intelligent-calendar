@@ -7,9 +7,14 @@ impl App {
         self.connect_show_data_window();
         self.connect_show_settings_window();
     }
-    
+
     fn connect_show_data_window(&self) {
-        fetch_from!(self.ui.borrow(), data_window, data_button, data_notification_revealer);
+        fetch_from!(
+            self.ui.borrow(),
+            data_window,
+            data_button,
+            data_notification_revealer
+        );
 
         // Hide window instead of deleting it
         // Clear notifications as well, we don't want notifications to show up persistently

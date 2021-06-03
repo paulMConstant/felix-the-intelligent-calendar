@@ -55,7 +55,7 @@ impl Ui {
         Ui {
             builder,
             signals: HashMap::new(),
-            
+
             current_entity: None,
             current_group: None,
             current_activity: None,
