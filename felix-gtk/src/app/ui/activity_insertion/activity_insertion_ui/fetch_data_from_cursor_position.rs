@@ -69,9 +69,10 @@ pub(super) fn get_entity_to_remove_under_cursor(
                 &schedules,
                 *index as f64 * schedules.width_per_schedule,
             );
-            // Use euclidian distance to the center of the remove button which is a circle
+            // Use euclidean distance to the center of the remove button which is a circle
             // No sqrt because it is useless for the sake of comparison
-            (x - x_button).powi(2) + (y - y_button).powi(2) <= REMOVE_BUTTON_RADIUS.powi(2)
+            // Multiply by 2 so that the user does not have to click precisely on the button
+            (x - x_button).powi(2) + (y - y_button).powi(2) <= (REMOVE_BUTTON_RADIUS * 2.0).powi(2)
         })
         .map(|(_index, entity_to_show)| entity_to_show.name().clone())
 }
