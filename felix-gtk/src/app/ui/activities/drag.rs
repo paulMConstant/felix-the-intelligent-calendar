@@ -101,18 +101,8 @@ impl Ui {
             remove_activity_from_schedule_callback(selected_activity_id);
 
             // 3. Draw possible activity beginnings
-            let mut concerned_entities_and_possible_insertion_times =
+            let concerned_entities_and_possible_insertion_times =
                 get_possible_insertions_callback(selected_activity_id);
-
-            // TODO if possible beginnings of all activities have been computed, wait
-            // else, warn user that possible insertion times have not been computed
-            while concerned_entities_and_possible_insertion_times
-                .insertion_times
-                .is_none()
-            {
-                concerned_entities_and_possible_insertion_times =
-                    get_possible_insertions_callback(selected_activity_id);
-            }
 
             activity_insertion
                 .borrow()
