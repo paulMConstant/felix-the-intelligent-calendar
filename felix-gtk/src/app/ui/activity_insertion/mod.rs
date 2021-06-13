@@ -35,7 +35,7 @@ impl Ui {
         possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
         remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
-        self.enable_drag_from_activities_treeview(
+        self.setup_drag_from_activities_treeview(
             possible_insertions_callback.clone(),
             remove_activity_from_schedule_callback.clone(),
         );

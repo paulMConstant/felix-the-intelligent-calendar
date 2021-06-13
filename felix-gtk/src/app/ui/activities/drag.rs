@@ -14,12 +14,12 @@ use byteorder::ByteOrder;
 use std::rc::Rc;
 
 impl Ui {
-    pub(in super::super) fn enable_drag_from_activities_treeview(
+    pub(in super::super) fn setup_drag_from_activities_treeview(
         &self,
         possible_insertions_callback: Rc<dyn Fn(ActivityId) -> EntitiesAndInsertionTimes>,
         remove_activity_from_schedule_callback: Rc<dyn Fn(ActivityId)>,
     ) {
-        self.drag_source_set();
+        self.enable_drag_from_activities_treeview();
         self.connect_drag_begin(
             possible_insertions_callback,
             remove_activity_from_schedule_callback,
@@ -28,7 +28,8 @@ impl Ui {
         self.connect_drag_end();
     }
 
-    fn drag_source_set(&self) {
+    // Public so that the connect module can access it
+    pub fn enable_drag_from_activities_treeview(&self) {
         fetch_from!(self, activities_tree_view);
         let targets = vec![gtk::TargetEntry::new(
             DRAG_TYPE,
@@ -40,6 +41,13 @@ impl Ui {
             &targets,
             gdk::DragAction::COPY,
         );
+    }
+
+    // Public so that the connect module can access it
+    pub fn disable_drag_from_activities_treeview(&self) {
+        fetch_from!(self, activities_tree_view);
+
+        activities_tree_view.drag_source_unset();
     }
 
     fn connect_drag_begin(

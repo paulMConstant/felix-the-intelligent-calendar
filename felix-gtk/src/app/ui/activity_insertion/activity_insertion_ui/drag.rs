@@ -18,6 +18,13 @@ impl ActivityInsertionUi {
     ) {
         self.possible_insertions_callback = possible_insertions_callback;
         self.remove_activity_from_schedule_callback = remove_activity_from_schedule_callback;
+
+        self.connect_drag_begin(
+            self.possible_insertions_callback.clone(),
+            self.remove_activity_from_schedule_callback.clone(),
+        );
+        self.connect_drag_data_get();
+        self.connect_drag_end();
     }
 
     // Public so that connect module can access it
@@ -33,12 +40,6 @@ impl ActivityInsertionUi {
             &targets,
             gdk::DragAction::COPY,
         );
-        self.connect_drag_begin(
-            self.possible_insertions_callback.clone(),
-            self.remove_activity_from_schedule_callback.clone(),
-        );
-        self.connect_drag_data_get();
-        self.connect_drag_end();
     }
 
     pub(super) fn disable_drag_from_schedules_drawing(&self) {
@@ -105,6 +106,7 @@ impl ActivityInsertionUi {
 
             let concerned_entities_and_possible_insertion_times =
                 (get_possible_insertions_callback)(selected_activity_id);
+
             this.show_possible_activity_insertions(concerned_entities_and_possible_insertion_times);
         }));
     }

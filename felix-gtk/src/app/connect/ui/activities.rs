@@ -17,7 +17,6 @@ use std::convert::TryFrom;
 impl App {
     pub fn connect_activities_tab(&self) {
         self.connect_add_activity();
-        self.connect_activity_selected();
         self.connect_remove_activity();
         self.connect_rename_activity();
         self.connect_set_activity_duration();
@@ -25,6 +24,8 @@ impl App {
         self.connect_remove_group_from_activity();
         self.connect_remove_entity_from_activity();
         self.connect_set_activity_color();
+
+        self.connect_activity_selected();
 
         self.connect_autoinsert();
 
@@ -88,6 +89,18 @@ impl App {
 
                     let data = data.borrow();
                     let activity = data.activity(activity_id);
+                    if !activity.can_be_inserted() {
+                        // Disable drag for this activity
+                        ui.borrow().disable_drag_from_activities_treeview();
+                        // Enabling drag here will make the next activity draggable if it can be
+                        // inserted
+                        ui.borrow().enable_drag_from_activities_treeview();
+                        // If we enable drag on click, there is a one-click delay:
+                        // 1 - Click on activity
+                        // 2 - Drag activity
+                        // And we can't just drag the activity because of this delay
+                        // Therefore, we enable it here preemptively
+                    }
                     ui.borrow_mut().on_activity_selected(&data, activity);
                 }
             })
