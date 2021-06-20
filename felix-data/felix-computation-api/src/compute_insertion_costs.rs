@@ -128,7 +128,7 @@ pub fn get_activity_insertion_costs(
         // Treat usize as float with 4 digits precision
         const SIGNIFICANT_DIGIT_MULTIPLIER: usize = 10_000;
         // Baseline
-        let mut cost = SIGNIFICANT_DIGIT_MULTIPLIER;
+        let mut cost = 0;
         let mut beginning_will_block_other_activities = false;
 
         for (
@@ -186,9 +186,6 @@ pub fn get_activity_insertion_costs(
         }
         // The activity can be inserted
         if !beginning_will_block_other_activities {
-            let nb_activities_inserted = insertion_data.len();
-            // Cost decreases with depth
-            cost /= nb_activities_inserted + 1;
             cost_for_all_beginnings.push(InsertionCostsMinutes {
                 beginning_minutes: beginning,
                 cost,
