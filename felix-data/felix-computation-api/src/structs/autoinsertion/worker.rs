@@ -6,7 +6,7 @@ use crate::{
         ActivityComputationStaticData,
     },
 };
-use felix_datatypes::Cost;
+use felix_datatypes::{Cost, InsertionCostsMinutes};
 
 use std::collections::btree_map::Entry;
 use std::sync::{mpsc, Arc, Mutex};
@@ -92,27 +92,20 @@ impl Worker {
                     .unwrap()
                     .send_solution(node);
             } else {
-                for insertion_cost in compute_insertion_costs(
-                    &self.static_data,
-                    &node,
-                    nb_activities_inserted,
-                ) {
-                    let cost = (insertion_cost.cost as f64 * self.age) as usize;
-                    match self.current_nodes.entry(cost) {
-                        Entry::Vacant(entry) => {
-                            entry.insert(vec![new_node(
-                                node.clone(),
-                                insertion_cost.beginning_minutes,
-                            )]);
-                        }
-                        Entry::Occupied(mut entry) => {
-                            entry.get_mut().push(new_node(
-                                node.clone(),
-                                insertion_cost.beginning_minutes,
-                            ));
+                let insertion_costs = compute_insertion_costs(&self.static_data, &node, nb_activities_inserted);
+
+                if let Some(min_insertion_cost) = insertion_costs.iter().min_by_key(|insertion_cost| insertion_cost.cost) {
+                    if min_insertion_cost.cost == 0 {
+                        // The best insertion slot does not bother any activity. We will not get better
+                        // results with the others => discard them
+                        self.insert_node_into_current_nodes(node.clone(), *min_insertion_cost);
+                    } else { 
+                        for insertion_cost in insertion_costs {
+                            self.insert_node_into_current_nodes(node.clone(), insertion_cost);
                         }
                     }
                 }
+
             }
             //println!("Took {:?} to expand best nodes", now.elapsed().as_millis());
         } else {
@@ -120,6 +113,24 @@ impl Worker {
             //let now = std::time::Instant::now();
             self.sync_with_pool();
             //println!("Took {:?} to sync with pool", now.elapsed().as_millis());
+        }
+    }
+    
+    fn insert_node_into_current_nodes(&mut self, current_node: Node, insertion_cost: InsertionCostsMinutes) {
+        let cost_with_age_penalty = (insertion_cost.cost as f64 * self.age) as usize;
+        match self.current_nodes.entry(cost_with_age_penalty) {
+            Entry::Vacant(entry) => {
+                entry.insert(vec![new_node(
+                    current_node,
+                    insertion_cost.beginning_minutes,
+                )]);
+            }
+            Entry::Occupied(mut entry) => {
+                entry.get_mut().push(new_node(
+                    current_node,
+                    insertion_cost.beginning_minutes,
+                ));
+            }
         }
     }
 }
