@@ -2,7 +2,7 @@ use crate::{
     compute_insertion_costs::compute_insertion_costs,
     structs::{
         autoinsertion::NodePool,
-        autoinsertion::{Node, NodesSortedByScore},
+        autoinsertion::{new_node, Node, NodesSortedByScore},
         ActivityComputationStaticData,
     },
 };
@@ -19,6 +19,7 @@ pub struct Worker {
     current_nodes: NodesSortedByScore,
     active: bool,
     n_iter: usize,
+    age: f64,
 
     exit_receiver: mpsc::Receiver<()>,
 }
@@ -36,6 +37,7 @@ impl Worker {
             current_nodes: NodesSortedByScore::new(current_nodes),
             active: true,
             n_iter: 0,
+            age: 1.0,
 
             exit_receiver,
         }
@@ -53,12 +55,14 @@ impl Worker {
     }
 
     /// Updates the pool and fetches a new node to explore.
-    /// If the pool is locked, this operation is skipped.
     fn sync_with_pool(&mut self) {
         self.pool
             .lock()
             .unwrap()
             .merge_and_load_nodes(&mut self.current_nodes, &mut self.active);
+        // The more we sync with the pool, the more the older nodes will be selected as costs
+        // increase over time
+        self.age += (self.n_iter as f64 / N_ITER_BEFORE_SYNC as f64) / 10.0;
         self.n_iter = 0;
     }
 
@@ -75,10 +79,10 @@ impl Worker {
     fn expand_node(&mut self) {
         if let Some((_key_cost, node)) = self.current_nodes.node_with_lowest_cost() {
             //let now = std::time::Instant::now();
-            //println!("Expanding {} nodes with cost {}...", value_nodes.len(), _key_cost);
+            //println!("Expanding with cost {}...", _key_cost);
 
             // Current nodes is not empty: work
-            let nb_activities_inserted = node.current_insertions.len();
+            let nb_activities_inserted = node.len();
             let nb_activities_to_insert = self.static_data.len();
 
             if nb_activities_inserted == nb_activities_to_insert {
@@ -86,23 +90,24 @@ impl Worker {
                 self.pool
                     .lock()
                     .unwrap()
-                    .send_solution(node.current_insertions);
+                    .send_solution(node);
             } else {
                 for insertion_cost in compute_insertion_costs(
                     &self.static_data,
-                    &node.current_insertions,
+                    &node,
                     nb_activities_inserted,
                 ) {
-                    match self.current_nodes.entry(insertion_cost.cost) {
+                    let cost = (insertion_cost.cost as f64 * self.age) as usize;
+                    match self.current_nodes.entry(cost) {
                         Entry::Vacant(entry) => {
-                            entry.insert(vec![Node::new(
-                                node.current_insertions.clone(),
+                            entry.insert(vec![new_node(
+                                node.clone(),
                                 insertion_cost.beginning_minutes,
                             )]);
                         }
                         Entry::Occupied(mut entry) => {
-                            entry.get_mut().push(Node::new(
-                                node.current_insertions.clone(),
+                            entry.get_mut().push(new_node(
+                                node.clone(),
                                 insertion_cost.beginning_minutes,
                             ));
                         }

@@ -1,7 +1,7 @@
 use crate::{
     compute_insertion_costs,
     structs::{
-        autoinsertion::{AutoinsertionThreadHandle, Node, NodePool, Worker},
+        autoinsertion::{AutoinsertionThreadHandle, Node, new_node, NodePool, Worker},
         ActivityComputationStaticData,
     },
 };
@@ -40,7 +40,7 @@ pub fn autoinsert(
     {
         init_nodes.push((
             insertion_cost.cost,
-            Node::new(
+            new_node(
                 current_insertions.to_vec(),
                 insertion_cost.beginning_minutes,
             ),
@@ -60,11 +60,11 @@ pub fn autoinsert(
         if let Some(node_with_solution) = init_nodes
             .iter()
             .map(|(_cost, node)| node)
-            .find(|&node| n_activities_to_insert == node.current_insertions.len())
+            .find(|&node| n_activities_to_insert == node.len())
         {
             // All activities are inserted - return the solution
             // If no one is listening, it is fine, we just return as if nothing happened
-            let _ = result_sender.send(Some(node_with_solution.current_insertions.clone()));
+            let _ = result_sender.send(Some(node_with_solution.clone()));
             return auto_insertion_handle;
         }
 
@@ -73,7 +73,7 @@ pub fn autoinsert(
             .iter()
             .map(|(_cost, node)| node)
             .enumerate()
-            .min_by_key(|(_index, node)| node.current_insertions.len())
+            .min_by_key(|(_index, node)| node.len())
             .expect("Taking min of empty vec");
 
         let (_cost, node_with_least_number_of_insertions) =
@@ -83,19 +83,16 @@ pub fn autoinsert(
         init_nodes.extend(
             compute_insertion_costs(
                 static_data,
-                &node_with_least_number_of_insertions.current_insertions,
+                &node_with_least_number_of_insertions,
                 node_with_least_number_of_insertions
-                    .current_insertions
                     .len(),
             )
             .into_iter()
             .map(|insertion_cost| {
                 (
                     insertion_cost.cost,
-                    Node::new(
-                        node_with_least_number_of_insertions
-                            .current_insertions
-                            .to_vec(),
+                    new_node(
+                        node_with_least_number_of_insertions.clone(),
                         insertion_cost.beginning_minutes,
                     ),
                 )
