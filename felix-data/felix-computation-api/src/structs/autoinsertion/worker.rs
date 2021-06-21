@@ -19,7 +19,6 @@ pub struct Worker {
     current_nodes: NodesSortedByScore,
     active: bool,
     n_iter: usize,
-    age: f64,
 
     exit_receiver: mpsc::Receiver<()>,
 }
@@ -37,7 +36,6 @@ impl Worker {
             current_nodes: NodesSortedByScore::new(current_nodes),
             active: true,
             n_iter: 0,
-            age: 1.0,
 
             exit_receiver,
         }
@@ -62,7 +60,6 @@ impl Worker {
             .merge_and_load_nodes(&mut self.current_nodes, &mut self.active);
         // The more we sync with the pool, the more the older nodes will be selected as costs
         // increase over time
-        self.age += (self.n_iter as f64 / N_ITER_BEFORE_SYNC as f64) / 10.0;
         self.n_iter = 0;
     }
 
@@ -77,10 +74,7 @@ impl Worker {
 
     /// Expands the nodes with the lowest cost.
     fn expand_node(&mut self) {
-        if let Some((_key_cost, node)) = self.current_nodes.node_with_lowest_cost() {
-            //let now = std::time::Instant::now();
-            //println!("Expanding with cost {}...", _key_cost);
-
+        if let Some((cost_of_parent, node)) = self.current_nodes.node_with_lowest_cost() {
             // Current nodes is not empty: work
             let nb_activities_inserted = node.len();
             let nb_activities_to_insert = self.static_data.len();
@@ -98,27 +92,23 @@ impl Worker {
                     if min_insertion_cost.cost == 0 {
                         // The best insertion slot does not bother any activity. We will not get better
                         // results with the others => discard them
-                        self.insert_node_into_current_nodes(node.clone(), *min_insertion_cost);
+                        self.insert_node_into_current_nodes(node.clone(), *min_insertion_cost, cost_of_parent);
                     } else { 
                         for insertion_cost in insertion_costs {
-                            self.insert_node_into_current_nodes(node.clone(), insertion_cost);
+                            self.insert_node_into_current_nodes(node.clone(), insertion_cost, cost_of_parent);
                         }
                     }
                 }
 
             }
-            //println!("Took {:?} to expand best nodes", now.elapsed().as_millis());
         } else {
             // Current nodes is empty, fetch from pool
-            //let now = std::time::Instant::now();
             self.sync_with_pool();
-            //println!("Took {:?} to sync with pool", now.elapsed().as_millis());
         }
     }
     
-    fn insert_node_into_current_nodes(&mut self, current_node: Node, insertion_cost: InsertionCostsMinutes) {
-        let cost_with_age_penalty = (insertion_cost.cost as f64 * self.age) as usize;
-        match self.current_nodes.entry(cost_with_age_penalty) {
+    fn insert_node_into_current_nodes(&mut self, current_node: Node, insertion_cost: InsertionCostsMinutes, cost_of_parent: Cost) {
+        match self.current_nodes.entry((insertion_cost.cost + cost_of_parent) / current_node.len()) {
             Entry::Vacant(entry) => {
                 entry.insert(vec![new_node(
                     current_node,
