@@ -440,11 +440,12 @@ impl App {
                         if let Some(solution) = result {
                             // Yay we got a solution - autoinsertion may be done
                             let mut data = data.borrow_mut();
-                            let nb_activities_inserted = solution.len();
-
                             data.apply_autoinsertion_result(solution);
 
-                            if nb_activities_inserted == data.activities_sorted().len() {
+                            if data.activities_sorted().iter().all(|activity| {
+                                activity.insertion_interval().is_some() 
+                                    || !activity.can_be_inserted()
+                            }) {
                                 // Complete solution - Autoinsertion is done
                                 glib_continue = false;
                                 exit_fetch_result_loop = true;
@@ -476,7 +477,9 @@ impl App {
             if !handle_still_alive {
                 // Autoinsertion aborted
                 glib_continue = false;
+                println!("Aborted");
             }
+
             glib::Continue(glib_continue)
         });
     }

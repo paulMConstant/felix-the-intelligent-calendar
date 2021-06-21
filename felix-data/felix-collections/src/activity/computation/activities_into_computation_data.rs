@@ -89,7 +89,7 @@ pub fn index_to_id_map(activities: &[Activity]) -> HashMap<usize, ActivityId> {
 }
 
 /// From a slice of activities, returns them in a sorted order.
-/// Filters out activities with zero-duration.
+/// Filters out activities with zero-duration or no participants.
 /// This is the order which is used for computation.
 #[must_use]
 pub fn activities_sorted_filtered_for_computation(activities: &[Activity]) -> Vec<Activity> {

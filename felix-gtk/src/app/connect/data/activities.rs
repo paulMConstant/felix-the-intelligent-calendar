@@ -112,7 +112,9 @@ impl App {
             ui.refresh_current_activity_view(data);
             ui.update_activities_treeview(data.activities_sorted());
 
-            if data.activities_sorted().iter().all(|activity| activity.insertion_interval().is_some()) {
+            if data.activities_sorted()
+                .iter()
+                    .all(|activity| activity.insertion_interval().is_some() || !activity.can_be_inserted()) {
                 // All activities have been inserted. Autoinsertion is stopped.
                 ui.on_autoinsertion_done_update_state();
             } // else: This is only a partial solution. Do nothing.
