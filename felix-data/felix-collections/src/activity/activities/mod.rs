@@ -34,6 +34,8 @@ pub struct Activities {
     separate_thread_computation: SeparateThreadActivityComputation,
     #[serde(skip)]
     activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings,
+    #[serde(skip)]
+    state_of_activities_before_autoinsertion_launched: Vec<Activity>,
 }
 
 impl Activities {
@@ -51,6 +53,7 @@ impl Activities {
             separate_thread_computation,
             activities_removed_because_duration_increased: ActivitiesAndOldInsertionBeginnings::new(
             ),
+            state_of_activities_before_autoinsertion_launched: Vec::new(),
         }
     }
 
@@ -386,9 +389,16 @@ impl Activities {
             .map(|closest_spot| closest_spot.1)
     }
 
+    /// Saves the current state of the activities so that the overwriting of the activities happens
+    /// with the original data.
+    pub fn save_current_state_for_autoinsertion(&mut self) {
+        self.state_of_activities_before_autoinsertion_launched = self.get_not_sorted();
+    }
+
     /// Associates each computation data to its rightful activity then overwrites it.
     pub fn overwrite_insertion_data(&mut self, insertion_data: Vec<ActivityBeginningMinutes>) {
-        let index_to_id_map = index_to_id_map(&self.get_not_sorted());
+        let index_to_id_map =
+            index_to_id_map(&self.state_of_activities_before_autoinsertion_launched);
         for (index, insertion) in insertion_data.into_iter().enumerate() {
             let id = index_to_id_map[&index];
             self.mutate_activity(id, |a| {
@@ -407,6 +417,7 @@ impl Clone for Activities {
             separate_thread_computation: SeparateThreadActivityComputation::default(),
             activities_removed_because_duration_increased:
                 ActivitiesAndOldInsertionBeginnings::default(),
+            state_of_activities_before_autoinsertion_launched: Vec::new(),
         }
     }
 }

@@ -11,6 +11,7 @@ pub struct NodePool {
     worker_thread_terminate_handles: Arc<Mutex<Vec<mpsc::Sender<()>>>>,
     n_workers: usize,
     n_inactive_workers: usize,
+    most_activities_inserted: usize,
 }
 
 impl NodePool {
@@ -27,10 +28,28 @@ impl NodePool {
             worker_thread_terminate_handles,
             n_workers,
             n_inactive_workers: 0,
+            most_activities_inserted: 0,
         }
     }
 
-    pub fn send_solution(&mut self, solution: Vec<ActivityBeginningMinutes>) {
+    pub fn get_most_activities_inserted(&self) -> usize {
+        self.most_activities_inserted
+    }
+
+    pub fn send_partial_solution(&mut self, solution: Vec<ActivityBeginningMinutes>) {
+        let nb_activities_inserted = solution.len();
+
+        if self.most_activities_inserted < nb_activities_inserted {
+            self.most_activities_inserted = nb_activities_inserted;
+
+            if self.result_sender.send(Some(solution)).is_err() {
+                // There is no receiving end -> abort
+                self.kill_worker_threads();
+            }
+        }
+    }
+
+    pub fn send_complete_solution(&mut self, solution: Vec<ActivityBeginningMinutes>) {
         self.kill_worker_threads();
         let _ = self.result_sender.send(Some(solution));
     }
@@ -70,7 +89,7 @@ impl NodePool {
         let mut worker_thread_terminate_handles =
             self.worker_thread_terminate_handles.lock().unwrap();
 
-        // Kill worker threads
+        // Killing worker threads will kill this object (they all own it)
         for handle in &*worker_thread_terminate_handles {
             // If the worker thread is already dead, that's fine
             let _ = handle.send(());

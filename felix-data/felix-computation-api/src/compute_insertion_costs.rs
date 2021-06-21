@@ -150,7 +150,6 @@ pub fn get_activity_insertion_costs(
             // Use only activities which are inserted
             .filter(|&index| insertion_data.len() <= index)
             .map(|index| {
-                //println!("Index {} insertion_data len {} insertions_with_conflicts len {}", index, insertion_data.len(), possible_insertions_with_conflicts.len());
                 unsafe {
                     (
                         static_data.get_unchecked(index),

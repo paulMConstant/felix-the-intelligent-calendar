@@ -420,39 +420,64 @@ impl App {
         let ui = self.ui.clone();
 
         glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
-            let handle = ui
-                .borrow()
-                .autoinsertion_handle()
-                .borrow()
-                .as_ref()
-                .map(|handle| handle.try_get_result());
+            let mut exit_fetch_result_loop = false;
+            let mut handle_still_alive = false;
+            let mut glib_continue = false;
 
-            if let Some(result_from_handle) = handle {
-                // Autoinsertion handle is still there
-                if let Some(result) = result_from_handle {
-                    // We have got a result
-                    if let Some(solution) = result {
-                        // Yay we got a solution - autoinsertion is done
-                        data.borrow_mut().apply_autoinsertion_result(solution);
-                        glib::Continue(false)
+            while !exit_fetch_result_loop {
+                let maybe_handle_response = ui
+                    .borrow()
+                    .autoinsertion_handle()
+                    .borrow()
+                    .as_ref()
+                    .map(|handle| handle.try_get_result());
+
+                if let Some(maybe_result_from_handle) = maybe_handle_response {
+                    handle_still_alive = true;
+                    // Autoinsertion handle is still there
+                    if let Some(result) = maybe_result_from_handle {
+                        // We have got a result
+                        if let Some(solution) = result {
+                            // Yay we got a solution - autoinsertion may be done
+                            let mut data = data.borrow_mut();
+                            let nb_activities_inserted = solution.len();
+
+                            data.apply_autoinsertion_result(solution);
+
+                            if nb_activities_inserted == data.activities_sorted().len() {
+                                // Complete solution - Autoinsertion is done
+                                glib_continue = false;
+                                exit_fetch_result_loop = true;
+                            } else {
+                                // Partial solution - Autoinsertion is not done
+                                glib_continue = true;
+                            }
+                        } else {
+                            // We have got no solution - autoinsertion is done
+                            ui.borrow()
+                                .notify_str(&tr("There is no solution for these activities"));
+
+                            data.borrow()
+                                .events()
+                                .borrow_mut()
+                                .emit_autoinsertion_done(&data.borrow());
+
+                            glib_continue = false;
+                            exit_fetch_result_loop = true;
+                        }
                     } else {
-                        // We have got no solution - autoinsertion is done
-                        ui.borrow()
-                            .notify_str(&tr("There is no solution for these activities"));
-                        data.borrow()
-                            .events()
-                            .borrow_mut()
-                            .emit_autoinsertion_done(&data.borrow());
-                        glib::Continue(false)
+                        // No result but autoinsertion still running
+                        glib_continue = true;
+                        exit_fetch_result_loop = true;
                     }
-                } else {
-                    // No result but autoinsertion still running
-                    glib::Continue(true)
                 }
-            } else {
-                // Autoinsertion handle is not there - autoinsertion was halted
-                glib::Continue(false)
             }
+
+            if !handle_still_alive {
+                // Autoinsertion aborted
+                glib_continue = false;
+            }
+            glib::Continue(glib_continue)
         });
     }
 

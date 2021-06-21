@@ -2,6 +2,7 @@ use crate::app::ui::ActivityToShow;
 use felix_data::{Data, Time, TimeInterval};
 
 /// Simple struct holding an entity's name, its activities and work hours.
+#[derive(Debug)]
 pub struct EntityToShow {
     name: String,
     activities: Vec<ActivityToShow>,

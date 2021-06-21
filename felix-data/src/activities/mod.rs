@@ -441,6 +441,7 @@ impl Data {
     /// Returns Err if the insertions have not been computed yet.
     pub fn start_autoinsertion(&mut self) -> Result<AutoinsertionThreadHandle> {
         // Poll insertion data
+        self.activities.save_current_state_for_autoinsertion();
         let activities = activities_sorted_filtered_for_computation(&self.activities_not_sorted());
 
         if let Some(activity_not_computed_yet) = activities

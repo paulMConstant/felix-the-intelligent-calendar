@@ -19,6 +19,7 @@ pub struct Worker {
     current_nodes: NodesSortedByScore,
     active: bool,
     n_iter: usize,
+    most_activities_inserted: usize,
 
     exit_receiver: mpsc::Receiver<()>,
 }
@@ -36,6 +37,7 @@ impl Worker {
             current_nodes: NodesSortedByScore::new(current_nodes),
             active: true,
             n_iter: 0,
+            most_activities_inserted: 0,
 
             exit_receiver,
         }
@@ -54,12 +56,11 @@ impl Worker {
 
     /// Updates the pool and fetches a new node to explore.
     fn sync_with_pool(&mut self) {
-        self.pool
-            .lock()
-            .unwrap()
-            .merge_and_load_nodes(&mut self.current_nodes, &mut self.active);
-        // The more we sync with the pool, the more the older nodes will be selected as costs
-        // increase over time
+        let mut pool = self.pool.lock().unwrap();
+        pool.merge_and_load_nodes(&mut self.current_nodes, &mut self.active);
+
+        debug_assert!(self.most_activities_inserted <= pool.get_most_activities_inserted());
+        self.most_activities_inserted = pool.get_most_activities_inserted();
         self.n_iter = 0;
     }
 
@@ -81,8 +82,19 @@ impl Worker {
 
             if nb_activities_inserted == nb_activities_to_insert {
                 // All activities have been inserted. Yay !
-                self.pool.lock().unwrap().send_solution(node);
+                self.pool.lock().unwrap().send_complete_solution(node);
             } else {
+                if nb_activities_inserted > self.most_activities_inserted {
+                    // This is the furthest we got, send it and continue computing
+                    self.pool
+                        .lock()
+                        .unwrap()
+                        .send_partial_solution(node.clone());
+
+                    // While we wait for the autoinsertion
+                    self.most_activities_inserted = nb_activities_inserted;
+                }
+
                 let insertion_costs =
                     compute_insertion_costs(&self.static_data, &node, nb_activities_inserted);
 
