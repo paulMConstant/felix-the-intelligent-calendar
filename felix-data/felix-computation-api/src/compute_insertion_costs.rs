@@ -34,7 +34,8 @@ pub fn get_all_activity_beginnings_with_conflicts(
     insertion_data: &[ActivityBeginningMinutes],
 ) -> Vec<BTreeSet<ActivityBeginningMinutes>> {
     // Preallocate data
-    let mut beginnings_for_all_activities = Vec::with_capacity(static_data.len() - insertion_data.len());
+    let mut beginnings_for_all_activities =
+        Vec::with_capacity(static_data.len() - insertion_data.len());
 
     for i in insertion_data.len()..static_data.len() {
         beginnings_for_all_activities.push(get_activity_beginnings_with_conflicts(
@@ -116,10 +117,14 @@ pub fn get_activity_insertion_costs(
     possible_insertions_with_conflicts: Vec<BTreeSet<ActivityBeginningMinutes>>,
     index_of_activity: usize,
 ) -> Vec<InsertionCostsMinutes> {
-    debug_assert!(index_of_activity >= insertion_data.len(), "Computing insertion costs of inserted activity");
+    debug_assert!(
+        index_of_activity >= insertion_data.len(),
+        "Computing insertion costs of inserted activity"
+    );
 
-    let possible_beginnings =
-        unsafe { possible_insertions_with_conflicts.get_unchecked(index_of_activity - insertion_data.len()) };
+    let possible_beginnings = unsafe {
+        possible_insertions_with_conflicts.get_unchecked(index_of_activity - insertion_data.len())
+    };
     let activity_static_data = unsafe { static_data.get_unchecked(index_of_activity) };
 
     // 1 - Calculate scores for the remaining beginnings
@@ -134,7 +139,7 @@ pub fn get_activity_insertion_costs(
         // Baseline
         let mut cost = 0;
         let mut beginning_will_block_other_activities = false;
-    
+
         for (
             incompatible_activities_static_data,
             incompatible_activities_insertions_with_conflict,
@@ -143,13 +148,14 @@ pub fn get_activity_insertion_costs(
             .iter()
             .copied()
             // Use only activities which are inserted
-            .filter(|&index| { insertion_data.len() <= index }) 
+            .filter(|&index| insertion_data.len() <= index)
             .map(|index| {
                 //println!("Index {} insertion_data len {} insertions_with_conflicts len {}", index, insertion_data.len(), possible_insertions_with_conflicts.len());
                 unsafe {
                     (
                         static_data.get_unchecked(index),
-                        possible_insertions_with_conflicts.get_unchecked(index - insertion_data.len()),
+                        possible_insertions_with_conflicts
+                            .get_unchecked(index - insertion_data.len()),
                     )
                 }
             })

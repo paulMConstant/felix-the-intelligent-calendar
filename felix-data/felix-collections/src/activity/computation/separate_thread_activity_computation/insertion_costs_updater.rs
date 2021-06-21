@@ -135,13 +135,33 @@ fn merge_beginnings_of_all_participants_of_each_activity(
 }
 
 /// For each activity, compute its insertion scores and stores them directly in the activity.
+/// If the activity is inserted, this function acts as if the activity isn't.
 fn compute_insertion_costs_for_each_activity(activities: &[Activity]) {
     let (static_data, insertion_data) = activities_into_computation_data(activities);
 
     // We can iterate in the right order because activities are sorted the same way as they
     // are in computation form
     for (index, activity) in activities.iter().enumerate() {
-        let insertion_costs = compute_insertion_costs(&static_data, &insertion_data, index)
+        let insertion_costs_minutes = if activity.insertion_interval().is_some() {
+            // Activity is inserted. Act as if it isn't !
+
+            // Remove the activity from insertion data
+            let mut insertion_data = insertion_data.clone();
+            insertion_data.remove(index);
+
+            // To keep parallel arrays coherent, move the activity to the end of the static data.
+            let mut static_data = static_data.clone();
+            let activity = static_data.remove(index);
+            static_data.push(activity);
+
+            // Update the index of the activity
+            let index = static_data.len() - 1;
+            compute_insertion_costs(&static_data, &insertion_data, index)
+        } else {
+            compute_insertion_costs(&static_data, &insertion_data, index)
+        };
+
+        let insertion_costs = insertion_costs_minutes
             .into_iter()
             .map(|insertion_cost_minutes| {
                 InsertionCost::from_insertion_cost_minutes(insertion_cost_minutes)
