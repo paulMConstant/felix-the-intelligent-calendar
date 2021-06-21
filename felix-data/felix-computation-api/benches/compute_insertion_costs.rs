@@ -57,8 +57,6 @@ fn bench_compute_costs(c: &mut Criterion) {
 
     c.bench_function("Bench compute insertion costs", |b| {
         b.iter(|| {
-            compute_insertion_costs(&static_data, &insertion_data, 0);
-            compute_insertion_costs(&static_data, &insertion_data, 1);
             compute_insertion_costs(&static_data, &insertion_data, 2);
             compute_insertion_costs(&static_data, &insertion_data, 3);
             compute_insertion_costs(&static_data, &insertion_data, 4);
