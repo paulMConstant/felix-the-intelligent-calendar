@@ -4,6 +4,6 @@ mod node_pool;
 mod worker;
 
 pub use autoinsertion_thread_handle::AutoinsertionThreadHandle;
-pub use node::{Node, new_node, NodesSortedByScore};
+pub use node::{new_node, Node, NodesSortedByScore};
 pub use node_pool::NodePool;
 pub use worker::Worker;

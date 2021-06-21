@@ -81,34 +81,50 @@ impl Worker {
 
             if nb_activities_inserted == nb_activities_to_insert {
                 // All activities have been inserted. Yay !
-                self.pool
-                    .lock()
-                    .unwrap()
-                    .send_solution(node);
+                self.pool.lock().unwrap().send_solution(node);
             } else {
-                let insertion_costs = compute_insertion_costs(&self.static_data, &node, nb_activities_inserted);
+                let insertion_costs =
+                    compute_insertion_costs(&self.static_data, &node, nb_activities_inserted);
 
-                if let Some(min_insertion_cost) = insertion_costs.iter().min_by_key(|insertion_cost| insertion_cost.cost) {
+                if let Some(min_insertion_cost) = insertion_costs
+                    .iter()
+                    .min_by_key(|insertion_cost| insertion_cost.cost)
+                {
                     if min_insertion_cost.cost == 0 {
                         // The best insertion slot does not bother any activity. We will not get better
                         // results with the others => discard them
-                        self.insert_node_into_current_nodes(node.clone(), *min_insertion_cost, cost_of_parent);
-                    } else { 
+                        self.insert_node_into_current_nodes(
+                            node.clone(),
+                            *min_insertion_cost,
+                            cost_of_parent,
+                        );
+                    } else {
                         for insertion_cost in insertion_costs {
-                            self.insert_node_into_current_nodes(node.clone(), insertion_cost, cost_of_parent);
+                            self.insert_node_into_current_nodes(
+                                node.clone(),
+                                insertion_cost,
+                                cost_of_parent,
+                            );
                         }
                     }
                 }
-
             }
         } else {
             // Current nodes is empty, fetch from pool
             self.sync_with_pool();
         }
     }
-    
-    fn insert_node_into_current_nodes(&mut self, current_node: Node, insertion_cost: InsertionCostsMinutes, cost_of_parent: Cost) {
-        match self.current_nodes.entry((insertion_cost.cost + cost_of_parent) / current_node.len()) {
+
+    fn insert_node_into_current_nodes(
+        &mut self,
+        current_node: Node,
+        insertion_cost: InsertionCostsMinutes,
+        cost_of_parent: Cost,
+    ) {
+        match self
+            .current_nodes
+            .entry((insertion_cost.cost + cost_of_parent) / current_node.len())
+        {
             Entry::Vacant(entry) => {
                 entry.insert(vec![new_node(
                     current_node,
@@ -116,10 +132,9 @@ impl Worker {
                 )]);
             }
             Entry::Occupied(mut entry) => {
-                entry.get_mut().push(new_node(
-                    current_node,
-                    insertion_cost.beginning_minutes,
-                ));
+                entry
+                    .get_mut()
+                    .push(new_node(current_node, insertion_cost.beginning_minutes));
             }
         }
     }

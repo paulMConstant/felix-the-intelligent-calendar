@@ -109,9 +109,9 @@ fn test_insertion_costs_simplest() {
         .collect::<Vec<_>>();
 
     assert_eq!(insertion_costs0[0], 10000); // 0 Blocks 0, 5
-                                                    // -> 2 blocked * 1 incompatible activities
+                                            // -> 2 blocked * 1 incompatible activities
     assert_eq!(insertion_costs0[1], 30000); // 5 Blocks 0, 5, 10
-                                                    // -> 3 blocked * 1 incompatible activities
+                                            // -> 3 blocked * 1 incompatible activities
     assert_eq!(insertion_costs0[2], 30000); // 10 Blocks 0, 5, 10
     assert_eq!(insertion_costs0[3], 30000); // 15 Blocks 5, 10 20
     assert_eq!(insertion_costs0[4], 10000); // 20 Blocks 10, 20
@@ -125,12 +125,12 @@ fn test_insertion_costs_simplest() {
         .collect::<Vec<_>>();
 
     assert_eq!(insertion_costs1[0], 6000); // 0 Blocks 0, 5, 10
-                                                   // -> 3 blocked * 1 incompatible activities
+                                           // -> 3 blocked * 1 incompatible activities
     assert_eq!(insertion_costs1[1], 10000); // 5 Blocks 0, 5, 10, 15
-                                                    // -> 4 blocked * 1 incompatible activities
+                                            // -> 4 blocked * 1 incompatible activities
     assert_eq!(insertion_costs1[2], 10000); // 10 Blocks 5, 10, 15, 20
     assert_eq!(insertion_costs1[3], 3333); // 15 Blocks 10, 20
-                                               // -> 2 blocked * 1 incompatible activities
+                                           // -> 2 blocked * 1 incompatible activities
 }
 
 fn btreeset_from_slice(slice: &[u16]) -> BTreeSet<u16> {

@@ -1,7 +1,7 @@
 use crate::{
     compute_insertion_costs,
     structs::{
-        autoinsertion::{AutoinsertionThreadHandle, Node, new_node, NodePool, Worker},
+        autoinsertion::{new_node, AutoinsertionThreadHandle, Node, NodePool, Worker},
         ActivityComputationStaticData,
     },
 };
@@ -84,8 +84,7 @@ pub fn autoinsert(
             compute_insertion_costs(
                 static_data,
                 &node_with_least_number_of_insertions,
-                node_with_least_number_of_insertions
-                    .len(),
+                node_with_least_number_of_insertions.len(),
             )
             .into_iter()
             .map(|insertion_cost| {

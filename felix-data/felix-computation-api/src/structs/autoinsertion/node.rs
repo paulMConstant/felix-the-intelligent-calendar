@@ -21,10 +21,7 @@ pub type Node = Vec<ActivityBeginningMinutes>;
 //}
 
 #[must_use]
-pub fn new_node(
-    mut current_insertions: Node,
-    next_insertion: ActivityBeginningMinutes,
-) -> Node {
+pub fn new_node(mut current_insertions: Node, next_insertion: ActivityBeginningMinutes) -> Node {
     current_insertions.push(next_insertion);
     current_insertions
 }
