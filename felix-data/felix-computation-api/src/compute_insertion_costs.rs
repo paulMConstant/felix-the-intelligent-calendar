@@ -149,14 +149,11 @@ pub fn get_activity_insertion_costs(
             .copied()
             // Use only activities which are inserted
             .filter(|&index| insertion_data.len() <= index)
-            .map(|index| {
-                unsafe {
-                    (
-                        static_data.get_unchecked(index),
-                        possible_insertions_with_conflicts
-                            .get_unchecked(index - insertion_data.len()),
-                    )
-                }
+            .map(|index| unsafe {
+                (
+                    static_data.get_unchecked(index),
+                    possible_insertions_with_conflicts.get_unchecked(index - insertion_data.len()),
+                )
             })
         {
             let offset_check_before_activity = incompatible_activities_static_data.duration_minutes

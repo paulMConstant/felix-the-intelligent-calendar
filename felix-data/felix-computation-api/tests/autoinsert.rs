@@ -14,7 +14,7 @@ fn test_autoinsert_everything_inserted() {
     let handle = autoinsert(&static_data, &insertion_data);
     assert_eq!(
         handle
-            .get_result()
+            .get_final_result()
             .expect("No autoinsertion result where there should be one"),
         vec![0]
     );
@@ -33,7 +33,7 @@ fn test_autoinsert_instant_result_1() {
     let handle = autoinsert(&static_data, &insertion_data);
     assert_eq!(
         handle
-            .get_result()
+            .get_final_result()
             .expect("No autoinsertion result where there should be one"),
         vec![0]
     );
@@ -60,7 +60,7 @@ fn test_autoinsert_instant_result_2() {
     let handle = autoinsert(&static_data, &insertion_data);
     assert_eq!(
         handle
-            .get_result()
+            .get_final_result()
             .expect("No autoinsertion result where there should be one"),
         vec![0, 10]
     );
@@ -110,7 +110,7 @@ fn test_basic_autoinsert() {
 
     let handle = autoinsert(&static_data, &insertion_data);
     let result = handle
-        .get_result()
+        .get_final_result()
         .expect("No autoinsertion result where there should be one");
     assert_eq!(result[0], 0);
 }
@@ -126,7 +126,7 @@ fn test_autoinsert_instant_no_solution() {
     let insertion_data = vec![];
 
     let handle = autoinsert(&static_data, &insertion_data);
-    assert!(handle.get_result().is_none());
+    assert!(handle.get_final_result().is_none());
 }
 
 #[test]
@@ -153,5 +153,5 @@ fn test_autoinsert_no_solution() {
     let insertion_data = vec![];
 
     let handle = autoinsert(&static_data, &insertion_data);
-    assert!(handle.get_result().is_none());
+    assert!(handle.get_final_result().is_none());
 }

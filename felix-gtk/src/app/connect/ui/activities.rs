@@ -420,38 +420,34 @@ impl App {
         let ui = self.ui.clone();
 
         glib::timeout_add_local(FREQUENCY_CHECK_AUTOINSERTION_RESULT_DONE_MS, move || {
-            let mut exit_fetch_result_loop = false;
-            let mut handle_still_alive = false;
-            let mut glib_continue = false;
+            let maybe_response_from_handle = ui
+                .borrow()
+                .autoinsertion_handle()
+                .borrow()
+                .as_ref()
+                .map(|handle| handle.try_get_latest_result());
 
-            while !exit_fetch_result_loop {
-                let maybe_handle_response = ui
-                    .borrow()
-                    .autoinsertion_handle()
-                    .borrow()
-                    .as_ref()
-                    .map(|handle| handle.try_get_result());
+            glib::Continue(
+                if let Some(maybe_result_from_handle) = maybe_response_from_handle {
+                    // Autoinsertion handle is still connected
 
-                if let Some(maybe_result_from_handle) = maybe_handle_response {
-                    handle_still_alive = true;
-                    // Autoinsertion handle is still there
                     if let Some(result) = maybe_result_from_handle {
                         // We have got a result
+
                         if let Some(solution) = result {
                             // Yay we got a solution - autoinsertion may be done
                             let mut data = data.borrow_mut();
                             data.apply_autoinsertion_result(solution);
 
                             if data.activities_sorted().iter().all(|activity| {
-                                activity.insertion_interval().is_some() 
+                                activity.insertion_interval().is_some()
                                     || !activity.can_be_inserted()
                             }) {
                                 // Complete solution - Autoinsertion is done
-                                glib_continue = false;
-                                exit_fetch_result_loop = true;
+                                false
                             } else {
                                 // Partial solution - Autoinsertion is not done
-                                glib_continue = true;
+                                true
                             }
                         } else {
                             // We have got no solution - autoinsertion is done
@@ -463,24 +459,17 @@ impl App {
                                 .borrow_mut()
                                 .emit_autoinsertion_done(&data.borrow());
 
-                            glib_continue = false;
-                            exit_fetch_result_loop = true;
+                            false
                         }
                     } else {
                         // No result but autoinsertion still running
-                        glib_continue = true;
-                        exit_fetch_result_loop = true;
+                        true
                     }
-                }
-            }
-
-            if !handle_still_alive {
-                // Autoinsertion aborted
-                glib_continue = false;
-                println!("Aborted");
-            }
-
-            glib::Continue(glib_continue)
+                } else {
+                    // Autoinsertion aborted
+                    false
+                },
+            )
         });
     }
 

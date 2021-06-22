@@ -916,7 +916,7 @@ fn autoinsertion_launches_and_ignores_activities_with_zero_duration() {
             );
 
             autoinsertion_handle
-                .get_result()
+                .get_final_result()
                 .expect("Autoinsertion failed");
         }
     );
@@ -952,7 +952,7 @@ fn autoinsertion_launches_and_ignores_activities_with_no_participants() {
             );
 
             autoinsertion_handle
-                .get_result()
+                .get_final_result()
                 .expect("Autoinsertion failed");
         }
     );

@@ -19,14 +19,26 @@ impl AutoinsertionThreadHandle {
         }
     }
 
+    /// Returns the latest result if available.
+    /// If no result is available or if the autoinsertion is done, returns None.
     #[must_use]
-    pub fn try_get_result(&self) -> Option<Option<Vec<ActivityBeginningMinutes>>> {
-        self.result_receiver.try_recv().ok()
+    pub fn try_get_latest_result(&self) -> Option<Option<Vec<ActivityBeginningMinutes>>> {
+        let mut latest_result = None;
+        while let Ok(result) = self.result_receiver.try_recv() {
+            latest_result = Some(result);
+        }
+        latest_result
     }
 
+    /// Blocks until the autoinsertion is done then return the final result.
     #[must_use]
-    pub fn get_result(&self) -> Option<Vec<ActivityBeginningMinutes>> {
-        self.result_receiver.recv().unwrap()
+    pub fn get_final_result(&self) -> Option<Vec<ActivityBeginningMinutes>> {
+        let mut final_result = None;
+        // Fetch result until the channel hangs up
+        while let Ok(result) = self.result_receiver.recv() {
+            final_result = result;
+        }
+        final_result
     }
 
     pub fn stop(&self) {
