@@ -10,6 +10,7 @@ mod common;
 mod entities;
 mod groups;
 mod notify;
+pub mod state;
 mod work_hours;
 
 use glib::signal::SignalHandlerId;
@@ -24,6 +25,8 @@ pub use activity_insertion::activity_to_show::ActivityToShow;
 pub use activity_insertion::entity_to_show::EntityToShow;
 
 use work_hours::WorkHoursBuilder;
+
+pub use state::UiState;
 
 use felix_data::{Activity, ActivityInsertionCosts, AutoinsertionThreadHandle, Entity, Group};
 
@@ -84,8 +87,20 @@ impl Ui {
         autoinsertion_running
     }
 
+    #[must_use]
     pub(super) fn autoinsertion_handle(&self) -> Rc<RefCell<Option<AutoinsertionThreadHandle>>> {
         self.autoinsertion_handle.clone()
+    }
+
+    /// Returns the state of the UI for serialization.
+    #[must_use]
+    pub(super) fn create_state_for_serialization(&self) -> UiState {
+        let entities_whose_schedules_are_shown =
+            self.activity_insertion().borrow().shown_entities();
+
+        UiState {
+            entities_whose_schedules_are_shown,
+        }
     }
 
     pub(super) fn init_ui_state(&mut self) {

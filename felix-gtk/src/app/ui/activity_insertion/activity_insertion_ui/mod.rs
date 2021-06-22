@@ -92,7 +92,7 @@ impl ActivityInsertionUi {
     }
 
     #[must_use]
-    pub(super) fn shown_entities(&self) -> Vec<String> {
+    pub fn shown_entities(&self) -> Vec<String> {
         self.schedules_to_show
             .borrow()
             .entities_to_show

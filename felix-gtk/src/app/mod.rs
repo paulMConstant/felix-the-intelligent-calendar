@@ -13,7 +13,6 @@ use ui::Ui;
 use gio::ApplicationExt;
 use gtk::prelude::*;
 use std::cell::RefCell;
-use std::fs;
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -31,12 +30,13 @@ impl App {
         let app = App { data, ui };
 
         serialize_data_on_shutdown(&app, &application);
+        serialize_ui_state_on_shutdown(&app, &application);
         app
     }
 }
 
 fn init_data() -> Rc<RefCell<Data>> {
-    let config_file_contents = fs::read_to_string(config::DATA_CONF_FILE);
+    let config_file_contents = std::fs::read_to_string(config::DATA_CONF_FILE);
 
     let data = if let Ok(contents) = config_file_contents {
         let data_value: serde_json::Result<Data> = serde_json::from_str(&contents);
@@ -82,7 +82,14 @@ fn init_ui(application: &gtk::Application) -> Rc<RefCell<Ui>> {
 
 fn serialize_data_on_shutdown(app: &App, application: &gtk::Application) {
     let app = app.clone();
-    application.connect_shutdown(move |_app| {
+    application.connect_shutdown(move |_gtk_app| {
         app.save_data();
+    });
+}
+
+fn serialize_ui_state_on_shutdown(app: &App, application: &gtk::Application) {
+    let app = app.clone();
+    application.connect_shutdown(move |_gtk_app| {
+        app.save_ui_state();
     });
 }

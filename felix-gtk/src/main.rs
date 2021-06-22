@@ -1,7 +1,7 @@
-extern crate byteorder;
-extern crate gdk;
-extern crate gio;
-extern crate gtk;
+//extern crate byteorder;
+//extern crate gdk;
+//extern crate gio;
+//extern crate gtk;
 
 pub mod app;
 pub mod config;

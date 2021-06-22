@@ -11,6 +11,7 @@ pub fn build_app(application: &gtk::Application) {
     app.connect_data();
     app.ui.borrow_mut().show_mainwindow();
     app.init_ui_with_existing_data();
+    app.recreate_last_ui_state();
 }
 
 fn build_resources(app: &gtk::Application) {
