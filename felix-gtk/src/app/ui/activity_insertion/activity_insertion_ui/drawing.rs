@@ -57,7 +57,7 @@ impl ActivityInsertionUi {
 
         hours_drawing.connect_draw(move |w, c| {
             draw_hours(
-                &c,
+                c,
                 w.get_allocated_width() as f64,
                 w.get_allocated_height() as f64,
             );
@@ -70,7 +70,7 @@ impl ActivityInsertionUi {
 
         corner_drawing.connect_draw(move |w, c| {
             draw_corner(
-                &c,
+                c,
                 w.get_allocated_width() as f64,
                 w.get_allocated_height() as f64,
             );
@@ -85,7 +85,7 @@ impl ActivityInsertionUi {
         schedules_drawing.connect_draw(move |w, c| {
             let header_visible_width = header_scrolled_window.get_allocated_width() as f64;
             if schedule_size_ok_or_resize(schedules.clone(), w, header_visible_width) {
-                draw_schedules(&c, w, schedules.clone());
+                draw_schedules(c, w, schedules.clone());
             }
             gtk::Inhibit(false)
         });
@@ -98,7 +98,7 @@ impl ActivityInsertionUi {
         header_drawing.connect_draw(move |w, c| {
             let header_visible_width = header_scrolled_window.get_allocated_width() as f64;
             if schedule_size_ok_or_resize(schedules.clone(), w, header_visible_width) {
-                draw_header(&c, w, schedules.clone());
+                draw_header(c, w, schedules.clone());
             }
             gtk::Inhibit(false)
         });
@@ -110,7 +110,7 @@ impl ActivityInsertionUi {
         let schedules = self.schedules_to_show.clone();
 
         schedules_drawing.connect_draw(move |_w, c| {
-            draw_time_tooltip(&c, schedules.clone());
+            draw_time_tooltip(c, schedules.clone());
             gtk::Inhibit(false)
         });
     }
@@ -458,7 +458,7 @@ fn draw_possible_insertions_background(
     // Calculating again here is safer.
     schedules.compute_height_for_min_discretization(height);
     if let Some(possible_insertion_times) = &schedules.possible_activity_insertion_times {
-        let colors_associated_to_beginnings = costs_to_rgb(&possible_insertion_times);
+        let colors_associated_to_beginnings = costs_to_rgb(possible_insertion_times);
 
         for (index, _entity) in
             schedules

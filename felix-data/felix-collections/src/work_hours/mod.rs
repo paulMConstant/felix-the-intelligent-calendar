@@ -29,7 +29,7 @@ impl WorkHours {
     /// Returns immutable reference to the work hours.
     #[must_use]
     pub fn work_intervals(&self) -> &Vec<TimeInterval> {
-        &self.global_work_intervals.work_intervals()
+        self.global_work_intervals.work_intervals()
     }
 
     /// Adds the given time interval to the work hours.

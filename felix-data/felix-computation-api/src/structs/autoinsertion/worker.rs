@@ -106,7 +106,7 @@ impl Worker {
                         // The best insertion slot does not bother any activity. We will not get better
                         // results with the others => discard them
                         self.insert_node_into_current_nodes(
-                            node.clone(),
+                            node,
                             *min_insertion_cost,
                             cost_of_parent,
                         );

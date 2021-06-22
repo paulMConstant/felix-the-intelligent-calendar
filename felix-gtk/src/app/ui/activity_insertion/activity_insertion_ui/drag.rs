@@ -87,12 +87,12 @@ impl ActivityInsertionUi {
 
             // Draw activity name with cairo
             // Center the text
-            let size_of_text = context.text_extents(&selected_activity_name).width;
+            let size_of_text = context.text_extents(selected_activity_name).width;
             let x_offset = (DRAG_WIDTH as f64 - size_of_text) / 2.0;
             context.move_to(x_offset, DRAG_TEXT_Y_OFFSET);
             context.set_font_size(DRAG_FONT_SIZE as f64);
             context.set_source_rgb(DRAG_FONT_RGB, DRAG_FONT_RGB, DRAG_FONT_RGB);
-            context.show_text(&selected_activity_name);
+            context.show_text(selected_activity_name);
 
             // Assign pixbuf to drag
             let surface = context.get_target();

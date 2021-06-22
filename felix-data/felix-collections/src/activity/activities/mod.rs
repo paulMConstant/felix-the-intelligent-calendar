@@ -216,7 +216,7 @@ impl Activities {
         for id in ids {
             // We don't care about the result : if the entity is not
             // taking part in the activity, that is what we want in the first place
-            let _ = self.remove_entity(id, &entity);
+            let _ = self.remove_entity(id, entity);
         }
     }
 

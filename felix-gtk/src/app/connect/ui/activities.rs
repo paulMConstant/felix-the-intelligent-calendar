@@ -81,7 +81,7 @@ impl App {
             activities_tree_view,
             activities_tree_view.connect_cursor_changed(move |tree_view| {
                 let selected_activity_id =
-                    get_selection_from_treeview(&tree_view, ACTIVITY_ID_COLUMN);
+                    get_selection_from_treeview(tree_view, ACTIVITY_ID_COLUMN);
                 if let Some(activity_id_str) = selected_activity_id {
                     let activity_id = activity_id_str
                         .parse::<ActivityId>()
@@ -439,16 +439,12 @@ impl App {
                             let mut data = data.borrow_mut();
                             data.apply_autoinsertion_result(solution);
 
-                            if data.activities_sorted().iter().all(|activity| {
+                            // If all activities are inserted or cannot be inserted, this is a
+                            // complete solution -> do not continue
+                            !data.activities_sorted().iter().all(|activity| {
                                 activity.insertion_interval().is_some()
                                     || !activity.can_be_inserted()
-                            }) {
-                                // Complete solution - Autoinsertion is done
-                                false
-                            } else {
-                                // Partial solution - Autoinsertion is not done
-                                true
-                            }
+                            })
                         } else {
                             // We have got no solution - autoinsertion is done
                             ui.borrow()

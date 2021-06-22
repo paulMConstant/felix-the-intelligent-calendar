@@ -25,12 +25,12 @@ impl App {
     /// Loads UI files in UI builder, binds mainwindow to application and sets title.
     pub fn new(application: &gtk::Application) -> App {
         let data = init_data();
-        let ui = init_ui(&application);
+        let ui = init_ui(application);
 
         let app = App { data, ui };
 
-        serialize_data_on_shutdown(&app, &application);
-        serialize_ui_state_on_shutdown(&app, &application);
+        serialize_data_on_shutdown(&app, application);
+        serialize_ui_state_on_shutdown(&app, application);
         app
     }
 }

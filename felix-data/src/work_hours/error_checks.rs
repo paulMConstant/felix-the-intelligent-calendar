@@ -72,7 +72,7 @@ impl Data {
             .custom_work_hours_of(entity_name)? // Check if entity exists here
             .is_empty()
         {
-            let activity_duration = self.time_taken_by_activities(&entity_name);
+            let activity_duration = self.time_taken_by_activities(entity_name);
             if interval_duration < activity_duration {
                 return Err(NotEnoughTime::work_hours_shortened_for(entity_name));
             }

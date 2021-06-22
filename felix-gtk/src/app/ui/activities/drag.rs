@@ -101,7 +101,7 @@ impl Ui {
             treeview.drag_source_set_icon_pixbuf(&pixbuf);
 
             // 2. Remove activity from schedule
-            let selected_activity_id = get_selection_from_treeview(&treeview, ACTIVITY_ID_COLUMN)
+            let selected_activity_id = get_selection_from_treeview(treeview, ACTIVITY_ID_COLUMN)
                 .expect("Dragging an activity when no activity is selected")
                 .parse::<ActivityId>()
                 .expect("Error when parsing activity ID from activities model");

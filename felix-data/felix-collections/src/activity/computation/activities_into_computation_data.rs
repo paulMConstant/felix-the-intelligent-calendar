@@ -36,7 +36,7 @@ pub fn activities_into_computation_data(
         for (index_of_other, id_of_other) in ids.iter().enumerate() {
             // We don't care if we compare ourselves to ourselves,
             // we cannot be incompatible with ourselves
-            if incompatible_ids.contains(&id_of_other) {
+            if incompatible_ids.contains(id_of_other) {
                 incompatible_indexes.push(index_of_other);
             }
         }

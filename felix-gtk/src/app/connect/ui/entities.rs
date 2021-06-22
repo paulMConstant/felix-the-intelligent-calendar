@@ -63,7 +63,7 @@ impl App {
             self,
             entities_tree_view,
             entities_tree_view.connect_cursor_changed(move |tree_view| {
-                let selected_entity = get_selection_from_treeview(&tree_view, ENTITY_NAME_COLUMN);
+                let selected_entity = get_selection_from_treeview(tree_view, ENTITY_NAME_COLUMN);
                 if let Some(entity_name) = selected_entity {
                     assign_or_return!(ui, entity, data.borrow().entity(entity_name));
                     ui.borrow_mut().on_entity_selected(&data.borrow(), entity);

@@ -43,7 +43,7 @@ pub fn find_possible_beginnings(
 
     // 1 - Compute all possible sums of activity durations (see tests)
     // Activity durations need to be sorted so that compute_all_sums output is sorted
-    let all_duration_sums = compute_all_sums(&activity_durations);
+    let all_duration_sums = compute_all_sums(activity_durations);
     let time_which_can_be_wasted =
         work_hour_durations.iter().sum::<u16>() - activity_durations.iter().sum::<u16>();
 

@@ -53,7 +53,7 @@ impl Activities {
                 activity
                     .computation_data
                     .set_incompatible_activity_ids(compute_incompatible_ids(
-                        &metadata,
+                        metadata,
                         &metadata_vec,
                     ));
             });

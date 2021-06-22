@@ -66,7 +66,7 @@ pub(super) fn get_entity_to_remove_under_cursor(
         .enumerate()
         .find(|(index, _entity_to_show)| {
             let (x_button, y_button) = get_center_of_remove_button(
-                &schedules,
+                schedules,
                 *index as f64 * schedules.width_per_schedule,
             );
             // Use euclidean distance to the center of the remove button which is a circle

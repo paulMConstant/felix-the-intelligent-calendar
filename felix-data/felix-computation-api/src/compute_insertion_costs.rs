@@ -103,7 +103,7 @@ pub fn get_activity_beginnings_with_conflicts(
             .possible_insertion_beginnings_minutes_sorted
             .range(incompatible_beginning..incompatible_end)
         {
-            possible_beginnings.remove(&beginning);
+            possible_beginnings.remove(beginning);
         }
     }
     possible_beginnings

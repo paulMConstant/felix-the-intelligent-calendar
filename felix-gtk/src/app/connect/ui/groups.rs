@@ -68,7 +68,7 @@ impl App {
             self,
             groups_tree_view,
             groups_tree_view.connect_cursor_changed(move |tree_view| {
-                let selected_group = get_selection_from_treeview(&tree_view, GROUP_NAME_COLUMN);
+                let selected_group = get_selection_from_treeview(tree_view, GROUP_NAME_COLUMN);
                 if let Some(group_name) = selected_group {
                     assign_or_return!(ui, group, data.borrow().group(group_name));
                     ui.borrow_mut().on_group_selected(group);

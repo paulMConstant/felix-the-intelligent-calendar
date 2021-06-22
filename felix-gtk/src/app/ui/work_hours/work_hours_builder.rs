@@ -185,8 +185,8 @@ impl WorkHoursBuilder {
 
         self.init_delete_button_callback(&delete_button, position_of_interval);
 
-        make_spinbuttons_sensitive(&builder, false);
-        update_interval_spinbuttons(&builder, interval);
+        make_spinbuttons_sensitive(builder, false);
+        update_interval_spinbuttons(builder, interval);
     }
 
     fn init_time_interval_builder_without_interval(
@@ -203,7 +203,7 @@ impl WorkHoursBuilder {
         edit_button.connect_clicked(clone!(@strong builder => move |_|
             editing_done_callback(position_of_interval, builder.clone())));
 
-        init_spinbuttons_to_default_value(&builder);
+        init_spinbuttons_to_default_value(builder);
         self.init_delete_button_callback(&delete_button, position_of_interval);
     }
 
@@ -240,11 +240,11 @@ fn new_time_interval_builder() -> gtk::Builder {
 }
 
 fn set_editing_done_icon_for_button(button: &gtk::Button) {
-    set_button_icon(&button, "object-select-symbolic");
+    set_button_icon(button, "object-select-symbolic");
 }
 
 fn set_start_editing_icon_for_button(button: &gtk::Button) {
-    set_button_icon(&button, "document-edit-symbolic");
+    set_button_icon(button, "document-edit-symbolic");
 }
 
 fn set_button_icon(button: &gtk::Button, icon_name: &str) {
